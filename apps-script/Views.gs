@@ -62,6 +62,7 @@ var Views = (function () {
       projects: Db.all('Projects').filter(function (p) { return bool(p.is_active); }),
       enums: ENUM,
       unread: unread,
+      theme: setting('theme', ''),
     };
   }
 

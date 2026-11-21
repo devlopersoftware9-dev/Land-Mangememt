@@ -6,28 +6,64 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  body { font-family: 'Inter', sans-serif; }
+  /* Theme colours – changed live by the 🎨 Theme panel */
+  :root { --p: #0f766e; --p-soft: #ccfbf1; --hdr: #134e4a; --hdr-text: #ffffff; --th: #0f766e; --th-text: #ffffff; --bg: #f1f5f9; --stripe: #f8fafc; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); }
   html[dir=rtl] body { font-family: 'Noto Nastaliq Urdu', serif; line-height: 2.1; }
   .num { direction: ltr; unicode-bidi: embed; font-family: 'Inter', sans-serif; }
-  .card { background: #fff; border-radius: .5rem; box-shadow: 0 1px 2px rgba(0,0,0,.06); padding: 1rem; }
-  .inp { border: 1px solid #cbd5e1; border-radius: .375rem; padding: .25rem .5rem; }
-  .btn { border-radius: .375rem; padding: .35rem .9rem; color: #fff; }
-  table.t { width: 100%; font-size: .875rem; } table.t th { text-align: start; color: #64748b; font-weight: 500; padding: .35rem; border-bottom: 1px solid #e2e8f0; }
-  table.t td { padding: .35rem; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
-  .chip { display: inline-flex; align-items: center; gap: .3rem; border-radius: 9999px; padding: 0 .6rem; font-size: .8rem; }
+  .card { background: #fff; border-radius: .6rem; box-shadow: 0 1px 3px rgba(15,23,42,.08); border: 1px solid #e2e8f0; padding: 1rem; }
+  .card h2 { color: var(--p); }
+  .inp { border: 1px solid #cbd5e1; border-radius: .375rem; padding: .3rem .6rem; background: #fff; }
+  .inp:focus { outline: 2px solid var(--p); outline-offset: 0; border-color: var(--p); }
+  .btn { border-radius: .375rem; padding: .4rem 1rem; color: #fff; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+  .btn:hover { filter: brightness(1.08); }
+  .bg-p { background: var(--p); } .text-p { color: var(--p); } .hover\:text-p:hover { color: var(--p); }
+  a.link { color: var(--p); cursor: pointer; font-weight: 500; } a.link:hover { text-decoration: underline; }
+
+  /* Header + tabs */
+  .topbar { background: var(--hdr); color: var(--hdr-text); }
+  .topbar .inp { background: rgba(255,255,255,.12); color: var(--hdr-text); border-color: rgba(255,255,255,.3); }
+  .topbar .inp option { color: #0f172a; }
+  .tabbar { background: #fff; border-bottom: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .tab { display: inline-flex; align-items: center; gap: .45rem; padding: .7rem 1rem; color: #475569; border-bottom: 3px solid transparent; font-weight: 500; cursor: pointer; white-space: nowrap; }
+  .tab:hover { color: var(--p); background: var(--stripe); }
+  .tab.active { color: var(--p); border-bottom-color: var(--p); background: var(--p-soft); }
+  .tab svg { width: 1.1rem; height: 1.1rem; }
+  .badge-n { background: #dc2626; color: #fff; border-radius: 9999px; font-size: .7rem; padding: 0 .4rem; }
+
+  /* Tables: real grid */
+  table.t { width: 100%; font-size: .875rem; border-collapse: separate; border-spacing: 0; border: 1px solid #cbd5e1; border-radius: .5rem; overflow: hidden; }
+  table.t th { text-align: start; background: var(--th); color: var(--th-text); font-weight: 600; padding: .55rem .7rem; border-inline-end: 1px solid rgba(255,255,255,.25); white-space: nowrap; }
+  table.t td { padding: .5rem .7rem; border-top: 1px solid #e2e8f0; border-inline-end: 1px solid #e2e8f0; vertical-align: top; background: #fff; }
+  table.t th:last-child, table.t td:last-child { border-inline-end: 0; }
+  table.t tr:nth-child(even) td { background: var(--stripe); }
+  table.t tr:hover td { background: var(--p-soft); }
+  .card.p-0 { padding: 0; }
+  .border, .border-b, .border-t, .divide-y > * { border-color: #e2e8f0; }
+  .scroll-table { max-height: 70vh; overflow: auto; border-radius: .5rem; }
+  .scroll-table table.t th { position: sticky; top: 0; z-index: 1; }
+  .chip { display: inline-flex; align-items: center; gap: .35rem; border-radius: 9999px; padding: .05rem .65rem; font-size: .78rem; font-weight: 500; }
   .dot { width: .6rem; height: .6rem; border-radius: 9999px; display: inline-block; }
-  a.link { color: #047857; cursor: pointer; }
+
+  /* Theme panel */
+  .swatch { width: 2.2rem; height: 2.2rem; border-radius: .5rem; border: 2px solid #fff; box-shadow: 0 0 0 1px #cbd5e1; cursor: pointer; }
+  .swatch:hover { transform: scale(1.08); }
+  input[type=color] { width: 3rem; height: 2rem; border: 1px solid #cbd5e1; border-radius: .375rem; padding: 0; background: #fff; cursor: pointer; }
 </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen">
+<body class="text-slate-800 min-h-screen">
 <div id="top"></div>
 <main id="app" class="max-w-7xl mx-auto px-4 py-6"></main>
 <div id="toast" class="fixed bottom-4 inset-x-0 flex justify-center pointer-events-none"></div>
+<div id="modal"></div>
 
 <script>
 // ===================================================================== i18n
 const I18N = {
 en: {
+  theme: { title: 'Theme', presets: 'Ready colour schemes', custom: 'Your own colours', header: 'Top bar', primary: 'Buttons / links / tabs',
+    table: 'Table header', background: 'Page background', done: 'Done', reset: 'Reset', save_all: 'Make default for everyone', saved_all: 'Saved as default for all users.',
+    note: 'Your choice is saved on this computer. Admin can make it the default for everyone.' },
   app: 'Land Management', login: 'Login', logout: 'Logout', email: 'Email', password: 'Password', save: 'Save', saved: 'Saved.',
   filter: 'Filter', all: 'All', nothing: 'Nothing here.', date: 'Date', notes: 'Notes', reason: 'Reason', by: 'By', now: 'now',
   company: 'Company', plot: 'Plot', loading: 'Loading…', are_you_sure: 'Are you sure?', read_only: 'You can only view this.',
@@ -102,6 +138,9 @@ en: {
     history_locked: 'History cannot be edited.', setup_missing: 'Run Setup from the sheet menu first.', unknown_action: 'Unknown action.' },
 },
 ur: {
+  theme: { title: 'رنگ', presets: 'تیار رنگ', custom: 'اپنی مرضی کے رنگ', header: 'اوپر والی پٹی', primary: 'بٹن / لنک / ٹیب',
+    table: 'ٹیبل کا ہیڈر', background: 'پیج کا پس منظر', done: 'ٹھیک ہے', reset: 'پہلے جیسا', save_all: 'سب کے لیے ڈیفالٹ بنائیں', saved_all: 'سب یوزرز کے لیے محفوظ ہو گیا۔',
+    note: 'آپ کی پسند اسی کمپیوٹر پر محفوظ رہے گی۔ ایڈمن اسے سب کے لیے ڈیفالٹ بنا سکتا ہے۔' },
   app: 'لینڈ مینجمنٹ', login: 'لاگ اِن', logout: 'لاگ آؤٹ', email: 'ای میل', password: 'پاس ورڈ', save: 'محفوظ کریں', saved: 'محفوظ ہو گیا۔',
   filter: 'تلاش', all: 'سب', nothing: 'کچھ نہیں۔', date: 'تاریخ', notes: 'نوٹ', reason: 'وجہ', by: 'کس نے', now: 'اب تک',
   company: 'کمپنی', plot: 'پلاٹ', loading: 'لوڈ ہو رہا ہے…', are_you_sure: 'کیا آپ کو یقین ہے؟', read_only: 'آپ صرف دیکھ سکتے ہیں۔',
@@ -203,7 +242,7 @@ function area(sqft, marla) {
   const k = Math.floor(tm / 20), m = tm % 20;
   return (k ? k + 'K-' : '') + String(m).padStart(2, '0') + 'M' + (rest > 0 ? '-' + rest + 'sft' : '');
 }
-function statusChip(s) { return `<span class="chip"><span class="dot" style="background:${COLORS[s] || '#94a3b8'}"></span>${esc(L('plotStatus', s))}</span>`; }
+function statusChip(s) { const c = COLORS[s] || '#94a3b8'; return `<span class="chip" style="background:${c}1f;color:${c};border:1px solid ${c}55"><span class="dot" style="background:${c}"></span>${esc(L('plotStatus', s))}</span>`; }
 function opts(group, selected, withEmpty) {
   return (withEmpty ? `<option value="">${esc(withEmpty)}</option>` : '') +
     (S.enums[group] || []).map(v => `<option value="${v}" ${v === selected ? 'selected' : ''}>${esc(L(group, v))}</option>`).join('');
@@ -211,7 +250,7 @@ function opts(group, selected, withEmpty) {
 
 function toast(msg, bad) {
   const el = document.getElementById('toast');
-  el.innerHTML = `<div class="pointer-events-auto rounded shadow px-4 py-2 ${bad ? 'bg-red-600' : 'bg-emerald-700'} text-white">${esc(msg)}</div>`;
+  el.innerHTML = `<div class="pointer-events-auto rounded shadow px-4 py-2 ${bad ? 'bg-red-600' : 'bg-p'} text-white">${esc(msg)}</div>`;
   clearTimeout(toast._t); toast._t = setTimeout(() => el.innerHTML = '', bad ? 6000 : 2500);
 }
 
@@ -251,19 +290,94 @@ function setLang(lang) {
   render();
 }
 
+const ICONS = {
+  dashboard: '<path d="M3 13h8V3H3zm0 8h8v-6H3zm10 0h8V11h-8zm0-18v6h8V3z"/>',
+  plots: '<path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18" fill="none" stroke="currentColor" stroke-width="2"/>',
+  registry: '<path d="M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h8" fill="none" stroke="currentColor" stroke-width="2"/>',
+  approvals: '<path d="M4 4h16v12H5.2L4 17.2zM8 10l2.5 2.5L16 7" fill="none" stroke="currentColor" stroke-width="2"/>',
+  customers: '<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2"/>',
+  land: '<path d="M3 20l6-12 4 7 3-4 5 9z" fill="none" stroke="currentColor" stroke-width="2"/>',
+  settings: '<path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm8-3l2-1-2-4-2 1-2-1-1-2h-4L10 5 8 6 6 5 4 9l2 1v2l-2 1 2 4 2-1 2 1 1 2h4l1-2 2-1 2 1 2-4-2-1z" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+};
+const icon = k => `<svg viewBox="0 0 24 24" fill="currentColor">${ICONS[k] || ''}</svg>`;
+
 function header() {
   if (!S.user) return '';
   const links = [['#/', 'dashboard'], ['#/plots', 'plots'], ['#/registry', 'registry'], ['#/approvals', 'approvals'], ['#/customers', 'customers'], ['#/land', 'land']];
   if (can('admin')) links.push(['#/settings', 'settings']);
-  return `<header class="bg-white border-b"><div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center gap-4">
-    <a class="font-semibold" href="#/" onclick="return go('#/')">${t('app')}</a>
-    <nav class="flex flex-wrap gap-3 text-sm">${links.map(([h, k]) => `<a class="hover:text-emerald-700 ${S.route.split('/')[1] === h.split('/')[1] ? 'text-emerald-700 font-medium' : ''}" href="${h}" onclick="return go('${h}')">${t('nav.' + k)}${k === 'approvals' && S.unread ? ` <span class="rounded-full bg-red-600 text-white text-xs px-1.5 num">${S.unread}</span>` : ''}</a>`).join('')}</nav>
-    <div class="ms-auto flex items-center gap-2 text-sm">
-      ${S.projects.length > 1 ? `<select class="inp" onchange="switchProject(this.value)">${S.projects.map(p => `<option value="${p.id}" ${p.id === S.projectId ? 'selected' : ''}>${esc(p.code)}</option>`).join('')}</select>` : `<span class="text-slate-500">${esc((S.projects[0] || {}).code || '')}</span>`}
-      <button class="inp" onclick="setLang('${S.lang === 'ur' ? 'en' : 'ur'}')">${S.lang === 'ur' ? 'English' : 'اردو'}</button>
-      <span class="text-slate-500">${esc(S.user.name)}</span>
-      <button class="text-slate-500 hover:text-red-600" onclick="logout()">${t('logout')}</button>
-    </div></div></header>`;
+  const cur = S.route.split('/')[1] || '';
+  const active = h => { const k = h.split('/')[1] || ''; return k === cur || (k === 'plots' && cur === 'plot') || (k === 'registry' && cur === 'case') || (k === 'approvals' && cur === 'approval') || (k === 'customers' && cur === 'customer'); };
+  return `<header class="topbar"><div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-3">
+      <a class="flex items-center gap-2 font-semibold text-lg cursor-pointer" onclick="go('#/')">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/20">🏘️</span>${t('app')}</a>
+      ${S.projects.length > 1 ? `<select class="inp text-sm" onchange="switchProject(this.value)">${S.projects.map(p => `<option value="${p.id}" ${p.id === S.projectId ? 'selected' : ''}>${esc(p.code)} – ${esc(S.lang === 'ur' && p.name_ur ? p.name_ur : p.name)}</option>`).join('')}</select>`
+        : `<span class="text-sm opacity-80">${esc(((S.projects[0] || {}).code || '') + ' – ' + ((S.projects[0] || {}).name || ''))}</span>`}
+      <div class="ms-auto flex items-center gap-2 text-sm">
+        <button class="inp" onclick="openTheme()" title="${t('theme.title')}">🎨 ${t('theme.title')}</button>
+        <button class="inp" onclick="setLang('${S.lang === 'ur' ? 'en' : 'ur'}')">${S.lang === 'ur' ? 'English' : 'اردو'}</button>
+        <span class="opacity-80 hidden md:inline">👤 ${esc(S.user.name)}</span>
+        <button class="inp" onclick="logout()">${t('logout')}</button>
+      </div></div></header>
+    <nav class="tabbar"><div class="max-w-7xl mx-auto px-2 flex overflow-x-auto">
+      ${links.map(([h, k]) => `<a class="tab ${active(h) ? 'active' : ''}" onclick="return go('${h}')">${icon(k)}${t('nav.' + k)}${k === 'approvals' && S.unread ? ` <span class="badge-n num">${S.unread}</span>` : ''}</a>`).join('')}
+    </div></nav>`;
+}
+
+// ===================================================================== theme
+const THEMES = {
+  teal:    { p: '#0f766e', hdr: '#134e4a', th: '#0f766e', bg: '#f1f5f9' },
+  blue:    { p: '#1d4ed8', hdr: '#1e3a8a', th: '#1d4ed8', bg: '#eff6ff' },
+  maroon:  { p: '#9f1239', hdr: '#4c0519', th: '#881337', bg: '#fff1f2' },
+  purple:  { p: '#7e22ce', hdr: '#3b0764', th: '#6b21a8', bg: '#faf5ff' },
+  green:   { p: '#15803d', hdr: '#14532d', th: '#166534', bg: '#f0fdf4' },
+  orange:  { p: '#c2410c', hdr: '#431407', th: '#9a3412', bg: '#fff7ed' },
+  slate:   { p: '#334155', hdr: '#0f172a', th: '#1e293b', bg: '#f1f5f9' },
+  gold:    { p: '#a16207', hdr: '#1c1917', th: '#854d0e', bg: '#fefce8' },
+};
+function mix(hex, pct) { // lighten a colour toward white (pct 0..1)
+  const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const f = c => Math.round(c + (255 - c) * pct).toString(16).padStart(2, '0');
+  return '#' + f(r) + f(g) + f(b);
+}
+function applyTheme(th) {
+  th = Object.assign({}, THEMES.teal, th || {});
+  const st = document.documentElement.style;
+  st.setProperty('--p', th.p); st.setProperty('--p-soft', mix(th.p, 0.88));
+  st.setProperty('--hdr', th.hdr); st.setProperty('--th', th.th); st.setProperty('--bg', th.bg);
+  st.setProperty('--stripe', mix(th.p, 0.96));
+  S.theme = th;
+}
+function loadTheme() {
+  let th = null;
+  try { th = JSON.parse(localStorage.getItem('lm_theme') || 'null'); } catch (e) {}
+  applyTheme(th || S.defaultTheme || THEMES.teal);
+}
+function setTheme(th, persist) {
+  applyTheme(th);
+  if (persist !== false) try { localStorage.setItem('lm_theme', JSON.stringify(S.theme)); } catch (e) {}
+  if (document.getElementById('theme-panel')) openTheme();
+}
+function closeTheme() { document.getElementById('modal').innerHTML = ''; }
+function openTheme() {
+  const th = S.theme || THEMES.teal;
+  const picker = (k, label) => `<label class="flex items-center justify-between gap-3 py-1"><span>${label}</span>
+    <input type="color" value="${th[k]}" oninput="setTheme(Object.assign({}, S.theme, {${k}: this.value}))"></label>`;
+  document.getElementById('modal').innerHTML = `<div class="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-16" onclick="if(event.target===this)closeTheme()">
+    <div id="theme-panel" class="card w-full max-w-md">
+      <div class="flex justify-between items-center mb-3"><h2 class="font-semibold text-lg">🎨 ${t('theme.title')}</h2><button class="text-2xl leading-none" onclick="closeTheme()">×</button></div>
+      <div class="text-sm text-slate-500 mb-2">${t('theme.presets')}</div>
+      <div class="flex flex-wrap gap-2 mb-4">${Object.keys(THEMES).map(k => `<button class="swatch" title="${k}" style="background:linear-gradient(135deg, ${THEMES[k].hdr} 50%, ${THEMES[k].p} 50%)" onclick="setTheme(THEMES.${k})"></button>`).join('')}</div>
+      <div class="text-sm text-slate-500 mb-1">${t('theme.custom')}</div>
+      <div class="text-sm divide-y">
+        ${picker('hdr', t('theme.header'))}${picker('p', t('theme.primary'))}${picker('th', t('theme.table'))}${picker('bg', t('theme.background'))}
+      </div>
+      <div class="flex flex-wrap gap-2 mt-4">
+        <button class="btn bg-p" onclick="closeTheme()">${t('theme.done')}</button>
+        <button class="inp" onclick="try{localStorage.removeItem('lm_theme')}catch(e){};applyTheme(S.defaultTheme||THEMES.teal);openTheme()">${t('theme.reset')}</button>
+        ${can('admin') ? `<button class="inp" onclick="call('saveTheme',{theme:S.theme}).then(()=>{S.defaultTheme=S.theme;toast(t('theme.saved_all'))}).catch(e=>toast(e.message,true))">${t('theme.save_all')}</button>` : ''}
+      </div>
+      <p class="text-xs text-slate-400 mt-3">${t('theme.note')}</p>
+    </div></div>`;
 }
 
 function switchProject(id) { S.projectId = id; try { localStorage.setItem('lm_project', id); } catch (e) {} load(); }
@@ -351,6 +465,7 @@ async function boot() {
   try {
     const b = await call('bootstrap');
     S.user = b.user; S.projects = b.projects; S.enums = b.enums; S.unread = b.unread;
+    if (b.theme) { try { S.defaultTheme = JSON.parse(b.theme); } catch (e) {} } loadTheme();
     if (!S.projectId || !S.projects.some(p => p.id === S.projectId)) S.projectId = (S.projects[0] || {}).id;
     if (b.user.locale && !localStorage.getItem('lm_lang')) S.lang = b.user.locale;
     load();
@@ -365,7 +480,7 @@ function viewLogin() {
     <form onsubmit="return doLogin(event)" class="space-y-3">
       <label class="block text-sm">${t('email')}<input name="email" type="email" required class="inp w-full num"></label>
       <label class="block text-sm">${t('password')}<input name="password" type="password" required class="inp w-full"></label>
-      <button class="btn bg-emerald-700 w-full">${t('login')}</button>
+      <button class="btn bg-p w-full">${t('login')}</button>
     </form></div>`;
 }
 
@@ -412,7 +527,7 @@ VIEWS.plots = d => {
     <select name="street" class="inp"><option value="">${t('p.street')}: ${t('all')}</option>${d.streets.map(s => `<option value="${s.id}" ${s.id === f.street ? 'selected' : ''}>${t('p.street')} ${esc(s.number)}</option>`).join('')}</select>
     <select name="category" class="inp">${opts('category', f.category, t('all'))}</select>
     <button class="btn bg-slate-800">${t('filter')}</button></form>
-  <div class="card overflow-x-auto"><table class="t">
+  <div class="card p-0 scroll-table"><table class="t">
     <tr><th>${t('plot')}</th><th>${t('p.size')}</th><th>${t('p.category')}</th><th>${t('p.status')}</th><th>${t('p.customer')}</th><th>${t('p.construction')}</th></tr>
     ${d.rows.map(p => `<tr class="hover:bg-slate-50"><td><a class="link num font-medium" onclick="go('#/plot/${p.id}')">${esc(p.plot_no)}</a>
         ${p.is_corner ? `<span class="text-xs text-slate-500">· ${t('p.corner')}</span>` : ''}${p.is_park_facing ? `<span class="text-xs text-slate-500">· ${t('p.park_facing')}</span>` : ''}</td>
@@ -430,7 +545,7 @@ function customerSelect(list) {
 VIEWS.plot = d => {
   const p = d.plot, s = p.sale_status, acc = can('accounts');
   const box = (title, body, action, extra, confirmMsg, color) => `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'${action}',${esc(JSON.stringify(Object.assign({ plot_id: p.id }, extra || {})))},${confirmMsg ? `{confirm:'${esc(confirmMsg)}'}` : '{}'})">
-      <div class="font-medium">${title}</div>${body}<button class="btn ${color || 'bg-emerald-700'}">${title}</button></form>`;
+      <div class="font-medium">${title}</div>${body}<button class="btn ${color || 'bg-p'}">${title}</button></form>`;
   let actions = '';
   if (acc) {
     if (s === 'available') actions += box(t('p.sell'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'sell');
@@ -486,7 +601,7 @@ VIEWS.registry = d => {
     <div class="flex flex-wrap gap-2 text-sm">${d.pending.map(p => `<a class="border rounded px-2 py-1 cursor-pointer hover:bg-orange-50" onclick="go('#/plot/${p.id}')"><span class="num font-medium">${esc(p.plot_no)}</span> · ${esc(p.customer)}</a>`).join('') || `<span class="text-slate-500">${t('nothing')}</span>`}</div></section>
   <select class="inp mb-3 text-sm" onchange="S.filters={registry:{status:this.value}};load()"><option value="">${t('r.open')}</option>
     ${Object.keys(t('enum.caseStatus')).map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${L('caseStatus', s)}</option>`).join('')}</select>
-  <div class="card overflow-x-auto"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('p.customer')}</th><th>${t('r.mode')}</th><th>${t('r.step')}</th><th>${t('r.with')}</th><th>${t('r.demand_date')}</th></tr>
+  <div class="card p-0 scroll-table"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('p.customer')}</th><th>${t('r.mode')}</th><th>${t('r.step')}</th><th>${t('r.with')}</th><th>${t('r.demand_date')}</th></tr>
     ${d.cases.map(c => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/case/${c.id}')">${esc(c.reference)}</a></td><td class="num">${esc(c.plot_no)}</td><td>${esc(c.customer_name)}</td>
       <td>${L('registryMode', c.mode)}</td><td>${L('caseStatus', c.status)}</td><td class="text-slate-500">${c.actor ? L('roles', c.actor) : '—'}</td><td class="num">${dmy(c.demand_date)}</td></tr>`).join('') || `<tr><td colspan="7" class="text-slate-500">${t('nothing')}</td></tr>`}
   </table></div>`;
@@ -593,7 +708,7 @@ VIEWS.approvals = d => {
   return `<h1 class="text-xl font-semibold mb-4">${t('nav.approvals')}</h1>
   <select class="inp mb-3 text-sm" onchange="S.filters={approvals:{status:this.value}};load()"><option value="">${t('all')}</option>
     ${Object.keys(t('enum.approvalStatus')).map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${L('approvalStatus', s)}</option>`).join('')}</select>
-  <div class="card overflow-x-auto"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('a.type')}</th><th>${t('a.sent')}</th><th>${t('p.status')}</th><th>${t('a.verified')}</th></tr>
+  <div class="card p-0 scroll-table"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('a.type')}</th><th>${t('a.sent')}</th><th>${t('p.status')}</th><th>${t('a.verified')}</th></tr>
     ${d.map(a => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/approval/${a.id}')">${esc(a.reference)}</a></td><td class="num">${esc(a.plot_no)}</td><td>${L('approvalType', a.type)}</td>
       <td class="num">${esc(a.sent_at).slice(0, 16)}</td><td>${L('approvalStatus', a.status)}</td><td>${esc(a.verifier)}</td></tr>`).join('') || `<tr><td colspan="6" class="text-slate-500">${t('nothing')}</td></tr>`}</table></div>`;
 };
@@ -604,7 +719,7 @@ VIEWS.approval = d => {
   if (['director_approved', 'director_rejected'].includes(a.status) && can('accounts')) {
     actions += `<form class="border-t pt-3 space-y-2" onsubmit="return submitForm(event,'verifyApproval',{id:'${a.id}'})">
       <p>${a.status === 'director_approved' ? t('a.help_ok') : t('a.help_no')}</p><textarea name="remarks" class="inp w-full" placeholder="${t('notes')}"></textarea>
-      <label class="flex gap-2"><input type="checkbox" required> ${t('a.checked')}</label><button class="btn bg-emerald-700">${t('a.verify')}</button></form>`;
+      <label class="flex gap-2"><input type="checkbox" required> ${t('a.checked')}</label><button class="btn bg-p">${t('a.verify')}</button></form>`;
   }
   if (['needs_review', 'sent'].includes(a.status) && can('accounts')) {
     actions += `<details class="border-t pt-3" ${a.status === 'needs_review' ? 'open' : ''}><summary class="cursor-pointer">${t('a.resolve')}</summary>
@@ -620,7 +735,7 @@ VIEWS.approval = d => {
       <div>${t('a.to')}: <span class="num">${esc(a.to_email)}</span></div>${a.cc ? `<div>CC: <span class="num">${esc(a.cc)}</span></div>` : ''}
       <div>${t('a.subject')}: <span class="num">${esc(a.subject)}</span></div><div><span class="num">${esc(a.sent_at)}</span> · ${esc(d.sender)}</div></section>
     <section class="card text-sm space-y-2"><h2 class="font-semibold mb-2">${t('a.decision')}</h2>
-      ${a.decision ? `<div class="text-lg font-semibold ${a.decision === 'approved' ? 'text-emerald-700' : 'text-red-700'}">${t('a.' + a.decision)}</div>
+      ${a.decision ? `<div class="text-lg font-semibold ${a.decision === 'approved' ? 'text-p' : 'text-red-700'}">${t('a.' + a.decision)}</div>
         <div>${t('a.how')}: ${t('a.' + a.decision_channel)} · <span class="num">${esc(a.decided_from_email)} · ${esc(a.decided_at)}</span></div>
         ${a.director_remarks ? `<div class="bg-slate-50 rounded p-2">“${esc(a.director_remarks)}”</div>` : ''}` : `<p class="text-slate-500">${t('a.none')}</p>`}
       ${d.inbound.length ? `<div class="font-medium pt-2">${t('a.inbound')}</div>` + d.inbound.map(m => `<div class="border rounded p-2 text-xs"><div class="num">${esc(m.from_email)} · ${esc(m.received_at)} · <b>${L('result', m.result)}</b></div>
@@ -635,7 +750,7 @@ VIEWS.customers = d => {
   const f = (S.filters || {}).customers || {};
   return `<h1 class="text-xl font-semibold mb-4">${t('nav.customers')}</h1>
   <form class="flex gap-2 mb-3 text-sm" onsubmit="event.preventDefault();S.filters={customers:formData(this)};load()"><input name="q" value="${esc(f.q || '')}" placeholder="${t('c.search')}" class="inp"><button class="btn bg-slate-800">${t('filter')}</button></form>
-  <div class="card overflow-x-auto mb-6"><table class="t"><tr><th>${t('c.name')}</th><th>${t('c.cnic')}</th><th>${t('c.phone')}</th><th>${t('c.plots')}</th><th>${t('c.filer')}</th></tr>
+  <div class="card p-0 scroll-table mb-6"><table class="t"><tr><th>${t('c.name')}</th><th>${t('c.cnic')}</th><th>${t('c.phone')}</th><th>${t('c.plots')}</th><th>${t('c.filer')}</th></tr>
     ${d.map(c => `<tr class="hover:bg-slate-50"><td><a class="link" onclick="go('#/customer/${c.id}')">${esc(c.label)}</a></td><td class="num">${esc(c.cnic)}</td><td class="num">${esc(c.phone)}</td><td class="num">${c.plots}</td><td>${isTrue(c.is_filer) ? '✔' : ''}</td></tr>`).join('') || `<tr><td colspan="5" class="text-slate-500">${t('nothing')}</td></tr>`}</table></div>
   ${can('accounts') ? `<section class="card"><h2 class="font-semibold mb-3">${t('c.new')}</h2>
     <form class="grid md:grid-cols-3 gap-3 text-sm" onsubmit="return submitForm(event,'saveCustomer',{})">
@@ -644,7 +759,7 @@ VIEWS.customers = d => {
       <input name="cnic" placeholder="00000-0000000-0" pattern="\\d{5}-\\d{7}-\\d" class="inp num"><input name="phone" placeholder="${t('c.phone')}" class="inp num"><input name="email" type="email" placeholder="${t('email')}" class="inp num">
       <input name="address" placeholder="${t('c.address')}" class="inp md:col-span-2"><label class="flex gap-2 items-center"><input type="checkbox" name="is_filer" value="TRUE"> ${t('c.filer')}</label>
       <input name="nominee_name" placeholder="${t('c.nominee')}" class="inp"><input name="nominee_cnic" placeholder="${t('c.nominee_cnic')}" class="inp num"><input name="nominee_relation" placeholder="${t('c.nominee_rel')}" class="inp">
-      <div><button class="btn bg-emerald-700">${t('save')}</button></div></form></section>` : ''}`;
+      <div><button class="btn bg-p">${t('save')}</button></div></form></section>` : ''}`;
 };
 
 VIEWS.customer = d => `<h1 class="text-xl font-semibold mb-1">${esc(d.label)}</h1>
@@ -669,7 +784,7 @@ VIEWS.land = d => {
     ${edit ? `<details class="mt-3"><summary class="link text-sm">${t('land.add_purchase')}</summary><form class="grid md:grid-cols-4 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'savePurchase',{project_id:'${pid}'})">
       <input name="seller_name" required placeholder="${t('land.seller')}" class="inp"><input name="seller_father_name" placeholder="${t('c.father')}" class="inp"><input name="seller_cnic" placeholder="00000-0000000-0" class="inp num"><input name="seller_phone" placeholder="${t('c.phone')}" class="inp num">
       <input name="mauza" placeholder="${t('land.mauza')}" class="inp"><input name="khewat_no" placeholder="${t('land.khewat')}" class="inp num"><input name="khatooni_no" placeholder="${t('land.khatooni')}" class="inp num"><input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">
-      ${areaInputs()}<input type="date" name="agreement_date" class="inp"><div><button class="btn bg-emerald-700">${t('save')}</button></div></form></details>` : ''}</section>
+      ${areaInputs()}<input type="date" name="agreement_date" class="inp"><div><button class="btn bg-p">${t('save')}</button></div></form></details>` : ''}</section>
   <section class="card mb-6"><h2 class="font-semibold mb-3">${t('land.intiqals')}</h2><table class="t">
     <tr><th>${t('land.intiqal_no')}</th><th>${t('date')}</th><th>${t('land.holder')}</th><th>${t('land.area')}</th><th>${t('land.issued')}</th><th>${t('land.balance')}</th></tr>
     ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td class="num">${dmy(i.intiqal_date)}</td><td>${esc(i.holder_name)} <span class="text-xs text-slate-500">${isTrue(i.holder_is_filer) ? t('r.filer') : t('r.non_filer')}</span></td>
@@ -679,11 +794,11 @@ VIEWS.land = d => {
       <label class="flex gap-2 items-center"><input type="hidden" name="holder_is_filer" value="FALSE"><input type="checkbox" name="holder_is_filer" value="TRUE" checked> ${t('r.filer')}</label>
       <label>${t('land.acquired')} <input type="date" name="holder_acquired_on" class="inp"></label>
       <select name="land_purchase_id" class="inp"><option value="">${t('land.link_purchase')}</option>${d.purchases.map(p => `<option value="${p.id}">${esc(p.seller_name)} – ${esc(p.khasra_nos)}</option>`).join('')}</select>
-      <input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">${areaInputs()}<div><button class="btn bg-emerald-700">${t('save')}</button></div></form></details>` : ''}</section>
+      <input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">${areaInputs()}<div><button class="btn bg-p">${t('save')}</button></div></form></details>` : ''}</section>
   <section class="card"><h2 class="font-semibold mb-3">${t('land.parcels')}</h2><table class="t"><tr><th>${t('land.type')}</th><th>${t('c.name')}</th><th>${t('land.area')}</th><th>${t('land.width')}</th></tr>
     ${d.parcels.map(p => `<tr><td>${L('parcelType', p.type)}</td><td>${esc(p.name)}</td><td class="num">${area(p.area_sqft, ms)}</td><td class="num">${esc(p.width_ft)}</td></tr>`).join('') || `<tr><td colspan="4" class="text-slate-500">${t('nothing')}</td></tr>`}</table>
     ${edit ? `<details class="mt-3"><summary class="link text-sm">${t('land.add_parcel')}</summary><form class="grid md:grid-cols-4 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'saveParcel',{project_id:'${pid}'})">
-      <select name="type" class="inp">${opts('parcelType')}</select><input name="name" required placeholder="${t('c.name')}" class="inp">${areaInputs()}<input name="width_ft" type="number" step="0.01" placeholder="${t('land.width')}" class="inp num"><div><button class="btn bg-emerald-700">${t('save')}</button></div></form></details>` : ''}</section>`;
+      <select name="type" class="inp">${opts('parcelType')}</select><input name="name" required placeholder="${t('c.name')}" class="inp">${areaInputs()}<input name="width_ft" type="number" step="0.01" placeholder="${t('land.width')}" class="inp num"><div><button class="btn bg-p">${t('save')}</button></div></form></details>` : ''}</section>`;
 };
 
 VIEWS.settings = ([rates, st, users]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>
@@ -696,7 +811,7 @@ VIEWS.settings = ([rates, st, users]) => `<h1 class="text-xl font-semibold mb-4"
         <td>${['fixed', 'percent', 'excise'].includes(r.calc_type) ? `<input data-f="fixed_amount" value="${esc(r.fixed_amount)}" class="inp w-24 num">` : ''}</td>
         <td class="text-xs">${Object.keys(ps).map(k => `<label class="block">${k} <input data-p="${k}" value="${esc(ps[k])}" class="inp w-24 num"></label>`).join('')}</td>
         ${['default_on', 'receipt', 'is_active'].map(f => `<td><input type="checkbox" data-f="${f}" ${isTrue(r[f]) ? 'checked' : ''}></td>`).join('')}</tr>`; }).join('')}
-    </table></div><button class="btn bg-emerald-700 mt-3">${t('save')}</button></form></section>
+    </table></div><button class="btn bg-p mt-3">${t('save')}</button></form></section>
   <section class="card mb-6"><h2 class="font-semibold mb-3">${t('s.approval')}</h2>
     <form class="grid md:grid-cols-2 gap-3 text-sm" onsubmit="return submitForm(event,'saveSettings',{})">
       <label>${t('s.director_email')}<input name="director_email" value="${esc(st.director_email)}" class="inp w-full num"></label>
@@ -705,7 +820,7 @@ VIEWS.settings = ([rates, st, users]) => `<h1 class="text-xl font-semibold mb-4"
       <label>${t('s.sender_dept')}<input name="sender_department" value="${esc(st.sender_department)}" class="inp w-full"></label>
       <label>${t('s.link_days')}<input name="link_valid_days" type="number" min="1" value="${esc(st.link_valid_days)}" class="inp w-24 num"></label>
       <label>Web app URL<input name="web_app_url" value="${esc(st.web_app_url)}" class="inp w-full num"></label>
-      <div><button class="btn bg-emerald-700">${t('save')}</button></div></form></section>
+      <div><button class="btn bg-p">${t('save')}</button></div></form></section>
   <section class="card mb-6"><h2 class="font-semibold mb-3">${t('s.users')}</h2><table class="t"><tr><th>${t('c.name')}</th><th>${t('email')}</th><th>${t('s.role')}</th><th>${t('s.active')}</th></tr>
     ${users.map(u => `<tr><td>${esc(u.name)}</td><td class="num">${esc(u.email)}</td><td>${L('roles', u.role)}</td><td>${u.is_active ? '✔' : '✖'}</td></tr>`).join('')}</table>
     <details class="mt-3"><summary class="link text-sm">${t('s.add_user')}</summary><form class="grid md:grid-cols-3 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'saveUser',{})">
@@ -713,7 +828,7 @@ VIEWS.settings = ([rates, st, users]) => `<h1 class="text-xl font-semibold mb-4"
       <input name="name" required placeholder="${t('c.name')}" class="inp"><input name="email" type="email" required placeholder="${t('email')}" class="inp num">
       <select name="role" class="inp">${opts('roles')}</select><input name="department" placeholder="${t('s.sender_dept')}" class="inp">
       <input name="password" type="password" placeholder="${t('s.new_password')}" class="inp"><label class="flex gap-2 items-center"><input type="hidden" name="is_active" value="FALSE"><input type="checkbox" name="is_active" value="TRUE" checked> ${t('s.active')}</label>
-      <div><button class="btn bg-emerald-700">${t('save')}</button></div></form></details></section>
+      <div><button class="btn bg-p">${t('save')}</button></div></form></details></section>
   <section class="card"><h2 class="font-semibold mb-3">${t('s.change_pw')}</h2><form class="flex flex-wrap gap-2 text-sm" onsubmit="return submitForm(event,'changePassword',{})">
     <input name="current" type="password" required placeholder="${t('s.current_pw')}" class="inp"><input name="password" type="password" required minlength="8" placeholder="${t('password')}" class="inp"><button class="btn bg-slate-800">${t('save')}</button></form></section>`;
 
@@ -759,7 +874,7 @@ try {
   google.script.history.setChangeHandler(e => { S.route = e.location.hash ? '#' + e.location.hash.replace(/^#/, '') : '#/'; load(); });
   google.script.url.getLocation(loc => { if (loc.hash) S.route = '#' + loc.hash.replace(/^#/, ''); start(); });
 } catch (e) { start(); }
-function start() { document.documentElement.dir = S.lang === 'ur' ? 'rtl' : 'ltr'; if (S.token) boot(); else render(); }
+function start() { loadTheme(); document.documentElement.dir = S.lang === 'ur' ? 'rtl' : 'ltr'; if (S.token) boot(); else render(); }
 </script>
 </body>
 </html>

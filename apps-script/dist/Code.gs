@@ -180,6 +180,7 @@ var API = {
   // settings
   saveRates: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); return Settings.saveRates(u, p.rates); } },
   saveUser: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); return Auth.saveUser(u, p); } },
+  saveTheme: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); Db.setSetting('theme', JSON.stringify(p.theme || {})); audit(u, 'theme.saved', 'Settings', '', p.theme); return true; } },
   saveSettings: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); return Settings.save(u, p); } },
   getSettings: { fn: function (u) { Auth.require(u, 'admin'); return Settings.get(); } },
 };
@@ -1403,6 +1404,7 @@ var Views = (function () {
       projects: Db.all('Projects').filter(function (p) { return bool(p.is_active); }),
       enums: ENUM,
       unread: unread,
+      theme: setting('theme', ''),
     };
   }
 

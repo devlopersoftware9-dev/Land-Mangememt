@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'name' => 'Land Management',
+    'login' => 'Login',
+    'logout' => 'Logout',
+    'email' => 'Email',
+    'password' => 'Password',
+    'remember' => 'Remember me',
+    'login_failed' => 'Email or password is wrong.',
+    'no_project' => 'No project found. Ask admin to create one.',
+    'company' => 'Company',
+    'plot' => 'Plot',
+    'date' => 'Date',
+    'notes' => 'Notes',
+    'reason' => 'Reason',
+    'by' => 'By',
+    'now' => 'now',
+    'all' => 'All',
+    'filter' => 'Filter',
+    'save' => 'Save',
+    'saved' => 'Saved.',
+    'nothing' => 'Nothing here.',
+    'read_only' => 'You can only view this.',
+    'are_you_sure' => 'Are you sure?',
+];

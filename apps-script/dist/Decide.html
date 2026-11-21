@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  body { font-family: system-ui, Arial, sans-serif; background: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+  .card { max-width: 480px; margin: 40px auto; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .btn { display: block; width: 100%; padding: 14px; border: 0; border-radius: 8px; font-size: 17px; color: #fff; cursor: pointer; }
+  .approve { background: #047857; } .reject { background: #b91c1c; } .btn:disabled { opacity: .5; }
+  dt { color: #64748b; font-size: 13px; } dd { margin: 0 0 8px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+<? if (view.error) { ?>
+  <h2>&#9888; <?= view.error ?></h2>
+<? } else { ?>
+  <h2><?= view.info.type ?></h2>
+  <dl>
+    <dt>Project / Plot</dt><dd><?= view.info.project ?> – Plot <?= view.info.plot ?></dd>
+    <dt>Area</dt><dd><?= view.info.area ?> Marla</dd>
+    <dt>Maliyat</dt><dd>Rs. <?= view.info.maliyat ?></dd>
+    <dt>Buyer</dt><dd><?= view.info.buyer ?></dd>
+    <? if (view.info.total) { ?><dt>Expense total</dt><dd>Rs. <?= view.info.total ?></dd><? } ?>
+  </dl>
+  <button id="go" class="btn <?= view.decision === 'approve' ? 'approve' : 'reject' ?>">
+    Confirm <?= view.decision === 'approve' ? 'APPROVE' : 'REJECT' ?>
+  </button>
+  <script>
+    var ref = <?!= JSON.stringify(String(view.ref)) ?>, d = <?!= JSON.stringify(String(view.decision)) ?>, tok = <?!= JSON.stringify(String(view.token)) ?>;
+    document.getElementById('go').onclick = function () {
+      this.disabled = true;
+      google.script.run.withSuccessHandler(function (r) {
+        var card = document.getElementById('card');
+        if (r && r.ok) card.innerHTML = '<h2>' + (d === 'approve' ? '&#9989; Approved' : '&#10060; Rejected') + '</h2><p>Thank you. ' + ref + ' has been recorded. The office will verify and proceed.</p>';
+        else card.innerHTML = '<h2>&#9888; ' + String((r && r.code) || 'Error').replace(/</g, '&lt;') + '</h2>';
+      }).withFailureHandler(function (e) {
+        document.getElementById('card').innerHTML = '<h2>&#9888; ' + String(e.message).replace(/</g, '&lt;') + '</h2>';
+      }).confirmDecision(ref, d, tok);
+    };
+  </script>
+<? } ?>
+</div>
+</body>
+</html>

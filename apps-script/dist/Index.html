@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  html[dir=rtl] body { font-family: 'Noto Nastaliq Urdu', serif; line-height: 2.1; }
+  .num { direction: ltr; unicode-bidi: embed; font-family: 'Inter', sans-serif; }
+  .card { background: #fff; border-radius: .5rem; box-shadow: 0 1px 2px rgba(0,0,0,.06); padding: 1rem; }
+  .inp { border: 1px solid #cbd5e1; border-radius: .375rem; padding: .25rem .5rem; }
+  .btn { border-radius: .375rem; padding: .35rem .9rem; color: #fff; }
+  table.t { width: 100%; font-size: .875rem; } table.t th { text-align: start; color: #64748b; font-weight: 500; padding: .35rem; border-bottom: 1px solid #e2e8f0; }
+  table.t td { padding: .35rem; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  .chip { display: inline-flex; align-items: center; gap: .3rem; border-radius: 9999px; padding: 0 .6rem; font-size: .8rem; }
+  .dot { width: .6rem; height: .6rem; border-radius: 9999px; display: inline-block; }
+  a.link { color: #047857; cursor: pointer; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+<div id="top"></div>
+<main id="app" class="max-w-7xl mx-auto px-4 py-6"></main>
+<div id="toast" class="fixed bottom-4 inset-x-0 flex justify-center pointer-events-none"></div>
+
+<script>
+// ===================================================================== i18n
+const I18N = {
+en: {
+  app: 'Land Management', login: 'Login', logout: 'Logout', email: 'Email', password: 'Password', save: 'Save', saved: 'Saved.',
+  filter: 'Filter', all: 'All', nothing: 'Nothing here.', date: 'Date', notes: 'Notes', reason: 'Reason', by: 'By', now: 'now',
+  company: 'Company', plot: 'Plot', loading: 'Loading…', are_you_sure: 'Are you sure?', read_only: 'You can only view this.',
+  nav: { dashboard: 'Dashboard', plots: 'Plots', registry: 'Registry', approvals: 'Approvals', customers: 'Customers', land: 'Land', settings: 'Settings' },
+  dash: { to_verify: 'Director replied – Check & Verify', waiting: '{n} waiting for director', files: 'Open registry files', area: 'Area', construction: 'Construction' },
+  area: { total: 'Total land purchased', non: 'Non-saleable', sale: 'Saleable (plots)', unalloc: 'Not yet allocated', kanal: 'Kanal', marla: 'Marla', sqft: 'Sq ft' },
+  p: { search: 'Plot no, customer, CNIC', street: 'Street', size: 'Size', category: 'Category', status: 'Status', customer: 'Customer',
+    construction: 'Construction', corner: 'Corner', park_facing: 'Park facing', details: 'Details', actions: 'Actions', sold_on: 'Sold on',
+    sell: 'Sell plot', choose: '— choose customer —', file_no: 'File / form no (optional)', reference: 'Reference',
+    payment_clear: 'Payment Clear', payment_clear_help: 'Tick when the full payment is received. The plot moves to the Registry list. No amount is recorded.',
+    payment_tick: 'Full payment received', transfer: 'Transfer to another customer', cancel: 'Cancel sale',
+    repurchase: 'Repurchase (wapas liya)', repurchase_help: 'Company takes the plot back. It becomes available again; history stays.',
+    chain: 'Ownership chain', history: 'Complete history', event: 'Event', from: 'From', to: 'To', edit: 'Edit plot details',
+    new_customer: '+ New customer', open_case: 'Registry file' },
+  c: { search: 'Name, CNIC, phone', new: 'New customer', name: 'Name', name_ur: 'Name in Urdu', father: 'Father / husband name', cnic: 'CNIC',
+    phone: 'Phone', address: 'Address', nominee: 'Nominee', nominee_cnic: 'Nominee CNIC', nominee_rel: 'Nominee relation', plots: 'Plots',
+    current: 'Current plots', history: 'All plots ever held', filer: 'Filer' },
+  land: { purchases: 'Land purchase', add_purchase: '+ Add land purchase', seller: 'Seller', mauza: 'Mauza', khewat: 'Khewat no', khatooni: 'Khatooni no',
+    khasra: 'Khasra no(s)', area: 'Area', payment_clear: 'Payment Clear', intiqal_done: 'Intiqal Done', intiqals: 'Intiqals', add_intiqal: '+ Add intiqal',
+    intiqal_no: 'Intiqal no', holder: 'In the name of', acquired: 'Acquired on (for 236-C)', issued: 'Fard issued', balance: 'Balance',
+    parcels: 'Roads, parks, masjid, green belt, graveyard …', add_parcel: '+ Add non-saleable area', type: 'Type', width: 'Width (ft)', link_purchase: '— linked purchase —' },
+  r: { pending: 'Payment cleared – registry pending', open: 'Open files', ref: 'Ref', mode: 'Registry by', step: 'Current step', with: 'File is with',
+    demand_date: 'Demand date', new_demand: 'Registry demand', create: 'Create demand', maliyat: 'Registry maliyat (Rs)', seller: 'Seller', buyer: 'Buyer',
+    intiqals: 'From intiqal(s)', fard: 'Fard', fard_no: 'Fard no', registry_no: 'Registry no', registry_date: 'Registry date', office: 'Sub-registrar office',
+    copy_url: 'Link to scanned copy (Drive)', next: 'Next step', send_fard_help: 'An email with plot, area and maliyat goes to the director for Fard approval.',
+    send_fard: 'Send Fard approval email', waiting: 'Waiting for the director to answer by email.', replied: 'Director has replied. Check and verify to move forward.',
+    jari_help: 'Select intiqal(s). Total must be {area} ({sqft} sq ft). 2-3 intiqals can be combined.', take: 'Take (sq ft)', jari_msg: 'Fard jari message for registry officer',
+    jari_default: 'Please get fard issued for Plot {plot} ({area}) in favour of {customer}.', issue_jari: 'Issue "Fard Jari" message', waiting_role: 'Waiting for {role}.',
+    fard_received: 'Fard received', hand_fard: 'Fard handed over to client', seller_exp_opt: 'Seller expense approval (e.g. 236-C) – optional',
+    client_reg_help: 'Client got the registry done himself. Record its details.', record_client: 'Record client registry',
+    paid_help: 'Director approved the expense. Tick when payment is made.', expense_paid: 'Registry expense paid', reg_done: 'Registry done',
+    record_help: 'Registry came to office (until intiqal is attested). Record it.', buyer_intiqal: 'Buyer intiqal no (if any)', record: 'Record in office',
+    hand_reg: 'Hand over registry to client', closed: 'This file is closed.', cancel: 'Cancel this registry file',
+    reg_exp: 'Registry expense', seller_exp: 'Seller expense', area_marla: 'Area (marla)', buyer_filer: 'Buyer is filer', seller_filer: 'Seller is filer',
+    land_value: 'Land value (for makaan)', item: 'Item', payer: 'Paid by', amount: 'Amount', override: 'Change amount', rate: 'Rate',
+    buyer_exp: 'Buyer exp', seller_exp_col: 'Seller exp', receipt: 'Receipt', no_receipt: 'No receipt', manual: 'changed by hand', total: 'Total',
+    grand: 'Grand total', filer: 'Filer', non_filer: 'Non-filer', send_exp: 'Save & send to director', confirm_send: 'Save and email this expense to the director?' },
+  a: { type: 'Type', sent: 'Sent', to: 'To', subject: 'Subject', director: 'Director', verified: 'Verified by', decision: 'Director decision',
+    none: 'No answer from director yet.', how: 'How', link: 'clicked button in email', reply: 'replied to email', manual: 'recorded by office',
+    approved: 'APPROVED', rejected: 'REJECTED', wrote: 'Director wrote:', verify: 'Verify & continue', checked: "I have checked the director's reply",
+    help_ok: 'Director approved. Check the details; on Verify the file moves to the next step.',
+    help_no: 'Director rejected. On Verify the file goes back so it can be corrected and sent again.',
+    resolve: 'Record decision by hand', resolve_help: 'Only if the reply was unclear or from another email, and you confirmed with the director yourself.',
+    how_confirmed: 'How was it confirmed? (e.g. phone call 21-11-2026 3pm)', open: 'Open & Check', inbound: 'Emails received' },
+  s: { rates: 'Registry rates', rates_help: 'Change after a budget. Saved expenses keep their old amounts.', filer_rate: 'Rate / Filer', nf_rate: 'Non-filer',
+    fixed: 'Fixed (Rs)', params: 'Rules', default_on: 'Ticked', active: 'Active', approval: 'Approval email', director_email: 'Director email',
+    cc: 'CC (comma separated)', sender_name: 'Sender name', sender_dept: 'Department', link_days: 'Link valid (days)', users: 'Users',
+    add_user: '+ Add / edit user', role: 'Role', new_password: 'Password (leave empty to keep)', change_pw: 'Change my password', current_pw: 'Current password' },
+  enum: {
+    roles: { admin: 'Admin', accounts: 'Accounts', land_management: 'Land Management', registry_officer: 'Registry Officer', viewer: 'Viewer' },
+    plotStatus: { available: 'Available', sold: 'Sold', payment_cleared: 'Payment Clear', registry_in_process: 'Registry in process', registered: 'Registered', blocked: 'Blocked' },
+    construction: { empty: 'Empty plot', started: 'Construction started', residence: 'Residence' },
+    category: { residential: 'Residential', commercial: 'Commercial' },
+    parcelType: { road: 'Road', park: 'Park', masjid: 'Masjid', green_belt: 'Green belt', graveyard: 'Graveyard', public_building: 'Public building', solid_waste: 'Solid waste', water_course: 'Water course', other: 'Other' },
+    registryMode: { client_self: 'Client himself (fard to client)', company_managed: 'Company gets registry done' },
+    event: { sold: 'Sold', payment_cleared: 'Payment cleared', transferred: 'Transferred', cancelled: 'Sale cancelled', repurchased: 'Repurchased by company', registry_started: 'Registry demand', registered: 'Registered', construction_changed: 'Construction updated', note: 'Note' },
+    caseStatus: { demand: 'Demand', fard_approval_pending: 'Fard approval – with director', fard_approval_review: 'Fard approval – check & verify', fard_approved: 'Fard approved – select intiqal', fard_jari_issued: 'Fard jari message issued', fard_received: 'Fard received', fard_handed_over: 'Fard handed to client', client_registry_recorded: 'Client registry recorded', expense_approval_pending: 'Expense approval – with director', expense_approval_review: 'Expense approval – check & verify', expense_approved: 'Expense approved', expense_paid: 'Expense paid', registry_done: 'Registry done', registry_recorded: 'Registry recorded in office', handed_over: 'Registry handed over', cancelled: 'Cancelled' },
+    approvalType: { fard: 'Fard approval', registry_expense: 'Registry expense approval', seller_expense: 'Seller expense approval' },
+    approvalStatus: { sent: 'With director', director_approved: 'Director approved – verify', director_rejected: 'Director rejected – verify', needs_review: 'Needs review', verified: 'Verified', closed: 'Closed (rejected)', expired: 'Expired' },
+    payer: { buyer: 'Buyer', seller: 'Seller' },
+    result: { approved: 'Approved', rejected: 'Rejected', unclear: 'Unclear', unknown_sender: 'Unknown sender', unmatched: 'Not matched', not_authenticated: 'Not verified', already_decided: 'Already answered', duplicate: 'Duplicate' },
+  },
+  err: { required: '{field} is required.', date: '{field}: enter a valid date.', login: 'Email or password is wrong.', session: 'Please log in again.',
+    not_allowed: 'Your role is not allowed to do this.', not_found: 'Record not found.', busy: 'System is busy, try again.', server: 'Error: {msg}',
+    plot_status: 'Plot {plot} is "{status}", so this is not possible.', same_customer: 'Plot is already with this customer.',
+    payment_not_cleared: 'Payment of plot {plot} is not cleared yet.', maliyat: 'Registry maliyat is required.', plot_size_missing: 'Enter the size of plot {plot} first.',
+    case_status: 'File {ref} is at "{status}"; this step is not possible now.', wrong_mode: 'This step is not for this registry type.',
+    case_closed: 'This file is already closed.', nothing_to_verify: 'Nothing to verify.', needs_manual: 'Reply was not clear. Record the decision by hand.',
+    select_intiqal: 'Select at least one intiqal and its area.', intiqal_low: 'Intiqal {no} has only {balance} sq ft left.',
+    allocation_mismatch: 'Intiqal areas total {total} sq ft but the plot needs {needed} sq ft.', director_email: 'Director email is not set (Settings).',
+    duplicate: '{field} already exists.', cnic: 'CNIC format: 00000-0000000-0', password_short: 'Password must be at least 8 characters.',
+    history_locked: 'History cannot be edited.', setup_missing: 'Run Setup from the sheet menu first.', unknown_action: 'Unknown action.' },
+},
+ur: {
+  app: 'لینڈ مینجمنٹ', login: 'لاگ اِن', logout: 'لاگ آؤٹ', email: 'ای میل', password: 'پاس ورڈ', save: 'محفوظ کریں', saved: 'محفوظ ہو گیا۔',
+  filter: 'تلاش', all: 'سب', nothing: 'کچھ نہیں۔', date: 'تاریخ', notes: 'نوٹ', reason: 'وجہ', by: 'کس نے', now: 'اب تک',
+  company: 'کمپنی', plot: 'پلاٹ', loading: 'لوڈ ہو رہا ہے…', are_you_sure: 'کیا آپ کو یقین ہے؟', read_only: 'آپ صرف دیکھ سکتے ہیں۔',
+  nav: { dashboard: 'ڈیش بورڈ', plots: 'پلاٹس', registry: 'رجسٹری', approvals: 'منظوریاں', customers: 'کسٹمرز', land: 'زمین', settings: 'سیٹنگز' },
+  dash: { to_verify: 'ڈائریکٹر کا جواب آ گیا – چیک اور تصدیق کریں', waiting: '{n} ڈائریکٹر کے جواب کے منتظر', files: 'جاری رجسٹری فائلیں', area: 'رقبہ', construction: 'تعمیر' },
+  area: { total: 'کل خریدی گئی زمین', non: 'ناقابلِ فروخت', sale: 'قابلِ فروخت (پلاٹس)', unalloc: 'ابھی تقسیم نہیں ہوئی', kanal: 'کنال', marla: 'مرلہ', sqft: 'مربع فٹ' },
+  p: { search: 'پلاٹ نمبر، کسٹمر، شناختی کارڈ', street: 'گلی', size: 'سائز', category: 'قسم', status: 'اسٹیٹس', customer: 'کسٹمر',
+    construction: 'تعمیر', corner: 'کارنر', park_facing: 'پارک فیسنگ', details: 'تفصیل', actions: 'کارروائی', sold_on: 'فروخت کی تاریخ',
+    sell: 'پلاٹ فروخت کریں', choose: '— کسٹمر منتخب کریں —', file_no: 'فائل / فارم نمبر (اختیاری)', reference: 'حوالہ',
+    payment_clear: 'پیمنٹ کلیئر', payment_clear_help: 'مکمل ادائیگی ملنے پر ٹک کریں۔ پلاٹ رجسٹری لسٹ میں چلا جائے گا۔ کوئی رقم درج نہیں ہوتی۔',
+    payment_tick: 'مکمل ادائیگی وصول ہو گئی', transfer: 'دوسرے کسٹمر کو منتقل کریں', cancel: 'سیل منسوخ کریں',
+    repurchase: 'واپس خریدیں (واپس لیا)', repurchase_help: 'کمپنی پلاٹ واپس لیتی ہے۔ پلاٹ دوبارہ دستیاب، ہسٹری محفوظ رہے گی۔',
+    chain: 'ملکیت کا سلسلہ', history: 'مکمل ہسٹری', event: 'واقعہ', from: 'سے', to: 'کو', edit: 'پلاٹ کی تفصیل تبدیل کریں',
+    new_customer: '+ نیا کسٹمر', open_case: 'رجسٹری فائل' },
+  c: { search: 'نام، شناختی کارڈ، فون', new: 'نیا کسٹمر', name: 'نام', name_ur: 'نام اردو میں', father: 'والد / شوہر کا نام', cnic: 'شناختی کارڈ',
+    phone: 'فون', address: 'پتہ', nominee: 'نامزد شخص', nominee_cnic: 'نامزد کا شناختی کارڈ', nominee_rel: 'نامزد سے رشتہ', plots: 'پلاٹس',
+    current: 'موجودہ پلاٹس', history: 'اب تک کے تمام پلاٹس', filer: 'فائلر' },
+  land: { purchases: 'زمین کی خریداری', add_purchase: '+ زمین کی خریداری درج کریں', seller: 'فروخت کنندہ', mauza: 'موضع', khewat: 'کھیوٹ نمبر', khatooni: 'کھتونی نمبر',
+    khasra: 'خسرہ نمبر', area: 'رقبہ', payment_clear: 'پیمنٹ کلیئر', intiqal_done: 'انتقال ہو گیا', intiqals: 'انتقالات', add_intiqal: '+ انتقال درج کریں',
+    intiqal_no: 'انتقال نمبر', holder: 'کس کے نام', acquired: 'حاصل کرنے کی تاریخ (236-C)', issued: 'فرد جاری', balance: 'بقایا',
+    parcels: 'سڑکیں، پارک، مسجد، گرین بیلٹ، قبرستان …', add_parcel: '+ ناقابلِ فروخت رقبہ درج کریں', type: 'قسم', width: 'چوڑائی (فٹ)', link_purchase: '— متعلقہ خریداری —' },
+  r: { pending: 'پیمنٹ کلیئر – رجسٹری باقی', open: 'جاری فائلیں', ref: 'حوالہ', mode: 'رجسٹری کون کروائے گا', step: 'موجودہ مرحلہ', with: 'فائل کس کے پاس',
+    demand_date: 'ڈیمانڈ کی تاریخ', new_demand: 'رجسٹری کی ڈیمانڈ', create: 'ڈیمانڈ درج کریں', maliyat: 'رجسٹری مالیت (روپے)', seller: 'فروخت کنندہ', buyer: 'خریدار',
+    intiqals: 'انتقال نمبر', fard: 'فرد', fard_no: 'فرد نمبر', registry_no: 'رجسٹری نمبر', registry_date: 'رجسٹری کی تاریخ', office: 'سب رجسٹرار آفس',
+    copy_url: 'اسکین کاپی کا لنک (ڈرائیو)', next: 'اگلا مرحلہ', send_fard_help: 'پلاٹ، رقبہ اور مالیت کے ساتھ ڈائریکٹر کو فرد منظوری کی ای میل جائے گی۔',
+    send_fard: 'فرد منظوری کی ای میل بھیجیں', waiting: 'ڈائریکٹر کے ای میل جواب کا انتظار ہے۔', replied: 'ڈائریکٹر نے جواب دے دیا ہے۔ آگے بڑھنے کے لیے چیک کر کے تصدیق کریں۔',
+    jari_help: 'انتقال منتخب کریں۔ کل رقبہ {area} ({sqft} مربع فٹ) ہونا چاہیے۔ 2-3 انتقال ملائے جا سکتے ہیں۔', take: 'لینا ہے (مربع فٹ)', jari_msg: 'رجسٹری آفیسر کے لیے فرد جاری کا پیغام',
+    jari_default: 'پلاٹ {plot} ({area}) کی فرد {customer} کے حق میں جاری کروائیں۔', issue_jari: '"فرد جاری" کا پیغام جاری کریں', waiting_role: '{role} کا انتظار ہے۔',
+    fard_received: 'فرد وصول ہو گئی', hand_fard: 'فرد کلائنٹ کے حوالے کر دی', seller_exp_opt: 'فروخت کنندہ کے اخراجات کی منظوری (مثلاً 236-C) – اختیاری',
+    client_reg_help: 'کلائنٹ نے رجسٹری خود کروائی۔ تفصیل درج کریں۔', record_client: 'کلائنٹ کی رجسٹری درج کریں',
+    paid_help: 'ڈائریکٹر نے اخراجات منظور کر دیے۔ ادائیگی کے بعد ٹک کریں۔', expense_paid: 'رجسٹری اخراجات ادا ہو گئے', reg_done: 'رجسٹری ہو گئی',
+    record_help: 'رجسٹری دفتر آ گئی (انتقال لگنے تک)۔ درج کریں۔', buyer_intiqal: 'خریدار کا انتقال نمبر (اگر ہو)', record: 'دفتر میں ریکارڈ کریں',
+    hand_reg: 'رجسٹری کلائنٹ کے حوالے کریں', closed: 'یہ فائل بند ہو چکی ہے۔', cancel: 'یہ رجسٹری فائل منسوخ کریں',
+    reg_exp: 'رجسٹری اخراجات', seller_exp: 'فروخت کنندہ کے اخراجات', area_marla: 'رقبہ (مرلہ)', buyer_filer: 'خریدار فائلر ہے', seller_filer: 'فروخت کنندہ فائلر ہے',
+    land_value: 'زمین کی قیمت (مکان کی صورت میں)', item: 'مد', payer: 'کون ادا کرے', amount: 'رقم', override: 'رقم تبدیل کریں', rate: 'ریٹ',
+    buyer_exp: 'خریدار', seller_exp_col: 'فروخت کنندہ', receipt: 'رسید', no_receipt: 'رسید نہیں', manual: 'ہاتھ سے تبدیل', total: 'ٹوٹل',
+    grand: 'کل ٹوٹل', filer: 'فائلر', non_filer: 'نان فائلر', send_exp: 'محفوظ کریں اور ڈائریکٹر کو بھیجیں', confirm_send: 'یہ اخراجات محفوظ کر کے ڈائریکٹر کو ای میل کر دیں؟' },
+  a: { type: 'قسم', sent: 'بھیجی گئی', to: 'بنام', subject: 'عنوان', director: 'ڈائریکٹر', verified: 'تصدیق کنندہ', decision: 'ڈائریکٹر کا فیصلہ',
+    none: 'ڈائریکٹر کا جواب ابھی نہیں آیا۔', how: 'کیسے', link: 'ای میل کا بٹن دبایا', reply: 'ای میل کا جواب دیا', manual: 'دفتر نے درج کیا',
+    approved: 'منظور', rejected: 'نامنظور', wrote: 'ڈائریکٹر نے لکھا:', verify: 'تصدیق کریں اور آگے بڑھائیں', checked: 'میں نے ڈائریکٹر کا جواب چیک کر لیا ہے',
+    help_ok: 'ڈائریکٹر نے منظور کر دیا۔ تفصیل چیک کریں، تصدیق پر فائل آگے چلی جائے گی۔',
+    help_no: 'ڈائریکٹر نے نامنظور کیا۔ تصدیق پر فائل درستگی کے لیے واپس آ جائے گی۔',
+    resolve: 'فیصلہ ہاتھ سے درج کریں', resolve_help: 'صرف تب، جب جواب واضح نہ ہو یا کسی اور ای میل سے آیا ہو، اور آپ نے خود ڈائریکٹر سے تصدیق کر لی ہو۔',
+    how_confirmed: 'تصدیق کیسے ہوئی؟ (مثلاً فون کال 21-11-2026 سہ پہر 3 بجے)', open: 'کھولیں اور چیک کریں', inbound: 'موصول ای میلز' },
+  s: { rates: 'رجسٹری ریٹس', rates_help: 'بجٹ کے بعد یہاں تبدیل کریں۔ پرانے محفوظ اخراجات اپنی رقم پر رہیں گے۔', filer_rate: 'ریٹ / فائلر', nf_rate: 'نان فائلر',
+    fixed: 'مقررہ رقم', params: 'اصول', default_on: 'پہلے سے ٹک', active: 'فعال', approval: 'منظوری کی ای میل', director_email: 'ڈائریکٹر کی ای میل',
+    cc: 'سی سی (کاما سے الگ)', sender_name: 'بھیجنے والے کا نام', sender_dept: 'شعبہ', link_days: 'لنک کی مدت (دن)', users: 'یوزرز',
+    add_user: '+ یوزر شامل / تبدیل کریں', role: 'رول', new_password: 'پاس ورڈ (خالی چھوڑیں تو پرانا رہے گا)', change_pw: 'اپنا پاس ورڈ تبدیل کریں', current_pw: 'موجودہ پاس ورڈ' },
+  enum: {
+    roles: { admin: 'ایڈمن', accounts: 'اکاؤنٹس', land_management: 'لینڈ مینجمنٹ', registry_officer: 'رجسٹری آفیسر', viewer: 'صرف دیکھنے والا' },
+    plotStatus: { available: 'دستیاب', sold: 'فروخت شدہ', payment_cleared: 'پیمنٹ کلیئر', registry_in_process: 'رجسٹری جاری', registered: 'رجسٹری مکمل', blocked: 'روکا ہوا' },
+    construction: { empty: 'خالی پلاٹ', started: 'تعمیر شروع', residence: 'رہائش' },
+    category: { residential: 'رہائشی', commercial: 'کمرشل' },
+    parcelType: { road: 'سڑک', park: 'پارک', masjid: 'مسجد', green_belt: 'گرین بیلٹ', graveyard: 'قبرستان', public_building: 'پبلک بلڈنگ', solid_waste: 'سالڈ ویسٹ', water_course: 'کھال', other: 'دیگر' },
+    registryMode: { client_self: 'کلائنٹ خود (فرد کلائنٹ کو)', company_managed: 'کمپنی رجسٹری کروائے' },
+    event: { sold: 'فروخت', payment_cleared: 'پیمنٹ کلیئر', transferred: 'منتقلی', cancelled: 'سیل منسوخ', repurchased: 'کمپنی نے واپس لیا', registry_started: 'رجسٹری ڈیمانڈ', registered: 'رجسٹری مکمل', construction_changed: 'تعمیر اپڈیٹ', note: 'نوٹ' },
+    caseStatus: { demand: 'ڈیمانڈ', fard_approval_pending: 'فرد منظوری – ڈائریکٹر کے پاس', fard_approval_review: 'فرد منظوری – چیک اور تصدیق', fard_approved: 'فرد منظور – انتقال منتخب کریں', fard_jari_issued: 'فرد جاری کا پیغام', fard_received: 'فرد وصول', fard_handed_over: 'فرد کلائنٹ کے حوالے', client_registry_recorded: 'کلائنٹ کی رجسٹری درج', expense_approval_pending: 'اخراجات منظوری – ڈائریکٹر کے پاس', expense_approval_review: 'اخراجات منظوری – چیک اور تصدیق', expense_approved: 'اخراجات منظور', expense_paid: 'اخراجات ادا', registry_done: 'رجسٹری ہو گئی', registry_recorded: 'رجسٹری دفتر میں درج', handed_over: 'رجسٹری حوالے', cancelled: 'منسوخ' },
+    approvalType: { fard: 'فرد منظوری', registry_expense: 'رجسٹری اخراجات منظوری', seller_expense: 'فروخت کنندہ اخراجات منظوری' },
+    approvalStatus: { sent: 'ڈائریکٹر کے پاس', director_approved: 'ڈائریکٹر نے منظور کیا – تصدیق کریں', director_rejected: 'ڈائریکٹر نے نامنظور کیا – تصدیق کریں', needs_review: 'جائزہ درکار', verified: 'تصدیق شدہ', closed: 'بند (نامنظور)', expired: 'مدت ختم' },
+    payer: { buyer: 'خریدار', seller: 'فروخت کنندہ' },
+    result: { approved: 'منظور', rejected: 'نامنظور', unclear: 'غیر واضح', unknown_sender: 'نامعلوم بھیجنے والا', unmatched: 'میچ نہیں ہوا', not_authenticated: 'تصدیق نہیں ہوئی', already_decided: 'پہلے ہی جواب دیا جا چکا', duplicate: 'دوہری' },
+  },
+  err: { required: '{field} ضروری ہے۔', date: '{field}: درست تاریخ درج کریں۔', login: 'ای میل یا پاس ورڈ غلط ہے۔', session: 'دوبارہ لاگ اِن کریں۔',
+    not_allowed: 'آپ کے رول کو اس کی اجازت نہیں۔', not_found: 'ریکارڈ نہیں ملا۔', busy: 'سسٹم مصروف ہے، دوبارہ کوشش کریں۔', server: 'خرابی: {msg}',
+    plot_status: 'پلاٹ {plot} اس وقت "{status}" ہے، یہ ممکن نہیں۔', same_customer: 'پلاٹ پہلے ہی اسی کسٹمر کے پاس ہے۔',
+    payment_not_cleared: 'پلاٹ {plot} کی پیمنٹ ابھی کلیئر نہیں ہوئی۔', maliyat: 'رجسٹری مالیت ضروری ہے۔', plot_size_missing: 'پہلے پلاٹ {plot} کا سائز درج کریں۔',
+    case_status: 'فائل {ref} اس وقت "{status}" پر ہے، یہ مرحلہ ابھی ممکن نہیں۔', wrong_mode: 'یہ مرحلہ اس قسم کی رجسٹری کے لیے نہیں۔',
+    case_closed: 'یہ فائل بند ہو چکی ہے۔', nothing_to_verify: 'تصدیق کے لیے کچھ نہیں۔', needs_manual: 'جواب واضح نہیں تھا۔ فیصلہ ہاتھ سے درج کریں۔',
+    select_intiqal: 'کم از کم ایک انتقال اور اس کا رقبہ منتخب کریں۔', intiqal_low: 'انتقال {no} میں صرف {balance} مربع فٹ باقی ہے۔',
+    allocation_mismatch: 'انتقالات کا رقبہ {total} مربع فٹ ہے جبکہ پلاٹ کو {needed} مربع فٹ چاہیے۔', director_email: 'ڈائریکٹر کی ای میل درج نہیں (سیٹنگز)۔',
+    duplicate: '{field} پہلے سے موجود ہے۔', cnic: 'شناختی کارڈ کا فارمیٹ: 00000-0000000-0', password_short: 'پاس ورڈ کم از کم 8 حروف کا ہو۔',
+    history_locked: 'ہسٹری تبدیل نہیں ہو سکتی۔', setup_missing: 'پہلے شیٹ کے مینو سے Setup چلائیں۔', unknown_action: 'نامعلوم کارروائی۔' },
+},
+};
+
+const COLORS = { available: '#22c55e', sold: '#eab308', payment_cleared: '#f97316', registry_in_process: '#a855f7', registered: '#3b82f6', blocked: '#6b7280' };
+
+// ===================================================================== state & helpers
+const S = { token: null, user: null, projects: [], projectId: null, lang: 'en', enums: {}, unread: 0, route: '#/', data: null };
+try { S.token = sessionStorage.getItem('lm_token'); S.lang = localStorage.getItem('lm_lang') || 'en'; S.projectId = localStorage.getItem('lm_project'); } catch (e) {}
+
+function t(key, params) {
+  const get = (lang) => key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), I18N[lang]);
+  let s = get(S.lang); if (s === undefined) s = get('en'); if (s === undefined) s = key;
+  if (params) Object.keys(params).forEach(k => { s = String(s).split('{' + k + '}').join(params[k]); });
+  return s;
+}
+const L = (group, v) => v ? t('enum.' + group + '.' + v) : '';
+const esc = s => String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const fmt = n => Number(n || 0).toLocaleString('en-US');
+const isTrue = v => v === true || v === 'TRUE' || v === 'true';
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const dmy = s => s ? String(s).slice(0, 10).split('-').reverse().join('-') : '';
+const can = role => S.user && (S.user.role === 'admin' || S.user.role === role);
+function area(sqft, marla) {
+  marla = marla || 270; sqft = num(sqft);
+  const tm = Math.floor(sqft / marla + 1e-9), rest = Math.round((sqft - tm * marla) * 100) / 100;
+  const k = Math.floor(tm / 20), m = tm % 20;
+  return (k ? k + 'K-' : '') + String(m).padStart(2, '0') + 'M' + (rest > 0 ? '-' + rest + 'sft' : '');
+}
+function statusChip(s) { return `<span class="chip"><span class="dot" style="background:${COLORS[s] || '#94a3b8'}"></span>${esc(L('plotStatus', s))}</span>`; }
+function opts(group, selected, withEmpty) {
+  return (withEmpty ? `<option value="">${esc(withEmpty)}</option>` : '') +
+    (S.enums[group] || []).map(v => `<option value="${v}" ${v === selected ? 'selected' : ''}>${esc(L(group, v))}</option>`).join('');
+}
+
+function toast(msg, bad) {
+  const el = document.getElementById('toast');
+  el.innerHTML = `<div class="pointer-events-auto rounded shadow px-4 py-2 ${bad ? 'bg-red-600' : 'bg-emerald-700'} text-white">${esc(msg)}</div>`;
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.innerHTML = '', bad ? 6000 : 2500);
+}
+
+function call(action, payload) {
+  return new Promise((resolve, reject) => {
+    google.script.run.withSuccessHandler(res => {
+      if (res && res.ok) return resolve(res.data);
+      const code = (res && res.code) || 'err.server';
+      if (code === 'err.session') { logoutLocal(); return reject(new Error(t(code))); }
+      const params = Object.assign({}, res && res.params);
+      if (params.status) params.status = L('caseStatus', params.status) !== 'enum.caseStatus.' + params.status ? L('caseStatus', params.status) : L('plotStatus', params.status);
+      if (params.field) params.field = params.field;
+      reject(new Error(t(code, params)));
+    }).withFailureHandler(e => reject(new Error(t('err.server', { msg: e && e.message })))).api(S.token, action, payload || {});
+  });
+}
+
+/** Read a form into an object. Names like enabled[code] become nested; hidden+checkbox pairs give last value. */
+function formData(form) {
+  const out = {};
+  Array.from(form.elements).forEach(el => {
+    if (!el.name || el.disabled) return;
+    if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
+    const v = el.type === 'checkbox' && el.value === 'on' ? true : el.value;
+    const m = /^([^\[]+)\[([^\]]+)\]$/.exec(el.name);
+    if (m) { out[m[1]] = out[m[1]] || {}; out[m[1]][m[2]] = v; } else out[el.name] = v;
+  });
+  Object.keys(out).forEach(k => { if (out[k] === '1') out[k] = out[k]; });
+  return out;
+}
+
+// ===================================================================== layout & routing
+function setLang(lang) {
+  S.lang = lang; try { localStorage.setItem('lm_lang', lang); } catch (e) {}
+  document.documentElement.lang = lang; document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr';
+  if (S.token) call('setLocale', { locale: lang }).catch(() => {});
+  render();
+}
+
+function header() {
+  if (!S.user) return '';
+  const links = [['#/', 'dashboard'], ['#/plots', 'plots'], ['#/registry', 'registry'], ['#/approvals', 'approvals'], ['#/customers', 'customers'], ['#/land', 'land']];
+  if (can('admin')) links.push(['#/settings', 'settings']);
+  return `<header class="bg-white border-b"><div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center gap-4">
+    <a class="font-semibold" href="#/" onclick="return go('#/')">${t('app')}</a>
+    <nav class="flex flex-wrap gap-3 text-sm">${links.map(([h, k]) => `<a class="hover:text-emerald-700 ${S.route.split('/')[1] === h.split('/')[1] ? 'text-emerald-700 font-medium' : ''}" href="${h}" onclick="return go('${h}')">${t('nav.' + k)}${k === 'approvals' && S.unread ? ` <span class="rounded-full bg-red-600 text-white text-xs px-1.5 num">${S.unread}</span>` : ''}</a>`).join('')}</nav>
+    <div class="ms-auto flex items-center gap-2 text-sm">
+      ${S.projects.length > 1 ? `<select class="inp" onchange="switchProject(this.value)">${S.projects.map(p => `<option value="${p.id}" ${p.id === S.projectId ? 'selected' : ''}>${esc(p.code)}</option>`).join('')}</select>` : `<span class="text-slate-500">${esc((S.projects[0] || {}).code || '')}</span>`}
+      <button class="inp" onclick="setLang('${S.lang === 'ur' ? 'en' : 'ur'}')">${S.lang === 'ur' ? 'English' : 'اردو'}</button>
+      <span class="text-slate-500">${esc(S.user.name)}</span>
+      <button class="text-slate-500 hover:text-red-600" onclick="logout()">${t('logout')}</button>
+    </div></div></header>`;
+}
+
+function switchProject(id) { S.projectId = id; try { localStorage.setItem('lm_project', id); } catch (e) {} load(); }
+
+function go(route) {
+  S.route = route;
+  try { google.script.history.push(null, null, route.replace(/^#/, '')); } catch (e) {}
+  load();
+  return false;
+}
+
+const ROUTES = [
+  [/^#\/?$/, 'dashboard'], [/^#\/plots$/, 'plots'], [/^#\/plot\/(\d+)$/, 'plot'], [/^#\/registry$/, 'registry'], [/^#\/case\/(\d+)$/, 'case'],
+  [/^#\/approvals$/, 'approvals'], [/^#\/approval\/(\d+)$/, 'approval'], [/^#\/customers$/, 'customers'], [/^#\/customer\/(\d+)$/, 'customer'],
+  [/^#\/land$/, 'land'], [/^#\/settings$/, 'settings'],
+];
+
+async function load(keepScroll) {
+  if (!S.token) return render();
+  const app = document.getElementById('app');
+  if (!keepScroll) app.innerHTML = `<p class="text-slate-500">${t('loading')}</p>`;
+  let name = 'dashboard', arg = null;
+  for (const [re, n] of ROUTES) { const m = re.exec(S.route); if (m) { name = n; arg = m[1]; break; } }
+  const pid = S.projectId, f = S.filters || {};
+  const loaders = {
+    dashboard: () => call('dashboard', { project_id: pid }),
+    plots: () => call('plots', Object.assign({ project_id: pid }, f.plots || {})),
+    plot: () => call('plot', { id: arg }),
+    registry: () => call('registryList', { project_id: pid, status: (f.registry || {}).status }),
+    case: () => call('registryCase', { id: arg }),
+    approvals: () => call('approvals', { project_id: pid, status: (f.approvals || {}).status }),
+    approval: () => call('approval', { id: arg }),
+    customers: () => call('customers', { q: (f.customers || {}).q }),
+    customer: () => call('customer', { id: arg }),
+    land: () => call('land', { project_id: pid }),
+    settings: () => Promise.all([call('rates'), call('getSettings'), call('users')]),
+  };
+  try {
+    S.view = name; S.data = await loaders[name]();
+    if (name === 'approvals' && S.unread) { call('readNotifications').then(() => { S.unread = 0; }).catch(() => {}); }
+  } catch (e) { S.data = null; toast(e.message, true); }
+  render();
+}
+
+function render() {
+  document.documentElement.dir = S.lang === 'ur' ? 'rtl' : 'ltr';
+  document.getElementById('top').innerHTML = header();
+  const app = document.getElementById('app');
+  if (!S.token) { app.innerHTML = viewLogin(); return; }
+  if (!S.data) return;
+  app.innerHTML = (VIEWS[S.view] || (() => ''))(S.data);
+  afterRender();
+}
+
+// ===================================================================== actions
+async function submitForm(ev, action, extra, opts) {
+  ev.preventDefault();
+  opts = opts || {};
+  if (opts.confirm && !confirm(opts.confirm)) return false;
+  const btn = ev.target.querySelector('button[type=submit],button:not([type])'); if (btn) btn.disabled = true;
+  try {
+    const res = await call(action, Object.assign(formData(ev.target), extra || {}));
+    toast(t('saved'));
+    if (opts.goTo) return go(typeof opts.goTo === 'function' ? opts.goTo(res) : opts.goTo);
+    await load(true);
+  } catch (e) { toast(e.message, true); if (btn) btn.disabled = false; }
+  return false;
+}
+
+async function doLogin(ev) {
+  ev.preventDefault();
+  const d = formData(ev.target);
+  try {
+    const r = await call('login', d);
+    S.token = r.token; try { sessionStorage.setItem('lm_token', r.token); } catch (e) {}
+    await boot();
+  } catch (e) { toast(e.message, true); }
+  return false;
+}
+
+function logoutLocal() { S.token = null; S.user = null; try { sessionStorage.removeItem('lm_token'); } catch (e) {} render(); }
+function logout() { call('logout').catch(() => {}); logoutLocal(); }
+
+async function boot() {
+  try {
+    const b = await call('bootstrap');
+    S.user = b.user; S.projects = b.projects; S.enums = b.enums; S.unread = b.unread;
+    if (!S.projectId || !S.projects.some(p => p.id === S.projectId)) S.projectId = (S.projects[0] || {}).id;
+    if (b.user.locale && !localStorage.getItem('lm_lang')) S.lang = b.user.locale;
+    load();
+  } catch (e) { render(); }
+}
+
+// ===================================================================== views
+function viewLogin() {
+  return `<div class="max-w-sm mx-auto mt-16 card">
+    <div class="flex justify-between items-center mb-4"><h1 class="text-lg font-semibold">${t('app')}</h1>
+      <button class="inp text-sm" onclick="setLang('${S.lang === 'ur' ? 'en' : 'ur'}')">${S.lang === 'ur' ? 'English' : 'اردو'}</button></div>
+    <form onsubmit="return doLogin(event)" class="space-y-3">
+      <label class="block text-sm">${t('email')}<input name="email" type="email" required class="inp w-full num"></label>
+      <label class="block text-sm">${t('password')}<input name="password" type="password" required class="inp w-full"></label>
+      <button class="btn bg-emerald-700 w-full">${t('login')}</button>
+    </form></div>`;
+}
+
+const VIEWS = {};
+
+VIEWS.dashboard = d => {
+  const ms = d.marla_sqft;
+  return `<div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">${(S.enums.plotStatus || []).map(s => `
+      <a class="card border-t-4 cursor-pointer" style="border-color:${COLORS[s]}" onclick="S.filters={plots:{status:'${s}'}};go('#/plots')">
+        <div class="text-sm text-slate-500">${L('plotStatus', s)}</div><div class="text-2xl font-semibold num">${d.byStatus[s] || 0}</div></a>`).join('')}</div>
+  <div class="grid md:grid-cols-2 gap-6">
+    <section class="card"><h2 class="font-semibold mb-2">${t('dash.to_verify')} <span class="text-sm text-slate-500">· ${t('dash.waiting', { n: d.waitingDirector })}</span></h2>
+      ${d.toVerify.length ? d.toVerify.map(a => `<a class="flex justify-between border-b py-2 text-sm cursor-pointer hover:bg-slate-50" onclick="go('#/approval/${a.id}')">
+        <span>${t('plot')} <b class="num">${esc(a.plot_no)}</b> · ${L('approvalType', a.type)}</span><span class="font-medium text-amber-700">${L('approvalStatus', a.status)}</span></a>`).join('') : `<p class="text-sm text-slate-500">${t('nothing')}</p>`}
+    </section>
+    <section class="card"><h2 class="font-semibold mb-2">${t('dash.files')}</h2>
+      ${Object.keys(d.caseCounts).length ? Object.keys(d.caseCounts).map(s => `<a class="flex justify-between border-b py-2 text-sm cursor-pointer hover:bg-slate-50" onclick="S.filters={registry:{status:'${s}'}};go('#/registry')">
+        <span>${L('caseStatus', s)} <span class="text-slate-400">(${L('roles', d.actors[s])})</span></span><span class="num">${d.caseCounts[s]}</span></a>`).join('') : `<p class="text-sm text-slate-500">${t('nothing')}</p>`}
+    </section>
+    <section class="card"><h2 class="font-semibold mb-2">${t('dash.area')}</h2>${areaTable(d.area, ms)}</section>
+    <section class="card"><h2 class="font-semibold mb-2">${t('land.intiqals')}</h2>
+      <table class="t"><tr><th>${t('land.intiqal_no')}</th><th>${t('land.holder')}</th><th>${t('land.balance')}</th></tr>
+      ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td>${esc(i.holder_name)}</td><td class="num ${i.balance <= 0 ? 'text-red-600' : ''}">${area(Math.max(0, i.balance), ms)}</td></tr>`).join('') || `<tr><td colspan="3" class="text-slate-500">${t('nothing')}</td></tr>`}</table></section>
+    <section class="card"><h2 class="font-semibold mb-2">${t('dash.construction')}</h2>
+      ${(S.enums.construction || []).map(c => `<div class="flex justify-between border-b py-1 text-sm"><span>${L('construction', c)}</span><span class="num">${d.byConstruction[c] || 0}</span></div>`).join('')}</section>
+  </div>`;
+};
+
+function areaTable(a, ms) {
+  return `<table class="t">
+    <tr><td>${t('area.total')}</td><td class="num">${area(a.total, ms)}</td></tr>
+    ${Object.keys(a.by_type).map(k => `<tr class="text-slate-600"><td class="ps-6">${L('parcelType', k)}</td><td class="num">${area(a.by_type[k], ms)}</td></tr>`).join('')}
+    <tr><td>${t('area.non')}</td><td class="num">${area(a.non_saleable, ms)}</td></tr>
+    <tr class="font-medium"><td>${t('area.sale')}</td><td class="num">${area(a.saleable, ms)}</td></tr>
+    <tr class="text-slate-500"><td>${t('area.unalloc')}</td><td class="num">${area(Math.max(0, a.unallocated), ms)}</td></tr></table>`;
+}
+
+VIEWS.plots = d => {
+  const f = (S.filters || {}).plots || {};
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.plots')} <span class="text-slate-400 num text-base">(${d.rows.length})</span></h1>
+  <form class="flex flex-wrap gap-2 mb-4 text-sm" onsubmit="event.preventDefault();S.filters={plots:formData(this)};load()">
+    <input name="q" value="${esc(f.q || '')}" placeholder="${t('p.search')}" class="inp">
+    <select name="status" class="inp">${opts('plotStatus', f.status, t('all'))}</select>
+    <select name="street" class="inp"><option value="">${t('p.street')}: ${t('all')}</option>${d.streets.map(s => `<option value="${s.id}" ${s.id === f.street ? 'selected' : ''}>${t('p.street')} ${esc(s.number)}</option>`).join('')}</select>
+    <select name="category" class="inp">${opts('category', f.category, t('all'))}</select>
+    <button class="btn bg-slate-800">${t('filter')}</button></form>
+  <div class="card overflow-x-auto"><table class="t">
+    <tr><th>${t('plot')}</th><th>${t('p.size')}</th><th>${t('p.category')}</th><th>${t('p.status')}</th><th>${t('p.customer')}</th><th>${t('p.construction')}</th></tr>
+    ${d.rows.map(p => `<tr class="hover:bg-slate-50"><td><a class="link num font-medium" onclick="go('#/plot/${p.id}')">${esc(p.plot_no)}</a>
+        ${p.is_corner ? `<span class="text-xs text-slate-500">· ${t('p.corner')}</span>` : ''}${p.is_park_facing ? `<span class="text-xs text-slate-500">· ${t('p.park_facing')}</span>` : ''}</td>
+      <td class="num">${p.size_marla ? esc(p.size_marla) + ' M' : '—'}</td><td>${L('category', p.category)}</td><td>${statusChip(p.sale_status)}</td>
+      <td>${esc(p.customer) || '—'}</td><td>${L('construction', p.construction_status)}</td></tr>`).join('')}
+  </table></div>`;
+};
+
+function dateInp(name, v) { return `<input type="date" name="${name || 'date'}" value="${v || today()}" required class="inp">`; }
+function customerSelect(list) {
+  return `<select name="customer_id" required class="inp w-full"><option value="">${t('p.choose')}</option>${list.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select>
+    <a class="link text-xs" onclick="go('#/customers')">${t('p.new_customer')}</a>`;
+}
+
+VIEWS.plot = d => {
+  const p = d.plot, s = p.sale_status, acc = can('accounts');
+  const box = (title, body, action, extra, confirmMsg, color) => `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'${action}',${esc(JSON.stringify(Object.assign({ plot_id: p.id }, extra || {})))},${confirmMsg ? `{confirm:'${esc(confirmMsg)}'}` : '{}'})">
+      <div class="font-medium">${title}</div>${body}<button class="btn ${color || 'bg-emerald-700'}">${title}</button></form>`;
+  let actions = '';
+  if (acc) {
+    if (s === 'available') actions += box(t('p.sell'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'sell');
+    if (s === 'sold') actions += box(t('p.payment_clear'), `<p class="text-slate-500">${t('p.payment_clear_help')}</p>${dateInp()}<label class="flex gap-2"><input type="checkbox" required> ${t('p.payment_tick')}</label>`, 'clearPayment', null, t('are_you_sure'), 'bg-orange-600');
+    if (s === 'sold' || s === 'payment_cleared') {
+      actions += box(t('p.transfer'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'transfer', null, null, 'bg-slate-800');
+      actions += box(t('p.cancel'), dateInp() + `<textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'cancelSale', null, t('are_you_sure'), 'bg-red-600');
+    }
+    if (['sold', 'payment_cleared', 'registered'].includes(s)) actions += box(t('p.repurchase'), `<p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}<input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'repurchase', null, t('are_you_sure'), 'bg-slate-800');
+    if (s === 'payment_cleared') actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
+      <div class="font-medium">${t('r.new_demand')}</div><select name="mode" class="inp w-full">${opts('registryMode')}</select>${dateInp('demand_date')}
+      <input name="maliyat" type="number" min="1" required placeholder="${t('r.maliyat')}" class="inp w-full num"><button class="btn bg-purple-700">${t('r.create')}</button></form>`;
+    actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'construction',{plot_id:'${p.id}'})">
+      <div class="font-medium">${t('p.construction')}</div><select name="status" class="inp w-full">${opts('construction', p.construction_status)}</select>${dateInp()}<button class="btn bg-slate-600">${t('save')}</button></form>`;
+  }
+  if (can('admin')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'savePlot',{id:'${p.id}'})">
+      <div class="font-medium">${t('p.edit')}</div>
+      <div class="flex gap-2"><input name="size_marla" value="${esc(p.size_marla)}" placeholder="${t('area.marla')}" class="inp w-24 num"><input name="width_ft" value="${esc(p.width_ft)}" placeholder="W ft" class="inp w-20 num"><input name="depth_ft" value="${esc(p.depth_ft)}" placeholder="D ft" class="inp w-20 num"></div>
+      <select name="category" class="inp">${opts('category', p.category)}</select>
+      <label class="flex gap-2"><input type="hidden" name="is_corner" value="FALSE"><input type="checkbox" name="is_corner" value="TRUE" ${isTrue(p.is_corner) ? 'checked' : ''}> ${t('p.corner')}</label>
+      <label class="flex gap-2"><input type="hidden" name="is_park_facing" value="FALSE"><input type="checkbox" name="is_park_facing" value="TRUE" ${isTrue(p.is_park_facing) ? 'checked' : ''}> ${t('p.park_facing')}</label>
+      <button class="btn bg-slate-600">${t('save')}</button></form>`;
+
+  return `<div class="flex flex-wrap items-center gap-3 mb-4"><h1 class="text-xl font-semibold">${t('plot')} <span class="num">${esc(p.plot_no)}</span></h1>
+      <span class="chip text-white" style="background:${COLORS[s]}">${L('plotStatus', s)}</span><span class="chip bg-slate-200">${L('construction', p.construction_status)}</span></div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <section class="card text-sm space-y-1"><h2 class="font-semibold mb-2">${t('p.details')}</h2>
+      <div>${t('p.street')}: <span class="num">${esc(d.street) || '—'}</span></div>
+      <div>${t('p.size')}: <span class="num">${esc(p.size_marla) || '—'} M ${p.width_ft ? `(${esc(p.width_ft)} × ${esc(p.depth_ft)})` : ''}</span></div>
+      <div>${t('p.category')}: ${L('category', p.category)}</div>
+      <div>${t('p.customer')}: ${d.customer ? `<a class="link" onclick="go('#/customer/${d.customer.id}')">${esc(d.customer_label)}</a> <span class="num text-slate-500">${esc(d.customer.cnic)}</span>` : t('company')}</div>
+      ${p.sold_on ? `<div>${t('p.sold_on')}: <span class="num">${dmy(p.sold_on)}</span></div>` : ''}
+      ${d.active_case ? `<div class="pt-2"><a class="link" onclick="go('#/case/${d.active_case.id}')">${t('p.open_case')} ${esc(d.active_case.reference)} · ${L('caseStatus', d.active_case.status)}</a></div>` : ''}
+    </section>
+    <section class="card text-sm md:col-span-2"><h2 class="font-semibold mb-3">${t('p.actions')}</h2>
+      ${actions ? `<div class="grid md:grid-cols-2 gap-4">${actions}</div>` : `<p class="text-slate-500">${t('read_only')}</p>`}</section>
+  </div>
+  <section class="card mt-6"><h2 class="font-semibold mb-3">${t('p.chain')}</h2><ol class="flex flex-wrap items-center gap-2 text-sm">
+    ${d.ownerships.length ? d.ownerships.map((o, i) => `<li class="rounded border px-3 py-1 ${o.ended_on ? 'bg-slate-50' : 'bg-emerald-50 border-emerald-300'}">
+      <div class="font-medium">${esc(o.holder) || t('company')}</div><div class="text-xs text-slate-500 num">${dmy(o.started_on)} → ${o.ended_on ? dmy(o.ended_on) : t('now')}</div>
+      ${o.end_event ? `<div class="text-xs">${L('event', o.end_event)}</div>` : ''}</li>${i < d.ownerships.length - 1 ? `<li class="text-slate-400">${S.lang === 'ur' ? '←' : '→'}</li>` : ''}`).join('') : `<li>${t('company')}</li>`}</ol></section>
+  <section class="card mt-6"><h2 class="font-semibold mb-3">${t('p.history')}</h2><table class="t">
+    <tr><th>${t('date')}</th><th>${t('p.event')}</th><th>${t('p.from')}</th><th>${t('p.to')}</th><th>${t('p.reference')}</th><th>${t('by')}</th></tr>
+    ${d.events.map(e => `<tr><td class="num">${dmy(e.event_date)}</td><td>${L('event', e.event)}${e.notes ? `<div class="text-xs text-slate-500">${esc(e.notes)}</div>` : ''}</td>
+      <td>${esc(e.from_name) || (e.event === 'sold' ? t('company') : '')}</td><td>${esc(e.to_name) || (['repurchased', 'cancelled'].includes(e.event) ? t('company') : '')}</td>
+      <td class="num">${esc(e.reference)}</td><td class="text-slate-500">${esc(e.by)}</td></tr>`).join('')}</table></section>`;
+};
+
+VIEWS.registry = d => {
+  const f = (S.filters || {}).registry || {};
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.registry')}</h1>
+  <section class="card mb-6"><h2 class="font-semibold mb-2">${t('r.pending')} <span class="num text-slate-500">(${d.pending.length})</span></h2>
+    <div class="flex flex-wrap gap-2 text-sm">${d.pending.map(p => `<a class="border rounded px-2 py-1 cursor-pointer hover:bg-orange-50" onclick="go('#/plot/${p.id}')"><span class="num font-medium">${esc(p.plot_no)}</span> · ${esc(p.customer)}</a>`).join('') || `<span class="text-slate-500">${t('nothing')}</span>`}</div></section>
+  <select class="inp mb-3 text-sm" onchange="S.filters={registry:{status:this.value}};load()"><option value="">${t('r.open')}</option>
+    ${Object.keys(t('enum.caseStatus')).map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${L('caseStatus', s)}</option>`).join('')}</select>
+  <div class="card overflow-x-auto"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('p.customer')}</th><th>${t('r.mode')}</th><th>${t('r.step')}</th><th>${t('r.with')}</th><th>${t('r.demand_date')}</th></tr>
+    ${d.cases.map(c => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/case/${c.id}')">${esc(c.reference)}</a></td><td class="num">${esc(c.plot_no)}</td><td>${esc(c.customer_name)}</td>
+      <td>${L('registryMode', c.mode)}</td><td>${L('caseStatus', c.status)}</td><td class="text-slate-500">${c.actor ? L('roles', c.actor) : '—'}</td><td class="num">${dmy(c.demand_date)}</td></tr>`).join('') || `<tr><td colspan="7" class="text-slate-500">${t('nothing')}</td></tr>`}
+  </table></div>`;
+};
+
+function stepForm(caseId, step, body, btn, color, confirmMsg) {
+  return `<form class="space-y-2" onsubmit="return submitForm(event,'registryStep',{case_id:'${caseId}',step:'${step}'}${confirmMsg ? `,{confirm:'${esc(confirmMsg)}'}` : ''})">${body}<button class="btn ${color || 'bg-purple-700'}">${btn}</button></form>`;
+}
+function registryFields(c) {
+  return `<div class="flex flex-wrap gap-2"><input name="registry_no" required placeholder="${t('r.registry_no')}" value="${esc(c.registry_no)}" class="inp num">
+    <input type="date" name="registry_date" required value="${c.registry_date || today()}" class="inp"><input name="registry_office" placeholder="${t('r.office')}" value="${esc(c.registry_office)}" class="inp">
+    <input name="registry_copy_url" placeholder="${t('r.copy_url')}" class="inp w-full num"></div>`;
+}
+
+function expenseForm(d, kind) {
+  const c = d.case, sellerFiler = d.allocations.length ? d.allocations[0].holder_is_filer : true;
+  const rows = d.rates.filter(r => kind !== 'seller_expense' || r.payer === 'seller');
+  return `<form id="exp-${kind}" class="space-y-3 mt-2" onsubmit="return submitForm(event,'registryStep',{case_id:'${c.id}',step:'expense_save',kind:'${kind}'},{confirm:'${esc(t('r.confirm_send'))}'})">
+    <div class="flex flex-wrap gap-3 items-end">
+      <label>${t('r.maliyat')}<br><input type="number" name="maliyat" value="${esc(c.maliyat)}" required class="inp w-36 num"></label>
+      <label>${t('r.area_marla')}<br><input type="number" step="0.01" name="area_marla" value="${esc(c.area_marla)}" required class="inp w-24 num"></label>
+      <label class="flex gap-1 items-center"><input type="hidden" name="buyer_is_filer" value="FALSE"><input type="checkbox" name="buyer_is_filer" value="TRUE" ${d.customer && isTrue(d.customer.is_filer) ? 'checked' : ''}> ${t('r.buyer_filer')}</label>
+      <label class="flex gap-1 items-center"><input type="hidden" name="seller_is_filer" value="FALSE"><input type="checkbox" name="seller_is_filer" value="TRUE" ${sellerFiler ? 'checked' : ''}> ${t('r.seller_filer')}</label>
+      <label>${t('r.land_value')}<br><input type="number" name="land_value" class="inp w-36 num"></label></div>
+    <table class="t"><tr><th></th><th>${t('r.item')}</th><th>${t('r.payer')}</th><th class="text-end">${t('r.amount')}</th><th>${t('r.override')}</th></tr>
+      ${rows.map(r => `<tr><td><input type="hidden" name="enabled[${r.code}]" value="FALSE"><input type="checkbox" name="enabled[${r.code}]" value="TRUE" ${isTrue(r.default_on) ? 'checked' : ''}></td>
+        <td>${esc(S.lang === 'ur' && r.label_ur ? r.label_ur : r.label)}</td><td>${L('payer', r.payer)}</td><td class="text-end num" data-amount="${r.code}">—</td>
+        <td><input type="number" min="0" name="manual[${r.code}]" class="inp w-28 num"></td></tr>`).join('')}
+      <tr class="font-medium"><td></td><td>${t('r.buyer_exp')} / ${t('r.seller_exp_col')}</td><td></td><td class="text-end num" data-total="bs">—</td><td></td></tr>
+      <tr class="font-semibold"><td></td><td>${t('r.grand')}</td><td></td><td class="text-end num" data-total="grand">—</td><td></td></tr></table>
+    <button class="btn bg-purple-700">${t('r.send_exp')}</button></form>`;
+}
+
+function expenseTable(e) {
+  return `<table class="t"><tr><th>${t('r.item')}</th><th class="text-end">${t('r.rate')}</th><th class="text-end">${t('r.buyer_exp')}</th><th class="text-end">${t('r.seller_exp_col')}</th><th>${t('r.receipt')}</th></tr>
+    ${e.lines.map(l => `<tr><td>${esc(l.label)} ${isTrue(l.is_manual) ? `<span class="text-xs text-amber-700">(${t('r.manual')})</span>` : ''}</td><td class="text-end num">${l.rate !== '' ? esc(l.rate) + '%' : ''}</td>
+      <td class="text-end num">${l.payer === 'buyer' ? fmt(l.amount) : ''}</td><td class="text-end num">${l.payer === 'seller' ? fmt(l.amount) : ''}</td><td>${isTrue(l.receipt) ? t('r.receipt') : t('r.no_receipt')}</td></tr>`).join('')}
+    <tr class="font-medium"><td>${t('r.total')}</td><td></td><td class="text-end num">${fmt(e.buyer_total)}</td><td class="text-end num">${fmt(e.seller_total)}</td><td></td></tr>
+    <tr class="font-semibold"><td>${t('r.grand')}</td><td></td><td colspan="2" class="text-end num">Rs. ${fmt(e.grand_total)}</td><td></td></tr></table>
+    <div class="text-xs text-slate-500 mt-1">${t('r.maliyat')}: <span class="num">${fmt(e.maliyat)}</span> · ${t('r.buyer')}: ${esc(e.buyer_name)} (${isTrue(e.buyer_is_filer) ? t('r.filer') : t('r.non_filer')}) · ${t('r.seller')}: ${esc(e.seller_name)} (${isTrue(e.seller_is_filer) ? t('r.filer') : t('r.non_filer')})</div>`;
+}
+
+VIEWS.case = d => {
+  const c = d.case, st = c.status, isB = c.mode === 'company_managed', ms = d.marla_sqft;
+  const steps = isB
+    ? ['demand', 'fard_approval_pending', 'fard_approval_review', 'fard_approved', 'fard_jari_issued', 'fard_received', 'expense_approval_pending', 'expense_approval_review', 'expense_approved', 'expense_paid', 'registry_done', 'registry_recorded', 'handed_over']
+    : ['demand', 'fard_approval_pending', 'fard_approval_review', 'fard_approved', 'fard_jari_issued', 'fard_received', 'fard_handed_over', 'client_registry_recorded'];
+  const pos = steps.indexOf(st);
+  let next = '';
+  switch (st) {
+    case 'demand': next = `<p class="mb-2">${t('r.send_fard_help')}</p>` + stepForm(c.id, 'send_fard_approval', '', t('r.send_fard')); break;
+    case 'fard_approval_pending': case 'expense_approval_pending': next = `<p>${t('r.waiting')}</p>`; break;
+    case 'fard_approval_review': case 'expense_approval_review':
+      next = `<p class="mb-2">${t('r.replied')}</p>${d.approvals[0] ? `<button class="btn bg-amber-600" onclick="go('#/approval/${d.approvals[0].id}')">${t('a.open')}</button>` : ''}`; break;
+    case 'fard_approved':
+      next = can('land_management') ? stepForm(c.id, 'fard_jari', `<p>${t('r.jari_help', { area: area(c.area_sqft, ms), sqft: c.area_sqft })}</p>
+        <table class="t"><tr><th>${t('land.intiqal_no')}</th><th>${t('land.holder')}</th><th>${t('land.balance')}</th><th>${t('r.take')}</th></tr>
+        ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td>${esc(i.holder_name)}</td><td class="num">${area(Math.max(0, i.balance), ms)}</td>
+          <td><input type="number" step="0.01" min="0" max="${i.balance}" name="allocations[${i.id}]" class="inp w-32 num" ${i.balance <= 0 ? 'disabled' : ''}></td></tr>`).join('')}</table>
+        <textarea name="message" required rows="3" class="inp w-full">${esc(t('r.jari_default', { plot: d.plot.plot_no, area: area(c.area_sqft, ms), customer: d.customer_label }))}</textarea>`, t('r.issue_jari'))
+        : `<p>${t('r.waiting_role', { role: L('roles', 'land_management') })}</p>`; break;
+    case 'fard_jari_issued': next = stepForm(c.id, 'fard_received', `<input name="fard_no" placeholder="${t('r.fard_no')}" class="inp num"> ${dateInp()}`, t('r.fard_received')); break;
+    case 'fard_received':
+      next = isB ? expenseForm(d, 'registry_expense')
+        : stepForm(c.id, 'hand_over_fard', dateInp(), t('r.hand_fard')) + `<details class="border rounded p-2 mt-4"><summary class="cursor-pointer">${t('r.seller_exp_opt')}</summary>${expenseForm(d, 'seller_expense')}</details>`; break;
+    case 'fard_handed_over': next = `<p class="mb-2">${t('r.client_reg_help')}</p>` + stepForm(c.id, 'client_registry', registryFields(c), t('r.record_client'), 'bg-blue-700'); break;
+    case 'expense_approved': next = `<p class="mb-2">${t('r.paid_help')}</p>` + stepForm(c.id, 'expense_paid', `<label class="flex gap-2"><input type="checkbox" required> ${t('r.expense_paid')}</label>`, t('save'), null, t('are_you_sure')); break;
+    case 'expense_paid': next = stepForm(c.id, 'registry_done', registryFields(c), t('r.reg_done')); break;
+    case 'registry_done': next = `<p class="mb-2">${t('r.record_help')}</p>` + stepForm(c.id, 'record_in_office', `${dateInp()} <input name="buyer_intiqal_no" placeholder="${t('r.buyer_intiqal')}" class="inp num"> <input name="registry_copy_url" placeholder="${t('r.copy_url')}" class="inp w-full num">`, t('r.record'), 'bg-blue-700'); break;
+    case 'registry_recorded': next = stepForm(c.id, 'hand_over', dateInp(), t('r.hand_reg'), 'bg-blue-700'); break;
+    default: next = `<p class="text-slate-500">${t('r.closed')}</p>`;
+  }
+  if (!['client_registry_recorded', 'handed_over', 'cancelled'].includes(st) && can('admin')) {
+    next += `<details class="mt-6"><summary class="text-red-600 cursor-pointer">${t('r.cancel')}</summary>${stepForm(c.id, 'cancel', `<textarea name="reason" required class="inp w-full" placeholder="${t('reason')}"></textarea>`, t('r.cancel'), 'bg-red-600', t('are_you_sure'))}</details>`;
+  }
+  const line = (k, v) => v ? `<div>${k}: <span class="num">${v}</span></div>` : '';
+  return `<div class="flex flex-wrap items-center gap-3 mb-4"><h1 class="text-xl font-semibold"><span class="num">${esc(c.reference)}</span> · ${t('plot')} <a class="link num" onclick="go('#/plot/${d.plot.id}')">${esc(d.plot.plot_no)}</a></h1>
+    <span class="chip bg-purple-100 text-purple-800">${L('caseStatus', st)}</span><span class="chip bg-slate-200">${L('registryMode', c.mode)}</span></div>
+  <ol class="flex flex-wrap gap-1 mb-6 text-xs">${steps.map((s, i) => `<li class="px-2 py-1 rounded ${pos >= 0 && i < pos ? 'bg-emerald-100 text-emerald-800' : i === pos ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500'}">${L('caseStatus', s)}</li>`).join('')}</ol>
+  <div class="grid md:grid-cols-3 gap-6">
+    <section class="card text-sm space-y-1"><h2 class="font-semibold mb-2">${t('r.ref')}</h2>
+      <div>${t('p.customer')}: ${esc(d.customer_label)} <span class="num text-slate-500">${esc(d.customer && d.customer.cnic)}</span></div>
+      ${line(t('p.size'), esc(c.area_marla) + ' M (' + area(c.area_sqft, ms) + ')')}${line(t('r.maliyat'), 'Rs. ' + fmt(c.maliyat))}${line(t('r.demand_date'), dmy(c.demand_date))}
+      ${c.seller_name ? `<div>${t('r.seller')}: ${esc(c.seller_name)}</div>` : ''}
+      ${d.allocations.length ? `<div>${t('r.intiqals')}: <span class="num">${d.allocations.map(a => esc(a.intiqal_no) + ' (' + area(a.area_sqft, ms) + ')').join(', ')}</span></div>` : ''}
+      ${c.fard_jari_message ? `<div class="bg-slate-50 rounded p-2 whitespace-pre-line">${esc(c.fard_jari_message)}</div>` : ''}
+      ${line(t('r.fard_no'), esc(c.fard_no) + ' ' + dmy(c.fard_received_on))}${line(t('r.hand_fard'), dmy(c.fard_handed_over_on))}
+      ${line(t('r.registry_no'), c.registry_no ? esc(c.registry_no) + ' · ' + dmy(c.registry_date) + ' ' + esc(c.registry_office) : '')}
+      ${isTrue(c.expense_paid) ? `<div>${t('r.expense_paid')} ✔ <span class="num">${dmy(c.expense_paid_at)}</span></div>` : ''}
+      ${line(t('r.record'), dmy(c.registry_recorded_on))}${line(t('r.hand_reg'), dmy(c.handed_over_on))}
+      ${c.registry_copy_url ? `<div><a class="link" href="${esc(c.registry_copy_url)}" target="_blank">📎 ${t('r.copy_url')}</a></div>` : ''}
+    </section>
+    <section class="card text-sm md:col-span-2"><h2 class="font-semibold mb-3">${t('r.next')}</h2>${next}</section>
+  </div>
+  <section class="card mt-6"><h2 class="font-semibold mb-3">${t('nav.approvals')}</h2><table class="t">
+    <tr><th>${t('r.ref')}</th><th>${t('a.type')}</th><th>${t('a.sent')}</th><th>${t('a.director')}</th><th>${t('a.verified')}</th><th>${t('p.status')}</th></tr>
+    ${d.approvals.map(a => `<tr><td><a class="link num" onclick="go('#/approval/${a.id}')">${esc(a.reference)}</a></td><td>${L('approvalType', a.type)}</td><td class="num">${esc(a.sent_at).slice(0, 16)}</td>
+      <td>${a.decision ? t('a.' + a.decision) : '—'} <span class="num text-slate-500">${esc(a.decided_at).slice(0, 16)}</span></td><td>${esc(a.verifier)}</td><td>${L('approvalStatus', a.status)}</td></tr>`).join('') || `<tr><td colspan="6" class="text-slate-500">${t('nothing')}</td></tr>`}</table></section>
+  ${d.expenses.map(e => `<section class="card mt-6"><h2 class="font-semibold mb-2">${e.kind === 'seller_expense' ? t('r.seller_exp') : t('r.reg_exp')} · <span class="num">${esc(e.created_at).slice(0, 16)}</span></h2>${expenseTable(e)}</section>`).join('')}`;
+};
+
+VIEWS.approvals = d => {
+  const f = (S.filters || {}).approvals || {};
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.approvals')}</h1>
+  <select class="inp mb-3 text-sm" onchange="S.filters={approvals:{status:this.value}};load()"><option value="">${t('all')}</option>
+    ${Object.keys(t('enum.approvalStatus')).map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${L('approvalStatus', s)}</option>`).join('')}</select>
+  <div class="card overflow-x-auto"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('a.type')}</th><th>${t('a.sent')}</th><th>${t('p.status')}</th><th>${t('a.verified')}</th></tr>
+    ${d.map(a => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/approval/${a.id}')">${esc(a.reference)}</a></td><td class="num">${esc(a.plot_no)}</td><td>${L('approvalType', a.type)}</td>
+      <td class="num">${esc(a.sent_at).slice(0, 16)}</td><td>${L('approvalStatus', a.status)}</td><td>${esc(a.verifier)}</td></tr>`).join('') || `<tr><td colspan="6" class="text-slate-500">${t('nothing')}</td></tr>`}</table></div>`;
+};
+
+VIEWS.approval = d => {
+  const a = d.approval;
+  let actions = '';
+  if (['director_approved', 'director_rejected'].includes(a.status) && can('accounts')) {
+    actions += `<form class="border-t pt-3 space-y-2" onsubmit="return submitForm(event,'verifyApproval',{id:'${a.id}'})">
+      <p>${a.status === 'director_approved' ? t('a.help_ok') : t('a.help_no')}</p><textarea name="remarks" class="inp w-full" placeholder="${t('notes')}"></textarea>
+      <label class="flex gap-2"><input type="checkbox" required> ${t('a.checked')}</label><button class="btn bg-emerald-700">${t('a.verify')}</button></form>`;
+  }
+  if (['needs_review', 'sent'].includes(a.status) && can('accounts')) {
+    actions += `<details class="border-t pt-3" ${a.status === 'needs_review' ? 'open' : ''}><summary class="cursor-pointer">${t('a.resolve')}</summary>
+      <form class="space-y-2 mt-2" onsubmit="return submitForm(event,'resolveApproval',{id:'${a.id}'})"><p class="text-slate-500">${t('a.resolve_help')}</p>
+      <select name="decision" class="inp"><option value="approved">${t('a.approved')}</option><option value="rejected">${t('a.rejected')}</option></select>
+      <textarea name="remarks" required class="inp w-full" placeholder="${t('a.how_confirmed')}"></textarea><button class="btn bg-amber-600">${t('save')}</button></form></details>`;
+  }
+  return `<div class="flex flex-wrap items-center gap-3 mb-4"><h1 class="text-xl font-semibold"><span class="num">${esc(a.reference)}</span> · ${L('approvalType', a.type)}</h1>
+    <span class="chip bg-amber-100 text-amber-800">${L('approvalStatus', a.status)}</span>
+    <a class="link text-sm" onclick="go('#/case/${d.case.id}')">${esc(d.case.reference)} · ${t('plot')} <span class="num">${esc(d.plot_no)}</span></a></div>
+  <div class="grid md:grid-cols-2 gap-6">
+    <section class="card text-sm space-y-1"><h2 class="font-semibold mb-2">${t('a.sent')}</h2>
+      <div>${t('a.to')}: <span class="num">${esc(a.to_email)}</span></div>${a.cc ? `<div>CC: <span class="num">${esc(a.cc)}</span></div>` : ''}
+      <div>${t('a.subject')}: <span class="num">${esc(a.subject)}</span></div><div><span class="num">${esc(a.sent_at)}</span> · ${esc(d.sender)}</div></section>
+    <section class="card text-sm space-y-2"><h2 class="font-semibold mb-2">${t('a.decision')}</h2>
+      ${a.decision ? `<div class="text-lg font-semibold ${a.decision === 'approved' ? 'text-emerald-700' : 'text-red-700'}">${t('a.' + a.decision)}</div>
+        <div>${t('a.how')}: ${t('a.' + a.decision_channel)} · <span class="num">${esc(a.decided_from_email)} · ${esc(a.decided_at)}</span></div>
+        ${a.director_remarks ? `<div class="bg-slate-50 rounded p-2">“${esc(a.director_remarks)}”</div>` : ''}` : `<p class="text-slate-500">${t('a.none')}</p>`}
+      ${d.inbound.length ? `<div class="font-medium pt-2">${t('a.inbound')}</div>` + d.inbound.map(m => `<div class="border rounded p-2 text-xs"><div class="num">${esc(m.from_email)} · ${esc(m.received_at)} · <b>${L('result', m.result)}</b></div>
+        <div class="text-slate-600 whitespace-pre-line mt-1">${esc(String(m.body_text).slice(0, 400))}</div></div>`).join('') : ''}
+      ${actions}
+      ${a.verified_at ? `<div class="border-t pt-2">${t('a.verified')}: ${esc(d.verifier)} · <span class="num">${esc(a.verified_at)}</span>${a.verify_remarks ? `<div class="text-slate-500">${esc(a.verify_remarks)}</div>` : ''}</div>` : ''}
+    </section></div>
+  ${d.expense ? `<section class="card mt-6">${expenseTable(d.expense)}</section>` : ''}`;
+};
+
+VIEWS.customers = d => {
+  const f = (S.filters || {}).customers || {};
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.customers')}</h1>
+  <form class="flex gap-2 mb-3 text-sm" onsubmit="event.preventDefault();S.filters={customers:formData(this)};load()"><input name="q" value="${esc(f.q || '')}" placeholder="${t('c.search')}" class="inp"><button class="btn bg-slate-800">${t('filter')}</button></form>
+  <div class="card overflow-x-auto mb-6"><table class="t"><tr><th>${t('c.name')}</th><th>${t('c.cnic')}</th><th>${t('c.phone')}</th><th>${t('c.plots')}</th><th>${t('c.filer')}</th></tr>
+    ${d.map(c => `<tr class="hover:bg-slate-50"><td><a class="link" onclick="go('#/customer/${c.id}')">${esc(c.label)}</a></td><td class="num">${esc(c.cnic)}</td><td class="num">${esc(c.phone)}</td><td class="num">${c.plots}</td><td>${isTrue(c.is_filer) ? '✔' : ''}</td></tr>`).join('') || `<tr><td colspan="5" class="text-slate-500">${t('nothing')}</td></tr>`}</table></div>
+  ${can('accounts') ? `<section class="card"><h2 class="font-semibold mb-3">${t('c.new')}</h2>
+    <form class="grid md:grid-cols-3 gap-3 text-sm" onsubmit="return submitForm(event,'saveCustomer',{})">
+      <input name="name" required placeholder="${t('c.name')}" class="inp"><input name="name_ur" dir="rtl" placeholder="${t('c.name_ur')}" class="inp">
+      <div class="flex gap-1"><select name="relation" class="inp"><option>s/o</option><option>d/o</option><option>w/o</option></select><input name="father_name" placeholder="${t('c.father')}" class="inp flex-1"></div>
+      <input name="cnic" placeholder="00000-0000000-0" pattern="\\d{5}-\\d{7}-\\d" class="inp num"><input name="phone" placeholder="${t('c.phone')}" class="inp num"><input name="email" type="email" placeholder="${t('email')}" class="inp num">
+      <input name="address" placeholder="${t('c.address')}" class="inp md:col-span-2"><label class="flex gap-2 items-center"><input type="checkbox" name="is_filer" value="TRUE"> ${t('c.filer')}</label>
+      <input name="nominee_name" placeholder="${t('c.nominee')}" class="inp"><input name="nominee_cnic" placeholder="${t('c.nominee_cnic')}" class="inp num"><input name="nominee_relation" placeholder="${t('c.nominee_rel')}" class="inp">
+      <div><button class="btn bg-emerald-700">${t('save')}</button></div></form></section>` : ''}`;
+};
+
+VIEWS.customer = d => `<h1 class="text-xl font-semibold mb-1">${esc(d.label)}</h1>
+  <p class="text-sm text-slate-500 mb-4"><span class="num">${esc(d.customer.cnic)} · ${esc(d.customer.phone)}</span> · ${esc(d.customer.address)}</p>
+  <div class="grid md:grid-cols-2 gap-6">
+    <section class="card text-sm"><h2 class="font-semibold mb-2">${t('c.current')}</h2>${d.current.map(p => `<a class="flex justify-between border-b py-1 cursor-pointer" onclick="go('#/plot/${p.id}')"><span class="num">${esc(p.plot_no)}</span>${statusChip(p.sale_status)}</a>`).join('') || t('nothing')}</section>
+    <section class="card text-sm"><h2 class="font-semibold mb-2">${t('c.history')}</h2>${d.history.map(o => `<div class="flex justify-between border-b py-1"><a class="link num" onclick="go('#/plot/${o.plot_id}')">${esc(o.plot_no)}</a>
+      <span class="num">${dmy(o.started_on)} → ${o.ended_on ? dmy(o.ended_on) : t('now')}</span><span>${L('event', o.end_event)}</span></div>`).join('') || t('nothing')}</section></div>`;
+
+function areaInputs() {
+  return `<div class="flex gap-1"><input type="number" step="0.01" min="0" name="kanal" placeholder="${t('area.kanal')}" class="inp w-20 num"><input type="number" step="0.01" min="0" name="marla" placeholder="${t('area.marla')}" class="inp w-20 num"><input type="number" step="0.01" min="0" name="sqft" placeholder="${t('area.sqft')}" class="inp w-24 num"></div>`;
+}
+
+VIEWS.land = d => {
+  const ms = d.marla_sqft, edit = can('land_management'), pid = S.projectId;
+  const tick = (p, f) => edit ? `<button class="text-lg" title="${esc(p[f + '_at'])}" onclick="call('tickPurchase',{id:'${p.id}',field:'${f}'}).then(()=>load(true)).catch(e=>toast(e.message,true))">${isTrue(p[f]) ? '✅' : '⬜'}</button>` : (isTrue(p[f]) ? '✅' : '⬜');
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.land')}</h1>
+  <div class="grid md:grid-cols-4 gap-3 mb-6 text-sm">${[['total', d.area.total], ['non', d.area.non_saleable], ['sale', d.area.saleable], ['unalloc', Math.max(0, d.area.unallocated)]].map(([k, v]) => `<div class="card">${t('area.' + k)}<div class="text-lg font-semibold num">${area(v, ms)}</div></div>`).join('')}</div>
+  <section class="card mb-6"><h2 class="font-semibold mb-3">${t('land.purchases')}</h2><table class="t">
+    <tr><th>${t('land.seller')}</th><th>${t('land.mauza')} / ${t('land.khasra')}</th><th>${t('land.area')}</th><th>${t('land.payment_clear')}</th><th>${t('land.intiqal_done')}</th></tr>
+    ${d.purchases.map(p => `<tr><td>${esc(p.seller_name)} <span class="num text-slate-500">${esc(p.seller_cnic)}</span></td><td>${esc(p.mauza)} <span class="num">${esc(p.khasra_nos)}</span></td><td class="num">${area(p.area_sqft, ms)}</td><td>${tick(p, 'payment_cleared')}</td><td>${tick(p, 'intiqal_done')}</td></tr>`).join('') || `<tr><td colspan="5" class="text-slate-500">${t('nothing')}</td></tr>`}</table>
+    ${edit ? `<details class="mt-3"><summary class="link text-sm">${t('land.add_purchase')}</summary><form class="grid md:grid-cols-4 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'savePurchase',{project_id:'${pid}'})">
+      <input name="seller_name" required placeholder="${t('land.seller')}" class="inp"><input name="seller_father_name" placeholder="${t('c.father')}" class="inp"><input name="seller_cnic" placeholder="00000-0000000-0" class="inp num"><input name="seller_phone" placeholder="${t('c.phone')}" class="inp num">
+      <input name="mauza" placeholder="${t('land.mauza')}" class="inp"><input name="khewat_no" placeholder="${t('land.khewat')}" class="inp num"><input name="khatooni_no" placeholder="${t('land.khatooni')}" class="inp num"><input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">
+      ${areaInputs()}<input type="date" name="agreement_date" class="inp"><div><button class="btn bg-emerald-700">${t('save')}</button></div></form></details>` : ''}</section>
+  <section class="card mb-6"><h2 class="font-semibold mb-3">${t('land.intiqals')}</h2><table class="t">
+    <tr><th>${t('land.intiqal_no')}</th><th>${t('date')}</th><th>${t('land.holder')}</th><th>${t('land.area')}</th><th>${t('land.issued')}</th><th>${t('land.balance')}</th></tr>
+    ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td class="num">${dmy(i.intiqal_date)}</td><td>${esc(i.holder_name)} <span class="text-xs text-slate-500">${isTrue(i.holder_is_filer) ? t('r.filer') : t('r.non_filer')}</span></td>
+      <td class="num">${area(i.area_sqft, ms)}</td><td class="num">${area(i.issued, ms)}</td><td class="num font-medium">${area(Math.max(0, i.balance), ms)}</td></tr>`).join('') || `<tr><td colspan="6" class="text-slate-500">${t('nothing')}</td></tr>`}</table>
+    ${edit ? `<details class="mt-3"><summary class="link text-sm">${t('land.add_intiqal')}</summary><form class="grid md:grid-cols-4 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'saveIntiqal',{project_id:'${pid}'})">
+      <input name="intiqal_no" required placeholder="${t('land.intiqal_no')}" class="inp num"><input type="date" name="intiqal_date" class="inp"><input name="holder_name" required placeholder="${t('land.holder')}" class="inp"><input name="holder_cnic" placeholder="00000-0000000-0" class="inp num">
+      <label class="flex gap-2 items-center"><input type="hidden" name="holder_is_filer" value="FALSE"><input type="checkbox" name="holder_is_filer" value="TRUE" checked> ${t('r.filer')}</label>
+      <label>${t('land.acquired')} <input type="date" name="holder_acquired_on" class="inp"></label>
+      <select name="land_purchase_id" class="inp"><option value="">${t('land.link_purchase')}</option>${d.purchases.map(p => `<option value="${p.id}">${esc(p.seller_name)} – ${esc(p.khasra_nos)}</option>`).join('')}</select>
+      <input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">${areaInputs()}<div><button class="btn bg-emerald-700">${t('save')}</button></div></form></details>` : ''}</section>
+  <section class="card"><h2 class="font-semibold mb-3">${t('land.parcels')}</h2><table class="t"><tr><th>${t('land.type')}</th><th>${t('c.name')}</th><th>${t('land.area')}</th><th>${t('land.width')}</th></tr>
+    ${d.parcels.map(p => `<tr><td>${L('parcelType', p.type)}</td><td>${esc(p.name)}</td><td class="num">${area(p.area_sqft, ms)}</td><td class="num">${esc(p.width_ft)}</td></tr>`).join('') || `<tr><td colspan="4" class="text-slate-500">${t('nothing')}</td></tr>`}</table>
+    ${edit ? `<details class="mt-3"><summary class="link text-sm">${t('land.add_parcel')}</summary><form class="grid md:grid-cols-4 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'saveParcel',{project_id:'${pid}'})">
+      <select name="type" class="inp">${opts('parcelType')}</select><input name="name" required placeholder="${t('c.name')}" class="inp">${areaInputs()}<input name="width_ft" type="number" step="0.01" placeholder="${t('land.width')}" class="inp num"><div><button class="btn bg-emerald-700">${t('save')}</button></div></form></details>` : ''}</section>`;
+};
+
+VIEWS.settings = ([rates, st, users]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>
+  <section class="card mb-6"><h2 class="font-semibold mb-1">${t('s.rates')}</h2><p class="text-sm text-slate-500 mb-3">${t('s.rates_help')}</p>
+    <form onsubmit="return saveRates(event)"><div class="overflow-x-auto"><table class="t">
+      <tr><th>${t('r.item')}</th><th>${t('r.payer')}</th><th>${t('s.filer_rate')}</th><th>${t('s.nf_rate')}</th><th>${t('s.fixed')}</th><th>${t('s.params')}</th><th>${t('s.default_on')}</th><th>${t('r.receipt')}</th><th>${t('s.active')}</th></tr>
+      ${rates.map(r => { const ps = r.params ? JSON.parse(r.params) : {}; return `<tr data-id="${r.id}"><td>${esc(S.lang === 'ur' && r.label_ur ? r.label_ur : r.label)}</td><td>${L('payer', r.payer)}</td>
+        <td>${['percent', 'percent_filer', 'percent_land'].includes(r.calc_type) ? `<input data-f="rate" value="${esc(r.rate)}" class="inp w-20 num">%` : ''}</td>
+        <td>${r.calc_type === 'percent_filer' ? `<input data-f="non_filer_rate" value="${esc(r.non_filer_rate)}" class="inp w-20 num">%` : ''}</td>
+        <td>${['fixed', 'percent', 'excise'].includes(r.calc_type) ? `<input data-f="fixed_amount" value="${esc(r.fixed_amount)}" class="inp w-24 num">` : ''}</td>
+        <td class="text-xs">${Object.keys(ps).map(k => `<label class="block">${k} <input data-p="${k}" value="${esc(ps[k])}" class="inp w-24 num"></label>`).join('')}</td>
+        ${['default_on', 'receipt', 'is_active'].map(f => `<td><input type="checkbox" data-f="${f}" ${isTrue(r[f]) ? 'checked' : ''}></td>`).join('')}</tr>`; }).join('')}
+    </table></div><button class="btn bg-emerald-700 mt-3">${t('save')}</button></form></section>
+  <section class="card mb-6"><h2 class="font-semibold mb-3">${t('s.approval')}</h2>
+    <form class="grid md:grid-cols-2 gap-3 text-sm" onsubmit="return submitForm(event,'saveSettings',{})">
+      <label>${t('s.director_email')}<input name="director_email" value="${esc(st.director_email)}" class="inp w-full num"></label>
+      <label>${t('s.cc')}<input name="approval_cc" value="${esc(st.approval_cc)}" class="inp w-full num"></label>
+      <label>${t('s.sender_name')}<input name="sender_name" value="${esc(st.sender_name)}" class="inp w-full"></label>
+      <label>${t('s.sender_dept')}<input name="sender_department" value="${esc(st.sender_department)}" class="inp w-full"></label>
+      <label>${t('s.link_days')}<input name="link_valid_days" type="number" min="1" value="${esc(st.link_valid_days)}" class="inp w-24 num"></label>
+      <label>Web app URL<input name="web_app_url" value="${esc(st.web_app_url)}" class="inp w-full num"></label>
+      <div><button class="btn bg-emerald-700">${t('save')}</button></div></form></section>
+  <section class="card mb-6"><h2 class="font-semibold mb-3">${t('s.users')}</h2><table class="t"><tr><th>${t('c.name')}</th><th>${t('email')}</th><th>${t('s.role')}</th><th>${t('s.active')}</th></tr>
+    ${users.map(u => `<tr><td>${esc(u.name)}</td><td class="num">${esc(u.email)}</td><td>${L('roles', u.role)}</td><td>${u.is_active ? '✔' : '✖'}</td></tr>`).join('')}</table>
+    <details class="mt-3"><summary class="link text-sm">${t('s.add_user')}</summary><form class="grid md:grid-cols-3 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'saveUser',{})">
+      <select name="id" class="inp" onchange="fillUser(this)"><option value="">— new —</option>${users.map(u => `<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select>
+      <input name="name" required placeholder="${t('c.name')}" class="inp"><input name="email" type="email" required placeholder="${t('email')}" class="inp num">
+      <select name="role" class="inp">${opts('roles')}</select><input name="department" placeholder="${t('s.sender_dept')}" class="inp">
+      <input name="password" type="password" placeholder="${t('s.new_password')}" class="inp"><label class="flex gap-2 items-center"><input type="hidden" name="is_active" value="FALSE"><input type="checkbox" name="is_active" value="TRUE" checked> ${t('s.active')}</label>
+      <div><button class="btn bg-emerald-700">${t('save')}</button></div></form></details></section>
+  <section class="card"><h2 class="font-semibold mb-3">${t('s.change_pw')}</h2><form class="flex flex-wrap gap-2 text-sm" onsubmit="return submitForm(event,'changePassword',{})">
+    <input name="current" type="password" required placeholder="${t('s.current_pw')}" class="inp"><input name="password" type="password" required minlength="8" placeholder="${t('password')}" class="inp"><button class="btn bg-slate-800">${t('save')}</button></form></section>`;
+
+function fillUser(sel) {
+  const u = (S.data[2] || []).find(x => x.id === sel.value); const f = sel.form;
+  f.name.value = u ? u.name : ''; f.email.value = u ? u.email : ''; f.role.value = u ? u.role : 'viewer'; f.department.value = u ? (u.department || '') : '';
+}
+
+async function saveRates(ev) {
+  ev.preventDefault();
+  const rows = Array.from(ev.target.querySelectorAll('tr[data-id]')).map(tr => {
+    const o = { id: tr.dataset.id };
+    tr.querySelectorAll('[data-f]').forEach(i => { o[i.dataset.f] = i.type === 'checkbox' ? i.checked : i.value; });
+    const ps = tr.querySelectorAll('[data-p]'); if (ps.length) { o.params = {}; ps.forEach(i => o.params[i.dataset.p] = num(i.value)); }
+    return o;
+  });
+  try { await call('saveRates', { rates: rows }); toast(t('saved')); load(true); } catch (e) { toast(e.message, true); }
+  return false;
+}
+
+/** Live totals on the expense form. */
+function afterRender() {
+  document.querySelectorAll('form[id^="exp-"]').forEach(form => {
+    const kind = form.id.replace('exp-', '');
+    let timer;
+    const refresh = async () => {
+      try {
+        const r = await call('expensePreview', Object.assign(formData(form), { kind }));
+        form.querySelectorAll('[data-amount]').forEach(td => td.textContent = '—');
+        r.lines.forEach(l => { const td = form.querySelector(`[data-amount="${l.code}"]`); if (td) td.textContent = fmt(l.amount); });
+        form.querySelector('[data-total="bs"]').textContent = fmt(r.buyer_total) + ' / ' + fmt(r.seller_total);
+        form.querySelector('[data-total="grand"]').textContent = 'Rs. ' + fmt(r.grand_total);
+      } catch (e) {}
+    };
+    form.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(refresh, 400); });
+    form.addEventListener('change', refresh);
+    refresh();
+  });
+}
+
+// ===================================================================== start
+try {
+  google.script.history.setChangeHandler(e => { S.route = e.location.hash ? '#' + e.location.hash.replace(/^#/, '') : '#/'; load(); });
+  google.script.url.getLocation(loc => { if (loc.hash) S.route = '#' + loc.hash.replace(/^#/, ''); start(); });
+} catch (e) { start(); }
+function start() { document.documentElement.dir = S.lang === 'ur' ? 'rtl' : 'ltr'; if (S.token) boot(); else render(); }
+</script>
+</body>
+</html>

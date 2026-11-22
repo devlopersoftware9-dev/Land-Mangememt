@@ -9,6 +9,7 @@ class Range {
   constructor(sh, r, c, nr, nc) { Object.assign(this, { sh, r, c, nr, nc }); }
   setValues(v) { for (let i = 0; i < this.nr; i++) for (let j = 0; j < this.nc; j++) this.sh.set(this.r + i, this.c + j, v[i][j]); return this; }
   setValue(v) { this.sh.set(this.r, this.c, v); return this; }
+  getValue() { const row = this.sh.rows[this.r - 1] || []; return row[this.c - 1] === undefined ? '' : row[this.c - 1]; }
   setNumberFormat() { return this; } setFontWeight() { return this; } setBackground() { return this; }
 }
 class Sheet {

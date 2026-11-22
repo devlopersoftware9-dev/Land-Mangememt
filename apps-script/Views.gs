@@ -112,6 +112,27 @@ var Views = (function () {
     return { rows: rows, streets: streetList };
   }
 
+  /** Rows for the plots grid. ids (optional) limits to those plots. */
+  function plotRows(projectId, ids) {
+    var only = ids ? {} : null;
+    (ids || []).forEach(function (i) { only[String(i)] = true; });
+    var streets = {};
+    Db.where('Streets', 'project_id', projectId).forEach(function (s) { streets[s.id] = s.number; });
+    var customers = {};
+    Db.all('Customers').forEach(function (c) { customers[c.id] = c; });
+    var openCase = {};
+    Db.all('RegistryCases').forEach(function (c) { if (ENUM.finalCase.indexOf(c.status) < 0) openCase[c.plot_id] = c; });
+    return plotsOf(projectId).filter(function (x) { return !only || only[x.id]; }).sort(natural).map(function (x) {
+      var c = customers[x.current_customer_id], k = openCase[x.id];
+      return {
+        id: x.id, plot_no: x.plot_no, street: streets[x.street_id] || '', street_id: x.street_id, size_marla: x.size_marla,
+        facing: x.facing || '', category: x.category, sale_status: x.sale_status, construction_status: x.construction_status,
+        customer: c ? c.name : '', customer_id: x.current_customer_id || '', cnic: c ? c.cnic : '', phone: c ? c.phone : '',
+        sold_on: x.sold_on, case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
+      };
+    });
+  }
+
   function plot(id) {
     var x = Db.get('Plots', id);
     var c = x.current_customer_id ? Db.find('Customers', x.current_customer_id) : null;
@@ -209,6 +230,6 @@ var Views = (function () {
 
   return {
     bootstrap: bootstrap, dashboard: dashboard, plots: plots, plot: plot, customers: customers, customer: customer,
-    land: land, registryList: registryList, registryCase: registryCase, approvals: approvals, approval: approval,
+    plotRows: plotRows, land: land, registryList: registryList, registryCase: registryCase, approvals: approvals, approval: approval,
   };
 })();

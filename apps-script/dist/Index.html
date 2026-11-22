@@ -39,6 +39,9 @@
   table.t tr:nth-child(even) td { background: var(--stripe); }
   table.t tr:hover td { background: var(--p-soft); }
   .card.p-0 { padding: 0; }
+  table.t tr.sel td { background: var(--p-soft) !important; }
+  input[type=checkbox] { accent-color: var(--p); }
+  table.t thead th { position: sticky; top: 0; z-index: 2; }
   .border, .border-b, .border-t, .divide-y > * { border-color: #e2e8f0; }
   .scroll-table { max-height: 70vh; overflow: auto; border-radius: .5rem; }
   .scroll-table table.t th { position: sticky; top: 0; z-index: 1; }
@@ -61,6 +64,10 @@
 // ===================================================================== i18n
 const I18N = {
 en: {
+  g: { sold: 'Sold', payment: 'Payment Clear', fard: 'Fard Demand', registry: 'Registry', clear_filters: 'Clear filters', selected: '{n} selected',
+    sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
+    sell_title: 'Sell plot {plots}', pay_title: 'Payment Clear: {plots}', demand_title: 'Fard demand – Plot {plot}', sold_menu: 'Plot {plot} – {name}',
+    transfer_open: 'Transfer / full details', done_n: 'Done ({n}).', need_payment: 'Payment Clear first', need_sold: 'Sell first' },
   theme: { title: 'Theme', presets: 'Ready colour schemes', custom: 'Your own colours', header: 'Top bar', primary: 'Buttons / links / tabs',
     table: 'Table header', background: 'Page background', done: 'Done', reset: 'Reset', save_all: 'Make default for everyone', saved_all: 'Saved as default for all users.',
     note: 'Your choice is saved on this computer. Admin can make it the default for everyone.' },
@@ -138,6 +145,10 @@ en: {
     history_locked: 'History cannot be edited.', setup_missing: 'Run Setup from the sheet menu first.', unknown_action: 'Unknown action.' },
 },
 ur: {
+  g: { sold: 'فروخت', payment: 'پیمنٹ کلیئر', fard: 'فرد ڈیمانڈ', registry: 'رجسٹری', clear_filters: 'فلٹر ہٹائیں', selected: '{n} منتخب',
+    sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
+    sell_title: 'پلاٹ {plots} فروخت کریں', pay_title: 'پیمنٹ کلیئر: {plots}', demand_title: 'فرد ڈیمانڈ – پلاٹ {plot}', sold_menu: 'پلاٹ {plot} – {name}',
+    transfer_open: 'منتقلی / مکمل تفصیل', done_n: 'ہو گیا ({n})۔', need_payment: 'پہلے پیمنٹ کلیئر کریں', need_sold: 'پہلے فروخت کریں' },
   theme: { title: 'رنگ', presets: 'تیار رنگ', custom: 'اپنی مرضی کے رنگ', header: 'اوپر والی پٹی', primary: 'بٹن / لنک / ٹیب',
     table: 'ٹیبل کا ہیڈر', background: 'پیج کا پس منظر', done: 'ٹھیک ہے', reset: 'پہلے جیسا', save_all: 'سب کے لیے ڈیفالٹ بنائیں', saved_all: 'سب یوزرز کے لیے محفوظ ہو گیا۔',
     note: 'آپ کی پسند اسی کمپیوٹر پر محفوظ رہے گی۔ ایڈمن اسے سب کے لیے ڈیفالٹ بنا سکتا ہے۔' },
@@ -395,6 +406,10 @@ const ROUTES = [
   [/^#\/land$/, 'land'], [/^#\/settings$/, 'settings'],
 ];
 
+function refreshGrid(pid) {
+  call('plotGrid', { project_id: pid }).then(g => { g._pid = pid; S.grid = g; if (S.view === 'plots') gridRender(); }).catch(() => {});
+}
+
 async function load(keepScroll) {
   if (!S.token) return render();
   const app = document.getElementById('app');
@@ -404,7 +419,7 @@ async function load(keepScroll) {
   const pid = S.projectId, f = S.filters || {};
   const loaders = {
     dashboard: () => call('dashboard', { project_id: pid }),
-    plots: () => call('plots', Object.assign({ project_id: pid }, f.plots || {})),
+    plots: () => (S.grid && S.grid._pid === pid) ? (refreshGrid(pid), Promise.resolve(S.grid)) : call('plotGrid', { project_id: pid }).then(g => { g._pid = pid; return S.grid = g; }),
     plot: () => call('plot', { id: arg }),
     registry: () => call('registryList', { project_id: pid, status: (f.registry || {}).status }),
     case: () => call('registryCase', { id: arg }),
@@ -440,6 +455,7 @@ async function submitForm(ev, action, extra, opts) {
   const btn = ev.target.querySelector('button[type=submit],button:not([type])'); if (btn) btn.disabled = true;
   try {
     const res = await call(action, Object.assign(formData(ev.target), extra || {}));
+    if (S.grid) S.grid._pid = null;
     toast(t('saved'));
     if (opts.goTo) return go(typeof opts.goTo === 'function' ? opts.goTo(res) : opts.goTo);
     await load(true);
@@ -518,23 +534,168 @@ function areaTable(a, ms) {
     <tr class="text-slate-500"><td>${t('area.unalloc')}</td><td class="num">${area(Math.max(0, a.unallocated), ms)}</td></tr></table>`;
 }
 
+// ===================================================================== plots grid
+// All plots are loaded once and filtered in the browser (instant). Status columns are checkboxes.
+const G = { sel: new Set() };
+const HAS_SOLD = ['sold', 'payment_cleared', 'registry_in_process', 'registered'];
+const HAS_PAID = ['payment_cleared', 'registry_in_process', 'registered'];
+
 VIEWS.plots = d => {
-  const f = (S.filters || {}).plots || {};
-  return `<h1 class="text-xl font-semibold mb-4">${t('nav.plots')} <span class="text-slate-400 num text-base">(${d.rows.length})</span></h1>
-  <form class="flex flex-wrap gap-2 mb-4 text-sm" onsubmit="event.preventDefault();S.filters={plots:formData(this)};load()">
-    <input name="q" value="${esc(f.q || '')}" placeholder="${t('p.search')}" class="inp">
-    <select name="status" class="inp">${opts('plotStatus', f.status, t('all'))}</select>
-    <select name="street" class="inp"><option value="">${t('p.street')}: ${t('all')}</option>${d.streets.map(s => `<option value="${s.id}" ${s.id === f.street ? 'selected' : ''}>${t('p.street')} ${esc(s.number)}</option>`).join('')}</select>
-    <select name="category" class="inp">${opts('category', f.category, t('all'))}</select>
-    <button class="btn bg-slate-800">${t('filter')}</button></form>
-  <div class="card p-0 scroll-table"><table class="t">
-    <tr><th>${t('plot')}</th><th>${t('p.size')}</th><th>${t('p.facing')}</th><th>${t('p.category')}</th><th>${t('p.status')}</th><th>${t('p.customer')}</th><th>${t('p.construction')}</th></tr>
-    ${d.rows.map(p => `<tr class="hover:bg-slate-50"><td><a class="link num font-medium" onclick="go('#/plot/${p.id}')">${esc(p.plot_no)}</a>
-        ${p.is_corner ? `<span class="text-xs text-slate-500">· ${t('p.corner')}</span>` : ''}${p.is_park_facing ? `<span class="text-xs text-slate-500">· ${t('p.park_facing')}</span>` : ''}</td>
-      <td class="num">${p.size_marla ? esc(p.size_marla) + ' M' : '—'}</td><td>${p.facing ? t('p.' + p.facing.toLowerCase()) : '—'}</td><td>${L('category', p.category)}</td><td>${statusChip(p.sale_status)}</td>
-      <td>${esc(p.customer) || '—'}</td><td>${L('construction', p.construction_status)}</td></tr>`).join('')}
-  </table></div>`;
+  const f = S.gf = S.gf || {};
+  const sel = (name, inner) => `<select class="inp" onchange="gf('${name}', this.value)">${inner}</select>`;
+  return `<div class="flex flex-wrap items-end justify-between gap-3 mb-3">
+      <h1 class="text-xl font-semibold">${t('nav.plots')} <span id="g-count" class="text-slate-400 num text-base"></span></h1>
+      <div class="flex flex-wrap gap-2 text-sm">
+        <input type="search" value="${esc(f.q || '')}" placeholder="${t('p.search')}" class="inp w-56" oninput="gf('q', this.value)">
+        ${sel('status', `<option value="">${t('p.status')}: ${t('all')}</option>${(S.enums.plotStatus || []).map(v => `<option value="${v}" ${v === f.status ? 'selected' : ''}>${L('plotStatus', v)}</option>`).join('')}`)}
+        ${sel('street', `<option value="">${t('p.street')}: ${t('all')}</option>${d.streets.map(x => `<option value="${x.id}" ${x.id === f.street ? 'selected' : ''}>${t('p.street')} ${esc(x.number)}</option>`).join('')}<option value="-" ${f.street === '-' ? 'selected' : ''}>${L('category', 'commercial')}</option>`)}
+        ${sel('facing', `<option value="">${t('p.facing')}: ${t('all')}</option><option value="East" ${f.facing === 'East' ? 'selected' : ''}>${t('p.east')}</option><option value="West" ${f.facing === 'West' ? 'selected' : ''}>${t('p.west')}</option>`)}
+        ${sel('size', `<option value="">${t('p.size')}: ${t('all')}</option>${[...new Set(d.rows.map(r => r.size_marla).filter(Boolean))].sort((a, b) => num(a) - num(b)).map(v => `<option value="${esc(v)}" ${v === f.size ? 'selected' : ''}>${esc(v)} M</option>`).join('')}`)}
+        ${Object.keys(f).some(k => f[k]) ? `<button class="inp" onclick="S.gf={};render()">✕ ${t('g.clear_filters')}</button>` : ''}
+      </div></div>
+    <div id="g-bulk"></div>
+    <div class="card p-0 scroll-table"><table class="t">
+      <thead><tr><th class="w-8"><input type="checkbox" id="g-all" onclick="gSelectAll(this.checked)"></th><th>${t('plot')}</th><th>${t('p.size')}</th><th>${t('p.facing')}</th>
+        <th>${t('p.customer')}</th><th class="text-center">${t('g.sold')}</th><th class="text-center">${t('g.payment')}</th><th class="text-center">${t('g.fard')}</th>
+        <th class="text-center">${t('g.registry')}</th><th>${t('p.construction')}</th></tr></thead>
+      <tbody id="g-body"></tbody></table></div>`;
 };
+
+function gf(k, v) { S.gf[k] = v; clearTimeout(gf._t); gf._t = setTimeout(gridRender, k === 'q' ? 150 : 0); }
+
+function gridFiltered() {
+  const f = S.gf || {}, q = (f.q || '').toLowerCase().trim();
+  return (S.grid ? S.grid.rows : []).filter(r =>
+    (!f.status || r.sale_status === f.status) &&
+    (!f.street || (f.street === '-' ? !r.street_id : r.street_id === f.street)) &&
+    (!f.facing || r.facing === f.facing) && (!f.size || r.size_marla === f.size) &&
+    (!q || (r.plot_no + ' ' + r.customer + ' ' + r.cnic + ' ' + r.phone).toLowerCase().includes(q)));
+}
+
+function gridRender() {
+  const body = document.getElementById('g-body');
+  if (!body || !S.grid) return;
+  const rows = gridFiltered(), acc = can('accounts');
+  document.getElementById('g-count').textContent = `(${rows.length}${rows.length !== S.grid.rows.length ? ' / ' + S.grid.rows.length : ''})`;
+  const box = (checked, enabled, onclick, title) =>
+    `<input type="checkbox" class="w-5 h-5 cursor-pointer accent-[var(--p)]" ${checked ? 'checked' : ''} ${enabled ? '' : 'disabled'} title="${esc(title || '')}" onclick="event.preventDefault();${enabled ? onclick : ''}">`;
+  body.innerHTML = rows.map(r => {
+    const sold = HAS_SOLD.includes(r.sale_status), paid = HAS_PAID.includes(r.sale_status);
+    const fard = r.case_id
+      ? `<a class="chip cursor-pointer" style="background:#a855f71f;color:#7e22ce;border:1px solid #a855f755" onclick="go('#/case/${r.case_id}')">${esc(L('caseStatus', r.case_status))}</a>`
+      : r.sale_status === 'registered' ? '' : box(false, acc && r.sale_status === 'payment_cleared', `demandModal('${r.id}')`, r.sale_status === 'payment_cleared' ? t('g.fard') : t('g.need_payment'));
+    return `<tr class="${G.sel.has(r.id) ? 'sel' : ''}">
+      <td><input type="checkbox" ${G.sel.has(r.id) ? 'checked' : ''} onclick="gToggle('${r.id}', this.checked)"></td>
+      <td><a class="link num font-medium" onclick="go('#/plot/${r.id}')">${esc(r.plot_no)}</a>${r.has_notes ? ' <span title="notes">📝</span>' : ''}
+        ${r.sale_status === 'blocked' ? `<span class="chip ms-1" style="background:#6b72801f;color:#374151">${L('plotStatus', 'blocked')}</span>` : ''}</td>
+      <td class="num">${r.size_marla ? esc(r.size_marla) + ' M' : '—'}</td>
+      <td>${r.facing ? t('p.' + r.facing.toLowerCase()) : '—'}</td>
+      <td>${r.customer ? `${esc(r.customer)}<div class="text-xs text-slate-400 num">${esc(r.phone)}</div>` : '<span class="text-slate-300">—</span>'}</td>
+      <td class="text-center">${box(sold, acc && r.sale_status !== 'blocked' && r.sale_status !== 'registry_in_process', sold ? `soldMenu('${r.id}')` : `sellModal(['${r.id}'])`)}</td>
+      <td class="text-center">${box(paid, acc && r.sale_status === 'sold', `payModal(['${r.id}'])`, sold ? '' : t('g.need_sold'))}</td>
+      <td class="text-center">${fard}</td>
+      <td class="text-center">${r.sale_status === 'registered' ? '<span class="text-lg" style="color:#2563eb">✔</span>' : ''}</td>
+      <td class="text-slate-500">${L('construction', r.construction_status)}</td></tr>`;
+  }).join('') || `<tr><td colspan="10" class="text-slate-500 text-center py-6">${t('nothing')}</td></tr>`;
+  const all = document.getElementById('g-all');
+  if (all) all.checked = rows.length > 0 && rows.every(r => G.sel.has(r.id));
+  bulkBar();
+}
+
+function gToggle(id, on) { on ? G.sel.add(id) : G.sel.delete(id); gridRender(); }
+function gSelectAll(on) { gridFiltered().forEach(r => on ? G.sel.add(r.id) : G.sel.delete(r.id)); gridRender(); }
+
+function bulkBar() {
+  const el = document.getElementById('g-bulk'); if (!el) return;
+  if (!G.sel.size || !can('accounts')) { el.innerHTML = ''; return; }
+  const rows = S.grid.rows.filter(r => G.sel.has(r.id));
+  const avail = rows.filter(r => r.sale_status === 'available').map(r => r.id), sold = rows.filter(r => r.sale_status === 'sold').map(r => r.id);
+  el.innerHTML = `<div class="card mb-3 flex flex-wrap items-center gap-3 text-sm" style="background:var(--p-soft)">
+    <b>${t('g.selected', { n: G.sel.size })}</b>
+    <button class="btn bg-p" ${avail.length ? '' : 'disabled style="opacity:.4"'} onclick='sellModal(${JSON.stringify(avail)})'>${t('g.sell_selected', { n: avail.length })}</button>
+    <button class="btn bg-orange-600" ${sold.length ? '' : 'disabled style="opacity:.4"'} onclick='payModal(${JSON.stringify(sold)})'>${t('g.pay_selected', { n: sold.length })}</button>
+    <button class="inp" onclick="G.sel.clear();gridRender()">✕ ${t('g.clear_sel')}</button></div>`;
+}
+
+// ---- modals
+function modal(title, body) {
+  document.getElementById('modal').innerHTML = `<div class="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-10 overflow-auto" onclick="if(event.target===this)closeModal()">
+    <div class="card w-full max-w-lg"><div class="flex justify-between items-center mb-3"><h2 class="font-semibold text-lg">${title}</h2>
+      <button class="text-2xl leading-none" onclick="closeModal()">×</button></div>${body}</div></div>`;
+}
+function closeModal() { document.getElementById('modal').innerHTML = ''; }
+const plotNos = ids => ids.map(id => (S.grid.rows.find(r => r.id === id) || {}).plot_no).join(', ');
+
+async function gridAction(ev, op, ids, extra) {
+  ev.preventDefault();
+  const btn = ev.target.querySelector('button[type=submit]'); if (btn) { btn.disabled = true; btn.textContent = t('loading'); }
+  const data = Object.assign(formData(ev.target), extra || {}, { op, plot_ids: ids });
+  if (op === 'sell' && !data.customer_id) {
+    data.new_customer = { name: data.nc_name, father_name: data.nc_father, relation: data.nc_relation, cnic: data.nc_cnic, phone: data.nc_phone };
+  }
+  try {
+    const r = await call('plotAction', data);
+    r.rows.forEach(row => { const i = S.grid.rows.findIndex(x => x.id === row.id); if (i >= 0) S.grid.rows[i] = row; });
+    if (r.customer_id && data.new_customer && !S.grid.customers.some(c => c.id === r.customer_id)) S.grid.customers.push({ id: r.customer_id, label: data.new_customer.name });
+    ids.forEach(id => G.sel.delete(id));
+    closeModal(); gridRender();
+    if (r.errors.length) toast(r.errors.map(e => e.plot_no + ': ' + t(e.code, e.params)).join(' | '), true);
+    else toast(t('g.done_n', { n: r.done.length }));
+  } catch (e) { toast(e.message, true); if (btn) { btn.disabled = false; btn.textContent = t('save'); } }
+  return false;
+}
+
+function sellModal(ids) {
+  if (!ids.length) return;
+  const custs = S.grid.customers;
+  modal(t('g.sell_title', { plots: plotNos(ids) }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "sell", ${JSON.stringify(ids)})'>
+    <div><input type="search" placeholder="${t('g.search_customer')}" class="inp w-full mb-1" oninput="filterCust(this.value)">
+      <select name="customer_id" id="cust-list" size="6" class="inp w-full" onchange="document.getElementById('nc').classList.add('hidden')">
+        ${custs.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select>
+      <a class="link text-xs" onclick="document.getElementById('cust-list').value='';document.getElementById('nc').classList.toggle('hidden')">＋ ${t('c.new')}</a></div>
+    <div id="nc" class="hidden grid grid-cols-2 gap-2 border rounded p-2">
+      <input name="nc_name" placeholder="${t('c.name')}" class="inp col-span-2">
+      <select name="nc_relation" class="inp"><option>s/o</option><option>d/o</option><option>w/o</option></select><input name="nc_father" placeholder="${t('c.father')}" class="inp">
+      <input name="nc_cnic" placeholder="00000-0000000-0" class="inp num"><input name="nc_phone" placeholder="${t('c.phone')}" class="inp num"></div>
+    <div class="flex gap-2"><label class="flex-1">${t('date')}<br>${dateInp()}</label><label class="flex-1">${t('p.file_no')}<br><input name="reference" class="inp w-full"></label></div>
+    <button type="submit" class="btn bg-p w-full">${t('save')}</button></form>`);
+}
+function filterCust(q) {
+  q = q.toLowerCase(); const sel = document.getElementById('cust-list');
+  Array.from(sel.options).forEach(o => { o.hidden = q && !o.text.toLowerCase().includes(q); });
+}
+
+function payModal(ids) {
+  if (!ids.length) return;
+  modal(t('g.pay_title', { plots: plotNos(ids) }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "clearPayment", ${JSON.stringify(ids)})'>
+    <p class="text-slate-500">${t('p.payment_clear_help')}</p>
+    <label>${t('date')}<br>${dateInp()}</label>
+    <label class="flex gap-2 items-center"><input type="checkbox" required> ${t('p.payment_tick')}</label>
+    <button type="submit" class="btn bg-orange-600 w-full">${t('p.payment_clear')}</button></form>`);
+}
+
+function demandModal(id) {
+  const r = S.grid.rows.find(x => x.id === id);
+  modal(t('g.demand_title', { plot: r.plot_no }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "demand", ["${id}"])'>
+    <div class="text-slate-500">${esc(r.customer)} · ${esc(r.size_marla)} M</div>
+    <label>${t('r.mode')}<br><select name="mode" class="inp w-full">${opts('registryMode')}</select></label>
+    <div class="flex gap-2"><label class="flex-1">${t('r.demand_date')}<br>${dateInp('demand_date')}</label>
+      <label class="flex-1">${t('r.maliyat')}<br><input name="maliyat" type="number" min="1" required class="inp w-full num"></label></div>
+    <button type="submit" class="btn bg-purple-700 w-full">${t('r.create')}</button></form>`);
+}
+
+function soldMenu(id) {
+  const r = S.grid.rows.find(x => x.id === id);
+  const canCancel = ['sold', 'payment_cleared'].includes(r.sale_status);
+  modal(t('g.sold_menu', { plot: r.plot_no, name: r.customer }), `<div class="space-y-4 text-sm">
+    ${canCancel ? `<form class="border rounded p-3 space-y-2" onsubmit='return gridAction(event, "cancelSale", ["${id}"])'>
+      <div class="font-medium">${t('p.cancel')}</div>${dateInp()}<input name="notes" placeholder="${t('notes')}" class="inp w-full">
+      <button type="submit" class="btn bg-red-600">${t('p.cancel')}</button></form>` : ''}
+    <form class="border rounded p-3 space-y-2" onsubmit='return gridAction(event, "repurchase", ["${id}"])'>
+      <div class="font-medium">${t('p.repurchase')}</div><p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}
+      <input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><button type="submit" class="btn bg-slate-800">${t('p.repurchase')}</button></form>
+    ${canCancel ? `<button class="inp w-full" onclick="closeModal();go('#/plot/${id}')">${t('g.transfer_open')}</button>` : ''}</div>`);
+}
 
 function dateInp(name, v) { return `<input type="date" name="${name || 'date'}" value="${v || today()}" required class="inp">`; }
 function customerSelect(list) {
@@ -854,6 +1015,7 @@ async function saveRates(ev) {
 
 /** Live totals on the expense form. */
 function afterRender() {
+  if (S.view === 'plots') gridRender();
   document.querySelectorAll('form[id^="exp-"]').forEach(form => {
     const kind = form.id.replace('exp-', '');
     let timer;

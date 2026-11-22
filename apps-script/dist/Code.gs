@@ -141,6 +141,35 @@ var API = {
   } },
   dashboard: { fn: function (u, p) { return Views.dashboard(p.project_id); } },
   plots: { fn: function (u, p) { return Views.plots(p); } },
+  plotGrid: { fn: function (u, p) {
+    return { rows: Views.plotRows(p.project_id), streets: Db.where('Streets', 'project_id', p.project_id).sort(function (a, b) { return num(a.number) - num(b.number); }),
+      customers: Db.all('Customers').map(function (c) { return { id: c.id, label: c.name + (c.father_name ? ' ' + c.relation + ' ' + c.father_name : '') + (c.cnic ? ' (' + c.cnic + ')' : '') + (c.phone ? ' ' + c.phone : '') }; }) };
+  } },
+  /** Grid actions on one or many plots: op = sell | clearPayment | cancelSale | repurchase | demand. Returns fresh rows. */
+  plotAction: { write: true, fn: function (u, p) {
+    var ids = (p.plot_ids || []).map(String), done = [], errors = [], extra = null;
+    Auth.require(u, 'accounts');
+    var customerId = p.customer_id;
+    if (p.op === 'sell' && !customerId && p.new_customer && str(p.new_customer.name)) customerId = Plots.saveCustomer(u, p.new_customer);
+    ids.forEach(function (id) {
+      var plot = Db.find('Plots', id);
+      try {
+        var a = Object.assign({}, p, { plot_id: id, customer_id: customerId });
+        if (p.op === 'sell') Plots.sell(u, a);
+        else if (p.op === 'clearPayment') Plots.clearPayment(u, a);
+        else if (p.op === 'cancelSale') Plots.cancelSale(u, a);
+        else if (p.op === 'repurchase') Plots.repurchase(u, a);
+        else if (p.op === 'demand') extra = Registry.createDemand(u, a);
+        else fail('err.unknown_action');
+        done.push(id);
+      } catch (e) {
+        if (!(e instanceof AppError)) throw e;
+        errors.push({ plot_no: plot ? plot.plot_no : id, code: e.code, params: e.params });
+      }
+    });
+    var projectId = ids.length ? (Db.find('Plots', ids[0]) || {}).project_id : '';
+    return { done: done, errors: errors, case_id: extra, customer_id: customerId || '', rows: projectId ? Views.plotRows(projectId, ids) : [] };
+  } },
   plot: { fn: function (u, p) { return Views.plot(p.id); } },
   customers: { fn: function (u, p) { return Views.customers(p.q); } },
   customer: { fn: function (u, p) { return Views.customer(p.id); } },
@@ -280,8 +309,15 @@ var Db = (function () {
     return all(table).filter(function (r) { return r[field] === value; });
   }
 
+  /** Rows are appended in id order, so the last row holds the highest id (no full read needed). */
   function nextId(table) {
     var max = 0;
+    if (!cache[table]) {
+      var sh = sheet(table), last = sh.getLastRow();
+      if (last <= 1) return '1';
+      var v = parseInt(sh.getRange(last, 1).getValue(), 10);
+      if (!isNaN(v)) return String(v + 1);
+    }
     all(table).forEach(function (r) { var n = parseInt(r.id, 10); if (n > max) max = n; });
     return String(max + 1);
   }
@@ -1455,6 +1491,27 @@ var Views = (function () {
     return { rows: rows, streets: streetList };
   }
 
+  /** Rows for the plots grid. ids (optional) limits to those plots. */
+  function plotRows(projectId, ids) {
+    var only = ids ? {} : null;
+    (ids || []).forEach(function (i) { only[String(i)] = true; });
+    var streets = {};
+    Db.where('Streets', 'project_id', projectId).forEach(function (s) { streets[s.id] = s.number; });
+    var customers = {};
+    Db.all('Customers').forEach(function (c) { customers[c.id] = c; });
+    var openCase = {};
+    Db.all('RegistryCases').forEach(function (c) { if (ENUM.finalCase.indexOf(c.status) < 0) openCase[c.plot_id] = c; });
+    return plotsOf(projectId).filter(function (x) { return !only || only[x.id]; }).sort(natural).map(function (x) {
+      var c = customers[x.current_customer_id], k = openCase[x.id];
+      return {
+        id: x.id, plot_no: x.plot_no, street: streets[x.street_id] || '', street_id: x.street_id, size_marla: x.size_marla,
+        facing: x.facing || '', category: x.category, sale_status: x.sale_status, construction_status: x.construction_status,
+        customer: c ? c.name : '', customer_id: x.current_customer_id || '', cnic: c ? c.cnic : '', phone: c ? c.phone : '',
+        sold_on: x.sold_on, case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
+      };
+    });
+  }
+
   function plot(id) {
     var x = Db.get('Plots', id);
     var c = x.current_customer_id ? Db.find('Customers', x.current_customer_id) : null;
@@ -1552,7 +1609,7 @@ var Views = (function () {
 
   return {
     bootstrap: bootstrap, dashboard: dashboard, plots: plots, plot: plot, customers: customers, customer: customer,
-    land: land, registryList: registryList, registryCase: registryCase, approvals: approvals, approval: approval,
+    plotRows: plotRows, land: land, registryList: registryList, registryCase: registryCase, approvals: approvals, approval: approval,
   };
 })();
 

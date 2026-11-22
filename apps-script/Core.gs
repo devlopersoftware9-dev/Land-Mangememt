@@ -138,6 +138,35 @@ var API = {
   } },
   dashboard: { fn: function (u, p) { return Views.dashboard(p.project_id); } },
   plots: { fn: function (u, p) { return Views.plots(p); } },
+  plotGrid: { fn: function (u, p) {
+    return { rows: Views.plotRows(p.project_id), streets: Db.where('Streets', 'project_id', p.project_id).sort(function (a, b) { return num(a.number) - num(b.number); }),
+      customers: Db.all('Customers').map(function (c) { return { id: c.id, label: c.name + (c.father_name ? ' ' + c.relation + ' ' + c.father_name : '') + (c.cnic ? ' (' + c.cnic + ')' : '') + (c.phone ? ' ' + c.phone : '') }; }) };
+  } },
+  /** Grid actions on one or many plots: op = sell | clearPayment | cancelSale | repurchase | demand. Returns fresh rows. */
+  plotAction: { write: true, fn: function (u, p) {
+    var ids = (p.plot_ids || []).map(String), done = [], errors = [], extra = null;
+    Auth.require(u, 'accounts');
+    var customerId = p.customer_id;
+    if (p.op === 'sell' && !customerId && p.new_customer && str(p.new_customer.name)) customerId = Plots.saveCustomer(u, p.new_customer);
+    ids.forEach(function (id) {
+      var plot = Db.find('Plots', id);
+      try {
+        var a = Object.assign({}, p, { plot_id: id, customer_id: customerId });
+        if (p.op === 'sell') Plots.sell(u, a);
+        else if (p.op === 'clearPayment') Plots.clearPayment(u, a);
+        else if (p.op === 'cancelSale') Plots.cancelSale(u, a);
+        else if (p.op === 'repurchase') Plots.repurchase(u, a);
+        else if (p.op === 'demand') extra = Registry.createDemand(u, a);
+        else fail('err.unknown_action');
+        done.push(id);
+      } catch (e) {
+        if (!(e instanceof AppError)) throw e;
+        errors.push({ plot_no: plot ? plot.plot_no : id, code: e.code, params: e.params });
+      }
+    });
+    var projectId = ids.length ? (Db.find('Plots', ids[0]) || {}).project_id : '';
+    return { done: done, errors: errors, case_id: extra, customer_id: customerId || '', rows: projectId ? Views.plotRows(projectId, ids) : [] };
+  } },
   plot: { fn: function (u, p) { return Views.plot(p.id); } },
   customers: { fn: function (u, p) { return Views.customers(p.q); } },
   customer: { fn: function (u, p) { return Views.customer(p.id); } },

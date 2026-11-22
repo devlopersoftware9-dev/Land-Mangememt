@@ -85,8 +85,15 @@ var Db = (function () {
     return all(table).filter(function (r) { return r[field] === value; });
   }
 
+  /** Rows are appended in id order, so the last row holds the highest id (no full read needed). */
   function nextId(table) {
     var max = 0;
+    if (!cache[table]) {
+      var sh = sheet(table), last = sh.getLastRow();
+      if (last <= 1) return '1';
+      var v = parseInt(sh.getRange(last, 1).getValue(), 10);
+      if (!isNaN(v)) return String(v + 1);
+    }
     all(table).forEach(function (r) { var n = parseInt(r.id, 10); if (n > max) max = n; });
     return String(max + 1);
   }

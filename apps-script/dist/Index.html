@@ -537,7 +537,7 @@ const VIEWS = {};
 VIEWS.dashboard = d => {
   const ms = d.marla_sqft;
   return `<div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">${(S.enums.plotStatus || []).map(s => `
-      <a class="card border-t-4 cursor-pointer" style="border-color:${COLORS[s]}" onclick="S.filters={plots:{status:'${s}'}};go('#/plots')">
+      <a class="card border-t-4 cursor-pointer" style="border-color:${COLORS[s]}" onclick="S.gf={status:'${s}'};go('#/plots')">
         <div class="text-sm text-slate-500">${L('plotStatus', s)}</div><div class="text-2xl font-semibold num">${d.byStatus[s] || 0}</div></a>`).join('')}</div>
   <div class="grid md:grid-cols-2 gap-6">
     <section class="card"><h2 class="font-semibold mb-2">${t('dash.to_verify')} <span class="text-sm text-slate-500">· ${t('dash.waiting', { n: d.waitingDirector })}</span></h2>

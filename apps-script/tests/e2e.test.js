@@ -174,6 +174,21 @@ ok(!apiErr(admin, 'savePlot', { id: p2.id, size_marla: '5' }).ok === false, 'adm
 let threw = false; try { vm.runInContext("Db.update('PlotEvents','1',{notes:'x'})", ctx); } catch (e) { threw = true; } ok(threw, 'PlotEvents cannot be updated');
 
 
+
+// permissions: admin removes 'sell' from accounts -> accounts blocked, then restore
+api(admin, 'savePermissions', { map: { sell: ['registry_officer'] } });
+ok(!apiErr(acc, 'plotAction', { op: 'sell', plot_ids: [plots.find(p => p.plot_no === '24.01').id], customer_id: c1, date: '2026-11-22' }).ok, 'permission removed -> accounts cannot sell');
+ok(api(acc, 'bootstrap', {}).perms.indexOf('sell') < 0, 'bootstrap perms reflect settings');
+ok(api(ro, 'plotAction', { op: 'sell', plot_ids: [plots.find(p => p.plot_no === '24.01').id], customer_id: c1, date: '2026-11-22' }).done.length === 1, 'registry officer now allowed to sell');
+api(admin, 'savePermissions', { map: {} });
+ok(api(acc, 'bootstrap', {}).perms.indexOf('sell') < 0, 'empty map = nobody but admin');
+api(admin, 'savePermissions', { map: { sell: ['accounts'], payment_clear: ['accounts'], fard_demand: ['accounts'], cancel_sale: ['accounts'], repurchase: ['accounts'], transfer: ['accounts'], construction: ['accounts'], customers: ['accounts'], land: ['land_management'], send_approval: ['accounts'], verify_approval: ['accounts'], fard_jari: ['land_management'], fard_received: ['registry_officer'], hand_over_fard: ['registry_officer', 'accounts'], client_registry: ['accounts', 'registry_officer'], expense: ['accounts'], expense_paid: ['accounts'], registry_done: ['registry_officer'], record_in_office: ['accounts', 'registry_officer'], hand_over: ['accounts', 'registry_officer'] } });
+// settings calculator with unsaved rate edit
+const rr = api(admin, 'rates', {}); const tma = rr.find(r => r.code === 'tma_sale_tax');
+const pv1 = api(admin, 'expensePreview', { kind: 'registry_expense', maliyat: 3100000, area_marla: 6.25, buyer_is_filer: true, seller_is_filer: true });
+const pv2 = api(admin, 'expensePreview', { kind: 'registry_expense', maliyat: 3100000, area_marla: 6.25, buyer_is_filer: true, seller_is_filer: true, rates: [{ id: tma.id, rate: '2', fixed_amount: '0' }] });
+ok(pv1.grand_total === 213200 && pv2.grand_total === 213200 + 31000, 'settings calculator uses unsaved edits: ' + pv2.grand_total);
+
 // ---------------- render every screen with real data (EN + UR)
 {
   const ui = { document: { documentElement: {}, getElementById: () => ({ innerHTML: '' }), querySelectorAll: () => [] },
@@ -186,7 +201,7 @@ let threw = false; try { vm.runInContext("Db.update('PlotEvents','1',{notes:'x'}
     dashboard: api(admin, 'dashboard', { project_id: pid }), plots: api(admin, 'plots', { project_id: pid }), plot: api(admin, 'plot', { id: plot.id }),
     registry: api(admin, 'registryList', { project_id: pid }), case: api(admin, 'registryCase', { id: caseId }), approvals: api(admin, 'approvals', { project_id: pid }),
     approval: api(admin, 'approval', { id: cs.approvals[0].id }), customers: api(admin, 'customers', {}), customer: api(admin, 'customer', { id: c1 }),
-    land: api(admin, 'land', { project_id: pid }), settings: [api(admin, 'rates', {}), api(admin, 'getSettings', {}), api(admin, 'users', {})],
+    land: api(admin, 'land', { project_id: pid }), settings: [api(admin, 'rates', {}), api(admin, 'getSettings', {}), api(admin, 'users', {}), api(admin, 'getPermissions', {})],
   };
   for (const lang of ['en', 'ur']) {
     ui.S.lang = lang;

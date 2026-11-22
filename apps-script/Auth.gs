@@ -39,6 +39,24 @@ var Auth = (function () {
     fail('err.not_allowed');
   }
 
+  /** {permission: [roles]} – defaults merged with admin's saved choices. */
+  function permMap() {
+    var saved = {};
+    try { saved = JSON.parse(setting('permissions', '{}') || '{}'); } catch (e) {}
+    var out = {};
+    PERMISSIONS.forEach(function (d) { out[d.key] = saved.hasOwnProperty(d.key) ? saved[d.key] : d.roles; });
+    return out;
+  }
+  function allowed(u, key) {
+    if (u.role === 'admin') return true;
+    return (permMap()[key] || []).indexOf(u.role) >= 0;
+  }
+  function need(u, key) { if (!allowed(u, key)) fail('err.not_allowed'); }
+  function myPerms(u) {
+    var m = permMap();
+    return PERMISSIONS.map(function (d) { return d.key; }).filter(function (k) { return u.role === 'admin' || (m[k] || []).indexOf(u.role) >= 0; });
+  }
+
   function publicUser(u) {
     return { id: u.id, name: u.name, email: u.email, role: u.role, department: u.department, locale: u.locale || 'en', is_active: bool(u.is_active) };
   }
@@ -72,6 +90,7 @@ var Auth = (function () {
 
   return {
     login: login, userFromToken: userFromToken, logout: logout, hasRole: hasRole, require: require,
+    permMap: permMap, allowed: allowed, need: need, myPerms: myPerms,
     publicUser: publicUser, setPassword: setPassword, changePassword: changePassword, saveUser: saveUser,
   };
 })();

@@ -64,6 +64,11 @@
 // ===================================================================== i18n
 const I18N = {
 en: {
+  perm: { sell: 'Sell plot (Sold tick)', payment_clear: 'Payment Clear tick', fard_demand: 'Fard demand', cancel_sale: 'Cancel sale', repurchase: 'Repurchase (wapas liya)',
+    transfer: 'Transfer to another customer', construction: 'Construction status', edit_plot: 'Edit plot details (size, E/W)', customers: 'Add / edit customers',
+    land: 'Land purchase, intiqals, parcels', send_approval: 'Send Fard approval email', verify_approval: 'Check & Verify director reply', fard_jari: 'Select intiqal + Fard Jari',
+    fard_received: 'Fard received', hand_over_fard: 'Hand over fard (Raasta A)', client_registry: 'Record client registry (Raasta A)', expense: 'Registry expense sheet + email',
+    expense_paid: 'Expense Paid tick', registry_done: 'Registry done', record_in_office: 'Record registry in office', hand_over: 'Hand over registry', cancel_case: 'Cancel registry file' },
   g: { sold: 'Sold', payment: 'Payment Clear', fard: 'Fard Demand', registry: 'Registry', clear_filters: 'Clear filters', selected: '{n} selected',
     sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
     sell_title: 'Sell plot {plots}', pay_title: 'Payment Clear: {plots}', demand_title: 'Fard demand – Plot {plot}', sold_menu: 'Plot {plot} – {name}',
@@ -115,7 +120,10 @@ en: {
     help_no: 'Director rejected. On Verify the file goes back so it can be corrected and sent again.',
     resolve: 'Record decision by hand', resolve_help: 'Only if the reply was unclear or from another email, and you confirmed with the director yourself.',
     how_confirmed: 'How was it confirmed? (e.g. phone call 21-11-2026 3pm)', open: 'Open & Check', inbound: 'Emails received' },
-  s: { rates: 'Registry rates', rates_help: 'Change after a budget. Saved expenses keep their old amounts.', filer_rate: 'Rate / Filer', nf_rate: 'Non-filer',
+  s: { calc_amount: 'Total amount (Maliyat) Rs', perms: 'Permissions (who can do what)', perms_help: 'Tick which role may use each checkbox / button. Admin can always do everything.', action: 'Action',
+    group_plots: 'Plots', group_land: 'Land', group_registry: 'Registry',
+    param_base: 'Base Rs', param_upto: 'Upto Rs', param_step: '+ Rs', param_per: 'per Rs', param_free_upto_marla: 'Free upto (marla)',
+    rates: 'Registry rates', rates_help: 'Change after a budget. Saved expenses keep their old amounts.', filer_rate: 'Rate / Filer', nf_rate: 'Non-filer',
     fixed: 'Fixed (Rs)', params: 'Rules', default_on: 'Ticked', active: 'Active', approval: 'Approval email', director_email: 'Director email',
     cc: 'CC (comma separated)', sender_name: 'Sender name', sender_dept: 'Department', link_days: 'Link valid (days)', users: 'Users',
     add_user: '+ Add / edit user', role: 'Role', new_password: 'Password (leave empty to keep)', change_pw: 'Change my password', current_pw: 'Current password' },
@@ -145,6 +153,11 @@ en: {
     history_locked: 'History cannot be edited.', setup_missing: 'Run Setup from the sheet menu first.', unknown_action: 'Unknown action.' },
 },
 ur: {
+  perm: { sell: 'پلاٹ فروخت (Sold ٹک)', payment_clear: 'پیمنٹ کلیئر ٹک', fard_demand: 'فرد ڈیمانڈ', cancel_sale: 'سیل منسوخ', repurchase: 'واپس خریدیں',
+    transfer: 'دوسرے کسٹمر کو منتقلی', construction: 'تعمیر کا اسٹیٹس', edit_plot: 'پلاٹ کی تفصیل (سائز، رخ)', customers: 'کسٹمر شامل / تبدیل',
+    land: 'زمین، انتقالات، رقبے', send_approval: 'فرد منظوری کی ای میل', verify_approval: 'ڈائریکٹر کے جواب کی تصدیق', fard_jari: 'انتقال منتخب + فرد جاری',
+    fard_received: 'فرد وصول', hand_over_fard: 'فرد حوالے (راستہ A)', client_registry: 'کلائنٹ کی رجسٹری درج (راستہ A)', expense: 'رجسٹری اخراجات + ای میل',
+    expense_paid: 'اخراجات ادا ٹک', registry_done: 'رجسٹری ہو گئی', record_in_office: 'رجسٹری دفتر میں درج', hand_over: 'رجسٹری حوالے', cancel_case: 'رجسٹری فائل منسوخ' },
   g: { sold: 'فروخت', payment: 'پیمنٹ کلیئر', fard: 'فرد ڈیمانڈ', registry: 'رجسٹری', clear_filters: 'فلٹر ہٹائیں', selected: '{n} منتخب',
     sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
     sell_title: 'پلاٹ {plots} فروخت کریں', pay_title: 'پیمنٹ کلیئر: {plots}', demand_title: 'فرد ڈیمانڈ – پلاٹ {plot}', sold_menu: 'پلاٹ {plot} – {name}',
@@ -196,7 +209,10 @@ ur: {
     help_no: 'ڈائریکٹر نے نامنظور کیا۔ تصدیق پر فائل درستگی کے لیے واپس آ جائے گی۔',
     resolve: 'فیصلہ ہاتھ سے درج کریں', resolve_help: 'صرف تب، جب جواب واضح نہ ہو یا کسی اور ای میل سے آیا ہو، اور آپ نے خود ڈائریکٹر سے تصدیق کر لی ہو۔',
     how_confirmed: 'تصدیق کیسے ہوئی؟ (مثلاً فون کال 21-11-2026 سہ پہر 3 بجے)', open: 'کھولیں اور چیک کریں', inbound: 'موصول ای میلز' },
-  s: { rates: 'رجسٹری ریٹس', rates_help: 'بجٹ کے بعد یہاں تبدیل کریں۔ پرانے محفوظ اخراجات اپنی رقم پر رہیں گے۔', filer_rate: 'ریٹ / فائلر', nf_rate: 'نان فائلر',
+  s: { calc_amount: 'کل رقم (مالیت) روپے', perms: 'اجازتیں (کون کیا کر سکتا ہے)', perms_help: 'ہر چیک باکس / بٹن کے لیے رول پر ٹک کریں۔ ایڈمن ہمیشہ سب کر سکتا ہے۔', action: 'کام',
+    group_plots: 'پلاٹس', group_land: 'زمین', group_registry: 'رجسٹری',
+    param_base: 'بنیادی رقم', param_upto: 'تک', param_step: '+ روپے', param_per: 'فی', param_free_upto_marla: 'فری (مرلہ تک)',
+    rates: 'رجسٹری ریٹس', rates_help: 'بجٹ کے بعد یہاں تبدیل کریں۔ پرانے محفوظ اخراجات اپنی رقم پر رہیں گے۔', filer_rate: 'ریٹ / فائلر', nf_rate: 'نان فائلر',
     fixed: 'مقررہ رقم', params: 'اصول', default_on: 'پہلے سے ٹک', active: 'فعال', approval: 'منظوری کی ای میل', director_email: 'ڈائریکٹر کی ای میل',
     cc: 'سی سی (کاما سے الگ)', sender_name: 'بھیجنے والے کا نام', sender_dept: 'شعبہ', link_days: 'لنک کی مدت (دن)', users: 'یوزرز',
     add_user: '+ یوزر شامل / تبدیل کریں', role: 'رول', new_password: 'پاس ورڈ (خالی چھوڑیں تو پرانا رہے گا)', change_pw: 'اپنا پاس ورڈ تبدیل کریں', current_pw: 'موجودہ پاس ورڈ' },
@@ -247,6 +263,8 @@ const isTrue = v => v === true || v === 'TRUE' || v === 'true';
 const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 const dmy = s => s ? String(s).slice(0, 10).split('-').reverse().join('-') : '';
 const can = role => S.user && (S.user.role === 'admin' || S.user.role === role);
+/** permission set by admin in Settings > Permissions */
+const allow = k => S.user && (S.user.role === 'admin' || (S.perms || []).includes(k));
 function area(sqft, marla) {
   marla = marla || 270; sqft = num(sqft);
   const tm = Math.floor(sqft / marla + 1e-9), rest = Math.round((sqft - tm * marla) * 100) / 100;
@@ -428,7 +446,7 @@ async function load(keepScroll) {
     customers: () => call('customers', { q: (f.customers || {}).q }),
     customer: () => call('customer', { id: arg }),
     land: () => call('land', { project_id: pid }),
-    settings: () => Promise.all([call('rates'), call('getSettings'), call('users')]),
+    settings: () => Promise.all([call('rates'), call('getSettings'), call('users'), call('getPermissions')]),
   };
   try {
     S.view = name; S.data = await loaders[name]();
@@ -480,7 +498,7 @@ function logout() { call('logout').catch(() => {}); logoutLocal(); }
 async function boot() {
   try {
     const b = await call('bootstrap');
-    S.user = b.user; S.projects = b.projects; S.enums = b.enums; S.unread = b.unread;
+    S.user = b.user; S.projects = b.projects; S.enums = b.enums; S.unread = b.unread; S.perms = b.perms || [];
     if (b.theme) { try { S.defaultTheme = JSON.parse(b.theme); } catch (e) {} } loadTheme();
     if (!S.projectId || !S.projects.some(p => p.id === S.projectId)) S.projectId = (S.projects[0] || {}).id;
     if (b.user.locale && !localStorage.getItem('lm_lang')) S.lang = b.user.locale;
@@ -575,7 +593,7 @@ function gridFiltered() {
 function gridRender() {
   const body = document.getElementById('g-body');
   if (!body || !S.grid) return;
-  const rows = gridFiltered(), acc = can('accounts');
+  const rows = gridFiltered();
   document.getElementById('g-count').textContent = `(${rows.length}${rows.length !== S.grid.rows.length ? ' / ' + S.grid.rows.length : ''})`;
   const box = (checked, enabled, onclick, title) =>
     `<input type="checkbox" class="w-5 h-5 cursor-pointer accent-[var(--p)]" ${checked ? 'checked' : ''} ${enabled ? '' : 'disabled'} title="${esc(title || '')}" onclick="event.preventDefault();${enabled ? onclick : ''}">`;
@@ -583,7 +601,7 @@ function gridRender() {
     const sold = HAS_SOLD.includes(r.sale_status), paid = HAS_PAID.includes(r.sale_status);
     const fard = r.case_id
       ? `<a class="chip cursor-pointer" style="background:#a855f71f;color:#7e22ce;border:1px solid #a855f755" onclick="go('#/case/${r.case_id}')">${esc(L('caseStatus', r.case_status))}</a>`
-      : r.sale_status === 'registered' ? '' : box(false, acc && r.sale_status === 'payment_cleared', `demandModal('${r.id}')`, r.sale_status === 'payment_cleared' ? t('g.fard') : t('g.need_payment'));
+      : r.sale_status === 'registered' ? '' : box(false, allow('fard_demand') && r.sale_status === 'payment_cleared', `demandModal('${r.id}')`, r.sale_status === 'payment_cleared' ? t('g.fard') : t('g.need_payment'));
     return `<tr class="${G.sel.has(r.id) ? 'sel' : ''}">
       <td><input type="checkbox" ${G.sel.has(r.id) ? 'checked' : ''} onclick="gToggle('${r.id}', this.checked)"></td>
       <td><a class="link num font-medium" onclick="go('#/plot/${r.id}')">${esc(r.plot_no)}</a>${r.has_notes ? ' <span title="notes">📝</span>' : ''}
@@ -591,8 +609,8 @@ function gridRender() {
       <td class="num">${r.size_marla ? esc(r.size_marla) + ' M' : '—'}</td>
       <td>${r.facing ? t('p.' + r.facing.toLowerCase()) : '—'}</td>
       <td>${r.customer ? `${esc(r.customer)}<div class="text-xs text-slate-400 num">${esc(r.phone)}</div>` : '<span class="text-slate-300">—</span>'}</td>
-      <td class="text-center">${box(sold, acc && r.sale_status !== 'blocked' && r.sale_status !== 'registry_in_process', sold ? `soldMenu('${r.id}')` : `sellModal(['${r.id}'])`)}</td>
-      <td class="text-center">${box(paid, acc && r.sale_status === 'sold', `payModal(['${r.id}'])`, sold ? '' : t('g.need_sold'))}</td>
+      <td class="text-center">${box(sold, r.sale_status !== 'blocked' && r.sale_status !== 'registry_in_process' && (sold ? (allow('cancel_sale') || allow('repurchase') || allow('transfer')) : allow('sell')), sold ? `soldMenu('${r.id}')` : `sellModal(['${r.id}'])`)}</td>
+      <td class="text-center">${box(paid, allow('payment_clear') && r.sale_status === 'sold', `payModal(['${r.id}'])`, sold ? '' : t('g.need_sold'))}</td>
       <td class="text-center">${fard}</td>
       <td class="text-center">${r.sale_status === 'registered' ? '<span class="text-lg" style="color:#2563eb">✔</span>' : ''}</td>
       <td class="text-slate-500">${L('construction', r.construction_status)}</td></tr>`;
@@ -607,13 +625,13 @@ function gSelectAll(on) { gridFiltered().forEach(r => on ? G.sel.add(r.id) : G.s
 
 function bulkBar() {
   const el = document.getElementById('g-bulk'); if (!el) return;
-  if (!G.sel.size || !can('accounts')) { el.innerHTML = ''; return; }
+  if (!G.sel.size || !(allow('sell') || allow('payment_clear'))) { el.innerHTML = ''; return; }
   const rows = S.grid.rows.filter(r => G.sel.has(r.id));
   const avail = rows.filter(r => r.sale_status === 'available').map(r => r.id), sold = rows.filter(r => r.sale_status === 'sold').map(r => r.id);
   el.innerHTML = `<div class="card mb-3 flex flex-wrap items-center gap-3 text-sm" style="background:var(--p-soft)">
     <b>${t('g.selected', { n: G.sel.size })}</b>
-    <button class="btn bg-p" ${avail.length ? '' : 'disabled style="opacity:.4"'} onclick='sellModal(${JSON.stringify(avail)})'>${t('g.sell_selected', { n: avail.length })}</button>
-    <button class="btn bg-orange-600" ${sold.length ? '' : 'disabled style="opacity:.4"'} onclick='payModal(${JSON.stringify(sold)})'>${t('g.pay_selected', { n: sold.length })}</button>
+    ${allow('sell') ? `<button class="btn bg-p" ${avail.length ? '' : 'disabled style="opacity:.4"'} onclick='sellModal(${JSON.stringify(avail)})'>${t('g.sell_selected', { n: avail.length })}</button>` : ''}
+    ${allow('payment_clear') ? `<button class="btn bg-orange-600" ${sold.length ? '' : 'disabled style="opacity:.4"'} onclick='payModal(${JSON.stringify(sold)})'>${t('g.pay_selected', { n: sold.length })}</button>` : ''}
     <button class="inp" onclick="G.sel.clear();gridRender()">✕ ${t('g.clear_sel')}</button></div>`;
 }
 
@@ -686,15 +704,15 @@ function demandModal(id) {
 
 function soldMenu(id) {
   const r = S.grid.rows.find(x => x.id === id);
-  const canCancel = ['sold', 'payment_cleared'].includes(r.sale_status);
+  const canCancel = ['sold', 'payment_cleared'].includes(r.sale_status) && allow('cancel_sale');
   modal(t('g.sold_menu', { plot: r.plot_no, name: r.customer }), `<div class="space-y-4 text-sm">
     ${canCancel ? `<form class="border rounded p-3 space-y-2" onsubmit='return gridAction(event, "cancelSale", ["${id}"])'>
       <div class="font-medium">${t('p.cancel')}</div>${dateInp()}<input name="notes" placeholder="${t('notes')}" class="inp w-full">
       <button type="submit" class="btn bg-red-600">${t('p.cancel')}</button></form>` : ''}
-    <form class="border rounded p-3 space-y-2" onsubmit='return gridAction(event, "repurchase", ["${id}"])'>
+    ${allow('repurchase') ? `<form class="border rounded p-3 space-y-2" onsubmit='return gridAction(event, "repurchase", ["${id}"])'>
       <div class="font-medium">${t('p.repurchase')}</div><p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}
-      <input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><button type="submit" class="btn bg-slate-800">${t('p.repurchase')}</button></form>
-    ${canCancel ? `<button class="inp w-full" onclick="closeModal();go('#/plot/${id}')">${t('g.transfer_open')}</button>` : ''}</div>`);
+      <input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><button type="submit" class="btn bg-slate-800">${t('p.repurchase')}</button></form>` : ''}
+    ${['sold', 'payment_cleared'].includes(r.sale_status) && allow('transfer') ? `<button class="inp w-full" onclick="closeModal();go('#/plot/${id}')">${t('g.transfer_open')}</button>` : ''}</div>`);
 }
 
 function dateInp(name, v) { return `<input type="date" name="${name || 'date'}" value="${v || today()}" required class="inp">`; }
@@ -704,25 +722,25 @@ function customerSelect(list) {
 }
 
 VIEWS.plot = d => {
-  const p = d.plot, s = p.sale_status, acc = can('accounts');
+  const p = d.plot, s = p.sale_status;
   const box = (title, body, action, extra, confirmMsg, color) => `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'${action}',${esc(JSON.stringify(Object.assign({ plot_id: p.id }, extra || {})))},${confirmMsg ? `{confirm:'${esc(confirmMsg)}'}` : '{}'})">
       <div class="font-medium">${title}</div>${body}<button class="btn ${color || 'bg-p'}">${title}</button></form>`;
   let actions = '';
-  if (acc) {
-    if (s === 'available') actions += box(t('p.sell'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'sell');
-    if (s === 'sold') actions += box(t('p.payment_clear'), `<p class="text-slate-500">${t('p.payment_clear_help')}</p>${dateInp()}<label class="flex gap-2"><input type="checkbox" required> ${t('p.payment_tick')}</label>`, 'clearPayment', null, t('are_you_sure'), 'bg-orange-600');
+  {
+    if (s === 'available' && allow('sell')) actions += box(t('p.sell'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'sell');
+    if (s === 'sold' && allow('payment_clear')) actions += box(t('p.payment_clear'), `<p class="text-slate-500">${t('p.payment_clear_help')}</p>${dateInp()}<label class="flex gap-2"><input type="checkbox" required> ${t('p.payment_tick')}</label>`, 'clearPayment', null, t('are_you_sure'), 'bg-orange-600');
     if (s === 'sold' || s === 'payment_cleared') {
-      actions += box(t('p.transfer'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'transfer', null, null, 'bg-slate-800');
-      actions += box(t('p.cancel'), dateInp() + `<textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'cancelSale', null, t('are_you_sure'), 'bg-red-600');
+      if (allow('transfer')) actions += box(t('p.transfer'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'transfer', null, null, 'bg-slate-800');
+      if (allow('cancel_sale')) actions += box(t('p.cancel'), dateInp() + `<textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'cancelSale', null, t('are_you_sure'), 'bg-red-600');
     }
-    if (['sold', 'payment_cleared', 'registered'].includes(s)) actions += box(t('p.repurchase'), `<p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}<input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'repurchase', null, t('are_you_sure'), 'bg-slate-800');
-    if (s === 'payment_cleared') actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
+    if (['sold', 'payment_cleared', 'registered'].includes(s) && allow('repurchase')) actions += box(t('p.repurchase'), `<p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}<input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'repurchase', null, t('are_you_sure'), 'bg-slate-800');
+    if (s === 'payment_cleared' && allow('fard_demand')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
       <div class="font-medium">${t('r.new_demand')}</div><select name="mode" class="inp w-full">${opts('registryMode')}</select>${dateInp('demand_date')}
       <input name="maliyat" type="number" min="1" required placeholder="${t('r.maliyat')}" class="inp w-full num"><button class="btn bg-purple-700">${t('r.create')}</button></form>`;
-    actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'construction',{plot_id:'${p.id}'})">
+    if (allow('construction')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'construction',{plot_id:'${p.id}'})">
       <div class="font-medium">${t('p.construction')}</div><select name="status" class="inp w-full">${opts('construction', p.construction_status)}</select>${dateInp()}<button class="btn bg-slate-600">${t('save')}</button></form>`;
   }
-  if (can('admin')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'savePlot',{id:'${p.id}'})">
+  if (allow('edit_plot')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'savePlot',{id:'${p.id}'})">
       <div class="font-medium">${t('p.edit')}</div>
       <div class="flex gap-2"><input name="size_marla" value="${esc(p.size_marla)}" placeholder="${t('area.marla')}" class="inp w-24 num"><input name="width_ft" value="${esc(p.width_ft)}" placeholder="W ft" class="inp w-20 num"><input name="depth_ft" value="${esc(p.depth_ft)}" placeholder="D ft" class="inp w-20 num"></div>
       <select name="category" class="inp">${opts('category', p.category)}</select>
@@ -771,7 +789,10 @@ VIEWS.registry = d => {
   </table></div>`;
 };
 
+const STEP_PERM = { send_fard_approval: 'send_approval', fard_jari: 'fard_jari', fard_received: 'fard_received', hand_over_fard: 'hand_over_fard', client_registry: 'client_registry',
+  expense_paid: 'expense_paid', registry_done: 'registry_done', record_in_office: 'record_in_office', hand_over: 'hand_over', cancel: 'cancel_case' };
 function stepForm(caseId, step, body, btn, color, confirmMsg) {
+  if (STEP_PERM[step] && !allow(STEP_PERM[step])) return `<p class="text-slate-500">🔒 ${t('read_only')}</p>`;
   return `<form class="space-y-2" onsubmit="return submitForm(event,'registryStep',{case_id:'${caseId}',step:'${step}'}${confirmMsg ? `,{confirm:'${esc(confirmMsg)}'}` : ''})">${body}<button class="btn ${color || 'bg-purple-700'}">${btn}</button></form>`;
 }
 function registryFields(c) {
@@ -781,6 +802,7 @@ function registryFields(c) {
 }
 
 function expenseForm(d, kind) {
+  if (!allow('expense')) return `<p class="text-slate-500">🔒 ${t('read_only')}</p>`;
   const c = d.case, sellerFiler = d.allocations.length ? d.allocations[0].holder_is_filer : true;
   const rows = d.rates.filter(r => kind !== 'seller_expense' || r.payer === 'seller');
   return `<form id="exp-${kind}" class="space-y-3 mt-2" onsubmit="return submitForm(event,'registryStep',{case_id:'${c.id}',step:'expense_save',kind:'${kind}'},{confirm:'${esc(t('r.confirm_send'))}'})">
@@ -821,7 +843,7 @@ VIEWS.case = d => {
     case 'fard_approval_review': case 'expense_approval_review':
       next = `<p class="mb-2">${t('r.replied')}</p>${d.approvals[0] ? `<button class="btn bg-amber-600" onclick="go('#/approval/${d.approvals[0].id}')">${t('a.open')}</button>` : ''}`; break;
     case 'fard_approved':
-      next = can('land_management') ? stepForm(c.id, 'fard_jari', `<p>${t('r.jari_help', { area: area(c.area_sqft, ms), sqft: c.area_sqft })}</p>
+      next = allow('fard_jari') ? stepForm(c.id, 'fard_jari', `<p>${t('r.jari_help', { area: area(c.area_sqft, ms), sqft: c.area_sqft })}</p>
         <table class="t"><tr><th>${t('land.intiqal_no')}</th><th>${t('land.holder')}</th><th>${t('land.balance')}</th><th>${t('r.take')}</th></tr>
         ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td>${esc(i.holder_name)}</td><td class="num">${area(Math.max(0, i.balance), ms)}</td>
           <td><input type="number" step="0.01" min="0" max="${i.balance}" name="allocations[${i.id}]" class="inp w-32 num" ${i.balance <= 0 ? 'disabled' : ''}></td></tr>`).join('')}</table>
@@ -838,7 +860,7 @@ VIEWS.case = d => {
     case 'registry_recorded': next = stepForm(c.id, 'hand_over', dateInp(), t('r.hand_reg'), 'bg-blue-700'); break;
     default: next = `<p class="text-slate-500">${t('r.closed')}</p>`;
   }
-  if (!['client_registry_recorded', 'handed_over', 'cancelled'].includes(st) && can('admin')) {
+  if (!['client_registry_recorded', 'handed_over', 'cancelled'].includes(st) && allow('cancel_case')) {
     next += `<details class="mt-6"><summary class="text-red-600 cursor-pointer">${t('r.cancel')}</summary>${stepForm(c.id, 'cancel', `<textarea name="reason" required class="inp w-full" placeholder="${t('reason')}"></textarea>`, t('r.cancel'), 'bg-red-600', t('are_you_sure'))}</details>`;
   }
   const line = (k, v) => v ? `<div>${k}: <span class="num">${v}</span></div>` : '';
@@ -880,12 +902,12 @@ VIEWS.approvals = d => {
 VIEWS.approval = d => {
   const a = d.approval;
   let actions = '';
-  if (['director_approved', 'director_rejected'].includes(a.status) && can('accounts')) {
+  if (['director_approved', 'director_rejected'].includes(a.status) && allow('verify_approval')) {
     actions += `<form class="border-t pt-3 space-y-2" onsubmit="return submitForm(event,'verifyApproval',{id:'${a.id}'})">
       <p>${a.status === 'director_approved' ? t('a.help_ok') : t('a.help_no')}</p><textarea name="remarks" class="inp w-full" placeholder="${t('notes')}"></textarea>
       <label class="flex gap-2"><input type="checkbox" required> ${t('a.checked')}</label><button class="btn bg-p">${t('a.verify')}</button></form>`;
   }
-  if (['needs_review', 'sent'].includes(a.status) && can('accounts')) {
+  if (['needs_review', 'sent'].includes(a.status) && allow('verify_approval')) {
     actions += `<details class="border-t pt-3" ${a.status === 'needs_review' ? 'open' : ''}><summary class="cursor-pointer">${t('a.resolve')}</summary>
       <form class="space-y-2 mt-2" onsubmit="return submitForm(event,'resolveApproval',{id:'${a.id}'})"><p class="text-slate-500">${t('a.resolve_help')}</p>
       <select name="decision" class="inp"><option value="approved">${t('a.approved')}</option><option value="rejected">${t('a.rejected')}</option></select>
@@ -916,7 +938,7 @@ VIEWS.customers = d => {
   <form class="flex gap-2 mb-3 text-sm" onsubmit="event.preventDefault();S.filters={customers:formData(this)};load()"><input name="q" value="${esc(f.q || '')}" placeholder="${t('c.search')}" class="inp"><button class="btn bg-slate-800">${t('filter')}</button></form>
   <div class="card p-0 scroll-table mb-6"><table class="t"><tr><th>${t('c.name')}</th><th>${t('c.cnic')}</th><th>${t('c.phone')}</th><th>${t('c.plots')}</th><th>${t('c.filer')}</th></tr>
     ${d.map(c => `<tr class="hover:bg-slate-50"><td><a class="link" onclick="go('#/customer/${c.id}')">${esc(c.label)}</a></td><td class="num">${esc(c.cnic)}</td><td class="num">${esc(c.phone)}</td><td class="num">${c.plots}</td><td>${isTrue(c.is_filer) ? '✔' : ''}</td></tr>`).join('') || `<tr><td colspan="5" class="text-slate-500">${t('nothing')}</td></tr>`}</table></div>
-  ${can('accounts') ? `<section class="card"><h2 class="font-semibold mb-3">${t('c.new')}</h2>
+  ${allow('customers') ? `<section class="card"><h2 class="font-semibold mb-3">${t('c.new')}</h2>
     <form class="grid md:grid-cols-3 gap-3 text-sm" onsubmit="return submitForm(event,'saveCustomer',{})">
       <input name="name" required placeholder="${t('c.name')}" class="inp"><input name="name_ur" dir="rtl" placeholder="${t('c.name_ur')}" class="inp">
       <div class="flex gap-1"><select name="relation" class="inp"><option>s/o</option><option>d/o</option><option>w/o</option></select><input name="father_name" placeholder="${t('c.father')}" class="inp flex-1"></div>
@@ -938,7 +960,7 @@ function areaInputs() {
 }
 
 VIEWS.land = d => {
-  const ms = d.marla_sqft, edit = can('land_management'), pid = S.projectId;
+  const ms = d.marla_sqft, edit = allow('land'), pid = S.projectId;
   const tick = (p, f) => edit ? `<button class="text-lg" title="${esc(p[f + '_at'])}" onclick="call('tickPurchase',{id:'${p.id}',field:'${f}'}).then(()=>load(true)).catch(e=>toast(e.message,true))">${isTrue(p[f]) ? '✅' : '⬜'}</button>` : (isTrue(p[f]) ? '✅' : '⬜');
   return `<h1 class="text-xl font-semibold mb-4">${t('nav.land')}</h1>
   <div class="grid md:grid-cols-4 gap-3 mb-6 text-sm">${[['total', d.area.total], ['non', d.area.non_saleable], ['sale', d.area.saleable], ['unalloc', Math.max(0, d.area.unallocated)]].map(([k, v]) => `<div class="card">${t('area.' + k)}<div class="text-lg font-semibold num">${area(v, ms)}</div></div>`).join('')}</div>
@@ -965,16 +987,33 @@ VIEWS.land = d => {
       <select name="type" class="inp">${opts('parcelType')}</select><input name="name" required placeholder="${t('c.name')}" class="inp">${areaInputs()}<input name="width_ft" type="number" step="0.01" placeholder="${t('land.width')}" class="inp num"><div><button class="btn bg-p">${t('save')}</button></div></form></details>` : ''}</section>`;
 };
 
-VIEWS.settings = ([rates, st, users]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>
+VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>
   <section class="card mb-6"><h2 class="font-semibold mb-1">${t('s.rates')}</h2><p class="text-sm text-slate-500 mb-3">${t('s.rates_help')}</p>
-    <form onsubmit="return saveRates(event)"><div class="overflow-x-auto"><table class="t">
-      <tr><th>${t('r.item')}</th><th>${t('r.payer')}</th><th>${t('s.filer_rate')}</th><th>${t('s.nf_rate')}</th><th>${t('s.fixed')}</th><th>${t('s.params')}</th><th>${t('s.default_on')}</th><th>${t('r.receipt')}</th><th>${t('s.active')}</th></tr>
-      ${rates.map(r => { const ps = r.params ? JSON.parse(r.params) : {}; return `<tr data-id="${r.id}"><td>${esc(S.lang === 'ur' && r.label_ur ? r.label_ur : r.label)}</td><td>${L('payer', r.payer)}</td>
+    <form id="rates-form" onsubmit="return saveRates(event)" oninput="calcRates()">
+    <div class="flex flex-wrap items-end gap-3 mb-4 p-3 rounded" style="background:var(--p-soft)">
+      <label class="text-sm font-medium">${t('s.calc_amount')}<br><input id="calc-maliyat" type="number" value="3100000" class="inp w-40 num text-lg"></label>
+      <label class="text-sm">${t('r.area_marla')}<br><input id="calc-area" type="number" step="0.01" value="6.25" class="inp w-24 num"></label>
+      <label class="text-sm flex items-center gap-1"><input id="calc-bf" type="checkbox" checked> ${t('r.buyer_filer')}</label>
+      <label class="text-sm flex items-center gap-1"><input id="calc-sf" type="checkbox" checked> ${t('r.seller_filer')}</label>
+      <label class="text-sm">${t('r.land_value')}<br><input id="calc-land" type="number" class="inp w-32 num"></label>
+      <div class="ms-auto text-sm text-end"><div>${t('r.buyer_exp')}: <b class="num" id="calc-b">—</b> · ${t('r.seller_exp_col')}: <b class="num" id="calc-s">—</b></div>
+        <div class="text-lg">${t('r.grand')}: <b class="num" id="calc-g">—</b></div></div>
+    </div>
+    <div class="overflow-x-auto"><table class="t">
+      <thead><tr><th>${t('r.item')}</th><th>${t('r.payer')}</th><th>${t('s.filer_rate')}</th><th>${t('s.nf_rate')}</th><th>${t('s.fixed')}</th><th>${t('s.params')}</th><th class="text-end">${t('r.amount')}</th></tr></thead>
+      ${rates.map(r => { const ps = r.params ? JSON.parse(r.params) : {}; return `<tr data-id="${r.id}" class="${isTrue(r.is_active) ? '' : 'opacity-40'}"><td>${esc(S.lang === 'ur' && r.label_ur ? r.label_ur : r.label)}</td><td>${L('payer', r.payer)}</td>
         <td>${['percent', 'percent_filer', 'percent_land'].includes(r.calc_type) ? `<input data-f="rate" value="${esc(r.rate)}" class="inp w-20 num">%` : ''}</td>
         <td>${r.calc_type === 'percent_filer' ? `<input data-f="non_filer_rate" value="${esc(r.non_filer_rate)}" class="inp w-20 num">%` : ''}</td>
         <td>${['fixed', 'percent', 'excise'].includes(r.calc_type) ? `<input data-f="fixed_amount" value="${esc(r.fixed_amount)}" class="inp w-24 num">` : ''}</td>
-        <td class="text-xs">${Object.keys(ps).map(k => `<label class="block">${k} <input data-p="${k}" value="${esc(ps[k])}" class="inp w-24 num"></label>`).join('')}</td>
-        ${['default_on', 'receipt', 'is_active'].map(f => `<td><input type="checkbox" data-f="${f}" ${isTrue(r[f]) ? 'checked' : ''}></td>`).join('')}</tr>`; }).join('')}
+        <td class="text-xs">${Object.keys(ps).map(k => `<label class="block">${t('s.param_' + k)} <input data-p="${k}" value="${esc(ps[k])}" class="inp w-24 num"></label>`).join('')}</td>
+        <td class="text-end num font-medium" data-amt="${r.code}">—</td></tr>`; }).join('')}
+    </table></div><button class="btn bg-p mt-3">${t('save')}</button></form></section>
+  <section class="card mb-6"><h2 class="font-semibold mb-1">${t('s.perms')}</h2><p class="text-sm text-slate-500 mb-3">${t('s.perms_help')}</p>
+    <form onsubmit="return savePerms(event)"><div class="overflow-x-auto"><table class="t">
+      <thead><tr><th>${t('s.action')}</th>${S.enums.roles.map(r => `<th class="text-center">${L('roles', r)}</th>`).join('')}</tr></thead>
+      ${['plots', 'land', 'registry'].map(g => `<tr><td colspan="${S.enums.roles.length + 1}" class="font-semibold" style="background:var(--p-soft)">${t('s.group_' + g)}</td></tr>` +
+        perms.defs.filter(d => d.group === g).map(d => `<tr><td>${t('perm.' + d.key)}</td>${S.enums.roles.map(r => `<td class="text-center">${r === 'admin'
+          ? '<input type="checkbox" checked disabled>' : `<input type="checkbox" data-perm="${d.key}" data-role="${r}" ${(perms.map[d.key] || []).includes(r) ? 'checked' : ''}>`}</td>`).join('')}</tr>`).join('')).join('')}
     </table></div><button class="btn bg-p mt-3">${t('save')}</button></form></section>
   <section class="card mb-6"><h2 class="font-semibold mb-3">${t('s.approval')}</h2>
     <form class="grid md:grid-cols-2 gap-3 text-sm" onsubmit="return submitForm(event,'saveSettings',{})">
@@ -1005,7 +1044,7 @@ async function saveRates(ev) {
   ev.preventDefault();
   const rows = Array.from(ev.target.querySelectorAll('tr[data-id]')).map(tr => {
     const o = { id: tr.dataset.id };
-    tr.querySelectorAll('[data-f]').forEach(i => { o[i.dataset.f] = i.type === 'checkbox' ? i.checked : i.value; });
+    tr.querySelectorAll('[data-f]').forEach(i => { o[i.dataset.f] = i.value; });
     const ps = tr.querySelectorAll('[data-p]'); if (ps.length) { o.params = {}; ps.forEach(i => o.params[i.dataset.p] = num(i.value)); }
     return o;
   });
@@ -1013,9 +1052,42 @@ async function saveRates(ev) {
   return false;
 }
 
+/** Settings: live calculation of every rate line for the test amount (uses unsaved edits too). */
+function rateEdits() {
+  return Array.from(document.querySelectorAll('#rates-form tr[data-id]')).map(tr => {
+    const o = { id: tr.dataset.id };
+    tr.querySelectorAll('[data-f]').forEach(i => { o[i.dataset.f] = i.value; });
+    const ps = tr.querySelectorAll('[data-p]'); if (ps.length) { o.params = {}; ps.forEach(i => o.params[i.dataset.p] = num(i.value)); }
+    return o;
+  });
+}
+function calcRates() {
+  clearTimeout(calcRates._t);
+  calcRates._t = setTimeout(async () => {
+    const v = id => document.getElementById(id);
+    if (!v('calc-maliyat')) return;
+    try {
+      const r = await call('expensePreview', { kind: 'registry_expense', maliyat: v('calc-maliyat').value, area_marla: v('calc-area').value,
+        buyer_is_filer: v('calc-bf').checked, seller_is_filer: v('calc-sf').checked, land_value: v('calc-land').value, rates: rateEdits() });
+      document.querySelectorAll('[data-amt]').forEach(td => td.textContent = '—');
+      r.lines.forEach(l => { const td = document.querySelector(`[data-amt="${l.code}"]`); if (td) td.textContent = fmt(l.amount); });
+      v('calc-b').textContent = fmt(r.buyer_total); v('calc-s').textContent = fmt(r.seller_total); v('calc-g').textContent = 'Rs. ' + fmt(r.grand_total);
+    } catch (e) {}
+  }, 350);
+}
+async function savePerms(ev) {
+  ev.preventDefault();
+  const map = {};
+  (S.data[3].defs || []).forEach(d => map[d.key] = []);
+  ev.target.querySelectorAll('[data-perm]').forEach(i => { if (i.checked) map[i.dataset.perm].push(i.dataset.role); });
+  try { await call('savePermissions', { map }); toast(t('saved')); const b = await call('bootstrap'); S.perms = b.perms || []; } catch (e) { toast(e.message, true); }
+  return false;
+}
+
 /** Live totals on the expense form. */
 function afterRender() {
   if (S.view === 'plots') gridRender();
+  if (S.view === 'settings') calcRates();
   document.querySelectorAll('form[id^="exp-"]').forEach(form => {
     const kind = form.id.replace('exp-', '');
     let timer;

@@ -31,7 +31,7 @@ var Registry = (function () {
 
   // ------------------------------------------------------------ 1. demand
   function createDemand(u, p) {
-    Auth.require(u, 'accounts');
+    Auth.need(u, 'fard_demand');
     var plot = Db.get('Plots', required(p.plot_id, 'plot'));
     if (plot.sale_status !== 'payment_cleared') fail('err.payment_not_cleared', { plot: plot.plot_no });
     if (ENUM.registryMode.indexOf(p.mode) < 0) fail('err.required', { field: 'mode' });
@@ -58,29 +58,29 @@ var Registry = (function () {
     var c = load(p.case_id);
     switch (p.step) {
       case 'send_fard_approval':
-        Auth.require(u, 'accounts'); expect(c, ['demand']);
+        Auth.need(u, 'send_approval'); expect(c, ['demand']);
         Approval.createAndSend(u, c, 'fard', null);
         move(u, c, 'fard_approval_pending');
         return true;
 
       case 'fard_jari':
-        Auth.require(u, 'land_management'); expect(c, ['fard_approved']);
+        Auth.need(u, 'fard_jari'); expect(c, ['fard_approved']);
         return fardJari(u, c, p.allocations || {}, required(p.message, 'message'));
 
       case 'fard_received':
-        Auth.require(u, 'registry_officer'); expect(c, ['fard_jari_issued']);
+        Auth.need(u, 'fard_received'); expect(c, ['fard_jari_issued']);
         Db.update('RegistryCases', c.id, { fard_no: str(p.fard_no), fard_received_on: validDate(p.date, 'date') });
         move(u, c, 'fard_received');
         return true;
 
       case 'hand_over_fard':
-        Auth.require(u, 'registry_officer', 'accounts'); mode(c, 'client_self'); expect(c, ['fard_received']);
+        Auth.need(u, 'hand_over_fard'); mode(c, 'client_self'); expect(c, ['fard_received']);
         Db.update('RegistryCases', c.id, { fard_handed_over_on: validDate(p.date, 'date') });
         move(u, c, 'fard_handed_over');
         return true;
 
       case 'client_registry':
-        Auth.require(u, 'accounts', 'registry_officer'); mode(c, 'client_self'); expect(c, ['fard_handed_over']);
+        Auth.need(u, 'client_registry'); mode(c, 'client_self'); expect(c, ['fard_handed_over']);
         var d1 = validDate(p.registry_date, 'registry_date');
         Db.update('RegistryCases', c.id, { registry_no: required(p.registry_no, 'registry_no'), registry_date: d1, registry_office: str(p.registry_office), registry_copy_url: str(p.registry_copy_url) });
         move(u, c, 'client_registry_recorded');
@@ -91,19 +91,19 @@ var Registry = (function () {
         return saveAndSendExpense(u, c, p);
 
       case 'expense_paid':
-        Auth.require(u, 'accounts'); expect(c, ['expense_approved']);
+        Auth.need(u, 'expense_paid'); expect(c, ['expense_approved']);
         Db.update('RegistryCases', c.id, { expense_paid: true, expense_paid_at: nowIso(), expense_paid_by: u.id });
         move(u, c, 'expense_paid');
         return true;
 
       case 'registry_done':
-        Auth.require(u, 'registry_officer'); expect(c, ['expense_paid']);
+        Auth.need(u, 'registry_done'); expect(c, ['expense_paid']);
         Db.update('RegistryCases', c.id, { registry_no: required(p.registry_no, 'registry_no'), registry_date: validDate(p.registry_date, 'registry_date'), registry_office: str(p.registry_office) });
         move(u, c, 'registry_done');
         return true;
 
       case 'record_in_office':
-        Auth.require(u, 'accounts', 'registry_officer'); expect(c, ['registry_done']);
+        Auth.need(u, 'record_in_office'); expect(c, ['registry_done']);
         var d2 = validDate(p.date, 'date');
         Db.update('RegistryCases', c.id, { registry_recorded_on: d2, buyer_intiqal_no: str(p.buyer_intiqal_no), registry_copy_url: str(p.registry_copy_url) });
         move(u, c, 'registry_recorded');
@@ -111,13 +111,13 @@ var Registry = (function () {
         return true;
 
       case 'hand_over':
-        Auth.require(u, 'accounts', 'registry_officer'); expect(c, ['registry_recorded']);
+        Auth.need(u, 'hand_over'); expect(c, ['registry_recorded']);
         Db.update('RegistryCases', c.id, { handed_over_on: validDate(p.date, 'date') });
         move(u, c, 'handed_over');
         return true;
 
       case 'cancel':
-        Auth.require(u, 'admin');
+        Auth.need(u, 'cancel_case');
         if (ENUM.finalCase.indexOf(c.status) >= 0) fail('err.case_closed');
         var reason = required(p.reason, 'reason');
         Db.update('RegistryCases', c.id, { notes: (c.notes ? c.notes + '\n' : '') + 'Cancelled: ' + reason });
@@ -160,13 +160,26 @@ var Registry = (function () {
     };
   }
 
+  /** Live calculation. p.rates (optional) = unsaved edits from the Settings page, merged over saved rates. */
   function expensePreview(p) {
-    return ExpenseCalc.calculate(Db.all('Rates'), expenseInput(p));
+    var rates = Db.all('Rates');
+    if (p.rates && p.rates.length) {
+      var edits = {};
+      p.rates.forEach(function (r) { edits[String(r.id)] = r; });
+      rates = rates.map(function (r) {
+        var e = edits[r.id]; if (!e) return r;
+        return Object.assign({}, r, {
+          rate: e.rate !== undefined ? e.rate : r.rate, non_filer_rate: e.non_filer_rate !== undefined ? e.non_filer_rate : r.non_filer_rate,
+          fixed_amount: e.fixed_amount !== undefined ? e.fixed_amount : r.fixed_amount, params: e.params ? JSON.stringify(e.params) : r.params,
+        });
+      });
+    }
+    return ExpenseCalc.calculate(rates, expenseInput(p));
   }
 
   /** Save the expense sheet and email it to the director (same as the Google Sheet button). */
   function saveAndSendExpense(u, c, p) {
-    Auth.require(u, 'accounts');
+    Auth.need(u, 'expense');
     var input = expenseInput(p);
     if (input.maliyat <= 0) fail('err.maliyat');
     if (input.kind === 'registry_expense') { mode(c, 'company_managed'); expect(c, ['fard_received']); }
@@ -208,7 +221,7 @@ var Registry = (function () {
 
   /** "Check & Review": our user confirms the director's decision; only then the file moves. */
   function verifyApproval(u, id, remarks) {
-    Auth.require(u, 'accounts');
+    Auth.need(u, 'verify_approval');
     var a = Db.get('Approvals', id);
     if (a.status === 'needs_review') fail('err.needs_manual');
     if (['director_approved', 'director_rejected'].indexOf(a.status) < 0) fail('err.nothing_to_verify');
@@ -223,7 +236,7 @@ var Registry = (function () {
 
   /** Unclear reply: user confirmed with the director (phone etc.) and records it by hand. */
   function resolveManually(u, id, decision, remarks) {
-    Auth.require(u, 'accounts');
+    Auth.need(u, 'verify_approval');
     var a = Db.get('Approvals', id);
     if (['sent', 'needs_review'].indexOf(a.status) < 0) fail('err.nothing_to_verify');
     Approval.recordDecision(a, decision === 'approved' ? 'approved' : 'rejected', 'manual', u.email, required(remarks, 'remarks'), true);

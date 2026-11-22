@@ -63,6 +63,7 @@ var Views = (function () {
       enums: ENUM,
       unread: unread,
       theme: setting('theme', ''),
+      perms: Auth.myPerms(u),
     };
   }
 

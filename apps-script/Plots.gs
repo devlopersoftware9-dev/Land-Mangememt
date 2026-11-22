@@ -232,10 +232,9 @@ var Settings = (function () {
   function saveRates(u, rows) {
     (rows || []).forEach(function (r) {
       var rec = Db.get('Rates', r.id);
-      var patch = {
-        rate: str(r.rate), non_filer_rate: str(r.non_filer_rate), fixed_amount: str(r.fixed_amount),
-        default_on: bool(r.default_on), receipt: bool(r.receipt), is_active: bool(r.is_active),
-      };
+      var patch = {};
+      ['rate', 'non_filer_rate', 'fixed_amount'].forEach(function (k) { if (r.hasOwnProperty(k)) patch[k] = str(r[k]); });
+      ['default_on', 'receipt', 'is_active'].forEach(function (k) { if (r.hasOwnProperty(k)) patch[k] = bool(r[k]); });
       if (r.params) patch.params = JSON.stringify(r.params);
       Db.update('Rates', rec.id, patch);
     });

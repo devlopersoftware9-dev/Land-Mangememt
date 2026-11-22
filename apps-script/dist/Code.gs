@@ -30,6 +30,36 @@ var CASE_ACTOR = {
   registry_recorded: 'registry_officer',
 };
 
+
+/**
+ * Role permissions. Admin can change who may do what in Settings > Permissions
+ * (stored in the Settings tab as JSON). Admin is always allowed.
+ */
+var PERMISSIONS = [
+  { key: 'sell', group: 'plots', roles: ['accounts'] },
+  { key: 'payment_clear', group: 'plots', roles: ['accounts'] },
+  { key: 'fard_demand', group: 'plots', roles: ['accounts'] },
+  { key: 'cancel_sale', group: 'plots', roles: ['accounts'] },
+  { key: 'repurchase', group: 'plots', roles: ['accounts'] },
+  { key: 'transfer', group: 'plots', roles: ['accounts'] },
+  { key: 'construction', group: 'plots', roles: ['accounts'] },
+  { key: 'edit_plot', group: 'plots', roles: [] },
+  { key: 'customers', group: 'plots', roles: ['accounts'] },
+  { key: 'land', group: 'land', roles: ['land_management'] },
+  { key: 'send_approval', group: 'registry', roles: ['accounts'] },
+  { key: 'verify_approval', group: 'registry', roles: ['accounts'] },
+  { key: 'fard_jari', group: 'registry', roles: ['land_management'] },
+  { key: 'fard_received', group: 'registry', roles: ['registry_officer'] },
+  { key: 'hand_over_fard', group: 'registry', roles: ['registry_officer', 'accounts'] },
+  { key: 'client_registry', group: 'registry', roles: ['accounts', 'registry_officer'] },
+  { key: 'expense', group: 'registry', roles: ['accounts'] },
+  { key: 'expense_paid', group: 'registry', roles: ['accounts'] },
+  { key: 'registry_done', group: 'registry', roles: ['registry_officer'] },
+  { key: 'record_in_office', group: 'registry', roles: ['accounts', 'registry_officer'] },
+  { key: 'hand_over', group: 'registry', roles: ['accounts', 'registry_officer'] },
+  { key: 'cancel_case', group: 'registry', roles: [] },
+];
+
 /** Error with a translation code; the UI shows t(code, params). */
 function AppError(code, params) {
   this.name = 'AppError';
@@ -148,7 +178,7 @@ var API = {
   /** Grid actions on one or many plots: op = sell | clearPayment | cancelSale | repurchase | demand. Returns fresh rows. */
   plotAction: { write: true, fn: function (u, p) {
     var ids = (p.plot_ids || []).map(String), done = [], errors = [], extra = null;
-    Auth.require(u, 'accounts');
+    Auth.need(u, { sell: 'sell', clearPayment: 'payment_clear', cancelSale: 'cancel_sale', repurchase: 'repurchase', demand: 'fard_demand' }[p.op] || 'none');
     var customerId = p.customer_id;
     if (p.op === 'sell' && !customerId && p.new_customer && str(p.new_customer.name)) customerId = Plots.saveCustomer(u, p.new_customer);
     ids.forEach(function (id) {
@@ -182,20 +212,20 @@ var API = {
   users: { fn: function (u) { Auth.require(u, 'admin'); return Db.all('Users').map(Auth.publicUser); } },
 
   // plots
-  sell: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.sell(u, p); } },
-  clearPayment: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.clearPayment(u, p); } },
-  transfer: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.transfer(u, p); } },
-  cancelSale: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.cancelSale(u, p); } },
-  repurchase: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.repurchase(u, p); } },
-  construction: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.construction(u, p); } },
-  savePlot: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); return Plots.savePlot(u, p); } },
-  saveCustomer: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.saveCustomer(u, p); } },
+  sell: { write: true, fn: function (u, p) { Auth.need(u, 'sell'); return Plots.sell(u, p); } },
+  clearPayment: { write: true, fn: function (u, p) { Auth.need(u, 'payment_clear'); return Plots.clearPayment(u, p); } },
+  transfer: { write: true, fn: function (u, p) { Auth.need(u, 'transfer'); return Plots.transfer(u, p); } },
+  cancelSale: { write: true, fn: function (u, p) { Auth.need(u, 'cancel_sale'); return Plots.cancelSale(u, p); } },
+  repurchase: { write: true, fn: function (u, p) { Auth.need(u, 'repurchase'); return Plots.repurchase(u, p); } },
+  construction: { write: true, fn: function (u, p) { Auth.need(u, 'construction'); return Plots.construction(u, p); } },
+  savePlot: { write: true, fn: function (u, p) { Auth.need(u, 'edit_plot'); return Plots.savePlot(u, p); } },
+  saveCustomer: { write: true, fn: function (u, p) { Auth.need(u, 'customers'); return Plots.saveCustomer(u, p); } },
 
   // land
-  savePurchase: { write: true, fn: function (u, p) { Auth.require(u, 'land_management'); return Land.savePurchase(u, p); } },
-  tickPurchase: { write: true, fn: function (u, p) { Auth.require(u, 'land_management'); return Land.tickPurchase(u, p); } },
-  saveIntiqal: { write: true, fn: function (u, p) { Auth.require(u, 'land_management'); return Land.saveIntiqal(u, p); } },
-  saveParcel: { write: true, fn: function (u, p) { Auth.require(u, 'land_management'); return Land.saveParcel(u, p); } },
+  savePurchase: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.savePurchase(u, p); } },
+  tickPurchase: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.tickPurchase(u, p); } },
+  saveIntiqal: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveIntiqal(u, p); } },
+  saveParcel: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveParcel(u, p); } },
 
   // registry
   createDemand: { write: true, fn: function (u, p) { return Registry.createDemand(u, p); } },
@@ -212,6 +242,15 @@ var API = {
   saveTheme: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); Db.setSetting('theme', JSON.stringify(p.theme || {})); audit(u, 'theme.saved', 'Settings', '', p.theme); return true; } },
   saveSettings: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); return Settings.save(u, p); } },
   getSettings: { fn: function (u) { Auth.require(u, 'admin'); return Settings.get(); } },
+  getPermissions: { fn: function (u) { Auth.require(u, 'admin'); return { defs: PERMISSIONS, map: Auth.permMap() }; } },
+  savePermissions: { write: true, fn: function (u, p) {
+    Auth.require(u, 'admin');
+    var clean = {};
+    PERMISSIONS.forEach(function (d) { clean[d.key] = (p.map && p.map[d.key] || []).filter(function (r) { return ENUM.roles.indexOf(r) >= 0 && r !== 'admin'; }); });
+    Db.setSetting('permissions', JSON.stringify(clean));
+    audit(u, 'permissions.saved', 'Settings', '', clean);
+    return true;
+  } },
 };
 
 function audit(user, action, table, id, details) {
@@ -433,6 +472,24 @@ var Auth = (function () {
     fail('err.not_allowed');
   }
 
+  /** {permission: [roles]} – defaults merged with admin's saved choices. */
+  function permMap() {
+    var saved = {};
+    try { saved = JSON.parse(setting('permissions', '{}') || '{}'); } catch (e) {}
+    var out = {};
+    PERMISSIONS.forEach(function (d) { out[d.key] = saved.hasOwnProperty(d.key) ? saved[d.key] : d.roles; });
+    return out;
+  }
+  function allowed(u, key) {
+    if (u.role === 'admin') return true;
+    return (permMap()[key] || []).indexOf(u.role) >= 0;
+  }
+  function need(u, key) { if (!allowed(u, key)) fail('err.not_allowed'); }
+  function myPerms(u) {
+    var m = permMap();
+    return PERMISSIONS.map(function (d) { return d.key; }).filter(function (k) { return u.role === 'admin' || (m[k] || []).indexOf(u.role) >= 0; });
+  }
+
   function publicUser(u) {
     return { id: u.id, name: u.name, email: u.email, role: u.role, department: u.department, locale: u.locale || 'en', is_active: bool(u.is_active) };
   }
@@ -466,6 +523,7 @@ var Auth = (function () {
 
   return {
     login: login, userFromToken: userFromToken, logout: logout, hasRole: hasRole, require: require,
+    permMap: permMap, allowed: allowed, need: need, myPerms: myPerms,
     publicUser: publicUser, setPassword: setPassword, changePassword: changePassword, saveUser: saveUser,
   };
 })();
@@ -858,10 +916,9 @@ var Settings = (function () {
   function saveRates(u, rows) {
     (rows || []).forEach(function (r) {
       var rec = Db.get('Rates', r.id);
-      var patch = {
-        rate: str(r.rate), non_filer_rate: str(r.non_filer_rate), fixed_amount: str(r.fixed_amount),
-        default_on: bool(r.default_on), receipt: bool(r.receipt), is_active: bool(r.is_active),
-      };
+      var patch = {};
+      ['rate', 'non_filer_rate', 'fixed_amount'].forEach(function (k) { if (r.hasOwnProperty(k)) patch[k] = str(r[k]); });
+      ['default_on', 'receipt', 'is_active'].forEach(function (k) { if (r.hasOwnProperty(k)) patch[k] = bool(r[k]); });
       if (r.params) patch.params = JSON.stringify(r.params);
       Db.update('Rates', rec.id, patch);
     });
@@ -906,7 +963,7 @@ var Registry = (function () {
 
   // ------------------------------------------------------------ 1. demand
   function createDemand(u, p) {
-    Auth.require(u, 'accounts');
+    Auth.need(u, 'fard_demand');
     var plot = Db.get('Plots', required(p.plot_id, 'plot'));
     if (plot.sale_status !== 'payment_cleared') fail('err.payment_not_cleared', { plot: plot.plot_no });
     if (ENUM.registryMode.indexOf(p.mode) < 0) fail('err.required', { field: 'mode' });
@@ -933,29 +990,29 @@ var Registry = (function () {
     var c = load(p.case_id);
     switch (p.step) {
       case 'send_fard_approval':
-        Auth.require(u, 'accounts'); expect(c, ['demand']);
+        Auth.need(u, 'send_approval'); expect(c, ['demand']);
         Approval.createAndSend(u, c, 'fard', null);
         move(u, c, 'fard_approval_pending');
         return true;
 
       case 'fard_jari':
-        Auth.require(u, 'land_management'); expect(c, ['fard_approved']);
+        Auth.need(u, 'fard_jari'); expect(c, ['fard_approved']);
         return fardJari(u, c, p.allocations || {}, required(p.message, 'message'));
 
       case 'fard_received':
-        Auth.require(u, 'registry_officer'); expect(c, ['fard_jari_issued']);
+        Auth.need(u, 'fard_received'); expect(c, ['fard_jari_issued']);
         Db.update('RegistryCases', c.id, { fard_no: str(p.fard_no), fard_received_on: validDate(p.date, 'date') });
         move(u, c, 'fard_received');
         return true;
 
       case 'hand_over_fard':
-        Auth.require(u, 'registry_officer', 'accounts'); mode(c, 'client_self'); expect(c, ['fard_received']);
+        Auth.need(u, 'hand_over_fard'); mode(c, 'client_self'); expect(c, ['fard_received']);
         Db.update('RegistryCases', c.id, { fard_handed_over_on: validDate(p.date, 'date') });
         move(u, c, 'fard_handed_over');
         return true;
 
       case 'client_registry':
-        Auth.require(u, 'accounts', 'registry_officer'); mode(c, 'client_self'); expect(c, ['fard_handed_over']);
+        Auth.need(u, 'client_registry'); mode(c, 'client_self'); expect(c, ['fard_handed_over']);
         var d1 = validDate(p.registry_date, 'registry_date');
         Db.update('RegistryCases', c.id, { registry_no: required(p.registry_no, 'registry_no'), registry_date: d1, registry_office: str(p.registry_office), registry_copy_url: str(p.registry_copy_url) });
         move(u, c, 'client_registry_recorded');
@@ -966,19 +1023,19 @@ var Registry = (function () {
         return saveAndSendExpense(u, c, p);
 
       case 'expense_paid':
-        Auth.require(u, 'accounts'); expect(c, ['expense_approved']);
+        Auth.need(u, 'expense_paid'); expect(c, ['expense_approved']);
         Db.update('RegistryCases', c.id, { expense_paid: true, expense_paid_at: nowIso(), expense_paid_by: u.id });
         move(u, c, 'expense_paid');
         return true;
 
       case 'registry_done':
-        Auth.require(u, 'registry_officer'); expect(c, ['expense_paid']);
+        Auth.need(u, 'registry_done'); expect(c, ['expense_paid']);
         Db.update('RegistryCases', c.id, { registry_no: required(p.registry_no, 'registry_no'), registry_date: validDate(p.registry_date, 'registry_date'), registry_office: str(p.registry_office) });
         move(u, c, 'registry_done');
         return true;
 
       case 'record_in_office':
-        Auth.require(u, 'accounts', 'registry_officer'); expect(c, ['registry_done']);
+        Auth.need(u, 'record_in_office'); expect(c, ['registry_done']);
         var d2 = validDate(p.date, 'date');
         Db.update('RegistryCases', c.id, { registry_recorded_on: d2, buyer_intiqal_no: str(p.buyer_intiqal_no), registry_copy_url: str(p.registry_copy_url) });
         move(u, c, 'registry_recorded');
@@ -986,13 +1043,13 @@ var Registry = (function () {
         return true;
 
       case 'hand_over':
-        Auth.require(u, 'accounts', 'registry_officer'); expect(c, ['registry_recorded']);
+        Auth.need(u, 'hand_over'); expect(c, ['registry_recorded']);
         Db.update('RegistryCases', c.id, { handed_over_on: validDate(p.date, 'date') });
         move(u, c, 'handed_over');
         return true;
 
       case 'cancel':
-        Auth.require(u, 'admin');
+        Auth.need(u, 'cancel_case');
         if (ENUM.finalCase.indexOf(c.status) >= 0) fail('err.case_closed');
         var reason = required(p.reason, 'reason');
         Db.update('RegistryCases', c.id, { notes: (c.notes ? c.notes + '\n' : '') + 'Cancelled: ' + reason });
@@ -1035,13 +1092,26 @@ var Registry = (function () {
     };
   }
 
+  /** Live calculation. p.rates (optional) = unsaved edits from the Settings page, merged over saved rates. */
   function expensePreview(p) {
-    return ExpenseCalc.calculate(Db.all('Rates'), expenseInput(p));
+    var rates = Db.all('Rates');
+    if (p.rates && p.rates.length) {
+      var edits = {};
+      p.rates.forEach(function (r) { edits[String(r.id)] = r; });
+      rates = rates.map(function (r) {
+        var e = edits[r.id]; if (!e) return r;
+        return Object.assign({}, r, {
+          rate: e.rate !== undefined ? e.rate : r.rate, non_filer_rate: e.non_filer_rate !== undefined ? e.non_filer_rate : r.non_filer_rate,
+          fixed_amount: e.fixed_amount !== undefined ? e.fixed_amount : r.fixed_amount, params: e.params ? JSON.stringify(e.params) : r.params,
+        });
+      });
+    }
+    return ExpenseCalc.calculate(rates, expenseInput(p));
   }
 
   /** Save the expense sheet and email it to the director (same as the Google Sheet button). */
   function saveAndSendExpense(u, c, p) {
-    Auth.require(u, 'accounts');
+    Auth.need(u, 'expense');
     var input = expenseInput(p);
     if (input.maliyat <= 0) fail('err.maliyat');
     if (input.kind === 'registry_expense') { mode(c, 'company_managed'); expect(c, ['fard_received']); }
@@ -1083,7 +1153,7 @@ var Registry = (function () {
 
   /** "Check & Review": our user confirms the director's decision; only then the file moves. */
   function verifyApproval(u, id, remarks) {
-    Auth.require(u, 'accounts');
+    Auth.need(u, 'verify_approval');
     var a = Db.get('Approvals', id);
     if (a.status === 'needs_review') fail('err.needs_manual');
     if (['director_approved', 'director_rejected'].indexOf(a.status) < 0) fail('err.nothing_to_verify');
@@ -1098,7 +1168,7 @@ var Registry = (function () {
 
   /** Unclear reply: user confirmed with the director (phone etc.) and records it by hand. */
   function resolveManually(u, id, decision, remarks) {
-    Auth.require(u, 'accounts');
+    Auth.need(u, 'verify_approval');
     var a = Db.get('Approvals', id);
     if (['sent', 'needs_review'].indexOf(a.status) < 0) fail('err.nothing_to_verify');
     Approval.recordDecision(a, decision === 'approved' ? 'approved' : 'rejected', 'manual', u.email, required(remarks, 'remarks'), true);
@@ -1442,6 +1512,7 @@ var Views = (function () {
       enums: ENUM,
       unread: unread,
       theme: setting('theme', ''),
+      perms: Auth.myPerms(u),
     };
   }
 

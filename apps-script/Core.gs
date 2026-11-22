@@ -27,6 +27,36 @@ var CASE_ACTOR = {
   registry_recorded: 'registry_officer',
 };
 
+
+/**
+ * Role permissions. Admin can change who may do what in Settings > Permissions
+ * (stored in the Settings tab as JSON). Admin is always allowed.
+ */
+var PERMISSIONS = [
+  { key: 'sell', group: 'plots', roles: ['accounts'] },
+  { key: 'payment_clear', group: 'plots', roles: ['accounts'] },
+  { key: 'fard_demand', group: 'plots', roles: ['accounts'] },
+  { key: 'cancel_sale', group: 'plots', roles: ['accounts'] },
+  { key: 'repurchase', group: 'plots', roles: ['accounts'] },
+  { key: 'transfer', group: 'plots', roles: ['accounts'] },
+  { key: 'construction', group: 'plots', roles: ['accounts'] },
+  { key: 'edit_plot', group: 'plots', roles: [] },
+  { key: 'customers', group: 'plots', roles: ['accounts'] },
+  { key: 'land', group: 'land', roles: ['land_management'] },
+  { key: 'send_approval', group: 'registry', roles: ['accounts'] },
+  { key: 'verify_approval', group: 'registry', roles: ['accounts'] },
+  { key: 'fard_jari', group: 'registry', roles: ['land_management'] },
+  { key: 'fard_received', group: 'registry', roles: ['registry_officer'] },
+  { key: 'hand_over_fard', group: 'registry', roles: ['registry_officer', 'accounts'] },
+  { key: 'client_registry', group: 'registry', roles: ['accounts', 'registry_officer'] },
+  { key: 'expense', group: 'registry', roles: ['accounts'] },
+  { key: 'expense_paid', group: 'registry', roles: ['accounts'] },
+  { key: 'registry_done', group: 'registry', roles: ['registry_officer'] },
+  { key: 'record_in_office', group: 'registry', roles: ['accounts', 'registry_officer'] },
+  { key: 'hand_over', group: 'registry', roles: ['accounts', 'registry_officer'] },
+  { key: 'cancel_case', group: 'registry', roles: [] },
+];
+
 /** Error with a translation code; the UI shows t(code, params). */
 function AppError(code, params) {
   this.name = 'AppError';
@@ -145,7 +175,7 @@ var API = {
   /** Grid actions on one or many plots: op = sell | clearPayment | cancelSale | repurchase | demand. Returns fresh rows. */
   plotAction: { write: true, fn: function (u, p) {
     var ids = (p.plot_ids || []).map(String), done = [], errors = [], extra = null;
-    Auth.require(u, 'accounts');
+    Auth.need(u, { sell: 'sell', clearPayment: 'payment_clear', cancelSale: 'cancel_sale', repurchase: 'repurchase', demand: 'fard_demand' }[p.op] || 'none');
     var customerId = p.customer_id;
     if (p.op === 'sell' && !customerId && p.new_customer && str(p.new_customer.name)) customerId = Plots.saveCustomer(u, p.new_customer);
     ids.forEach(function (id) {
@@ -179,20 +209,20 @@ var API = {
   users: { fn: function (u) { Auth.require(u, 'admin'); return Db.all('Users').map(Auth.publicUser); } },
 
   // plots
-  sell: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.sell(u, p); } },
-  clearPayment: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.clearPayment(u, p); } },
-  transfer: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.transfer(u, p); } },
-  cancelSale: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.cancelSale(u, p); } },
-  repurchase: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.repurchase(u, p); } },
-  construction: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.construction(u, p); } },
-  savePlot: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); return Plots.savePlot(u, p); } },
-  saveCustomer: { write: true, fn: function (u, p) { Auth.require(u, 'accounts'); return Plots.saveCustomer(u, p); } },
+  sell: { write: true, fn: function (u, p) { Auth.need(u, 'sell'); return Plots.sell(u, p); } },
+  clearPayment: { write: true, fn: function (u, p) { Auth.need(u, 'payment_clear'); return Plots.clearPayment(u, p); } },
+  transfer: { write: true, fn: function (u, p) { Auth.need(u, 'transfer'); return Plots.transfer(u, p); } },
+  cancelSale: { write: true, fn: function (u, p) { Auth.need(u, 'cancel_sale'); return Plots.cancelSale(u, p); } },
+  repurchase: { write: true, fn: function (u, p) { Auth.need(u, 'repurchase'); return Plots.repurchase(u, p); } },
+  construction: { write: true, fn: function (u, p) { Auth.need(u, 'construction'); return Plots.construction(u, p); } },
+  savePlot: { write: true, fn: function (u, p) { Auth.need(u, 'edit_plot'); return Plots.savePlot(u, p); } },
+  saveCustomer: { write: true, fn: function (u, p) { Auth.need(u, 'customers'); return Plots.saveCustomer(u, p); } },
 
   // land
-  savePurchase: { write: true, fn: function (u, p) { Auth.require(u, 'land_management'); return Land.savePurchase(u, p); } },
-  tickPurchase: { write: true, fn: function (u, p) { Auth.require(u, 'land_management'); return Land.tickPurchase(u, p); } },
-  saveIntiqal: { write: true, fn: function (u, p) { Auth.require(u, 'land_management'); return Land.saveIntiqal(u, p); } },
-  saveParcel: { write: true, fn: function (u, p) { Auth.require(u, 'land_management'); return Land.saveParcel(u, p); } },
+  savePurchase: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.savePurchase(u, p); } },
+  tickPurchase: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.tickPurchase(u, p); } },
+  saveIntiqal: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveIntiqal(u, p); } },
+  saveParcel: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveParcel(u, p); } },
 
   // registry
   createDemand: { write: true, fn: function (u, p) { return Registry.createDemand(u, p); } },
@@ -209,6 +239,15 @@ var API = {
   saveTheme: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); Db.setSetting('theme', JSON.stringify(p.theme || {})); audit(u, 'theme.saved', 'Settings', '', p.theme); return true; } },
   saveSettings: { write: true, fn: function (u, p) { Auth.require(u, 'admin'); return Settings.save(u, p); } },
   getSettings: { fn: function (u) { Auth.require(u, 'admin'); return Settings.get(); } },
+  getPermissions: { fn: function (u) { Auth.require(u, 'admin'); return { defs: PERMISSIONS, map: Auth.permMap() }; } },
+  savePermissions: { write: true, fn: function (u, p) {
+    Auth.require(u, 'admin');
+    var clean = {};
+    PERMISSIONS.forEach(function (d) { clean[d.key] = (p.map && p.map[d.key] || []).filter(function (r) { return ENUM.roles.indexOf(r) >= 0 && r !== 'admin'; }); });
+    Db.setSetting('permissions', JSON.stringify(clean));
+    audit(u, 'permissions.saved', 'Settings', '', clean);
+    return true;
+  } },
 };
 
 function audit(user, action, table, id, details) {

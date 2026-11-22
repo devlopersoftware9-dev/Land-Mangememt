@@ -46,7 +46,7 @@ const ctx = {
   HtmlService: {},
 };
 vm.createContext(ctx);
-for (const f of ['Core.gs', 'Db.gs', 'Auth.gs', 'Expense.gs', 'Parser.gs', 'Plots.gs', 'Registry.gs', 'Approval.gs', 'Views.gs', 'Setup.gs']) {
+for (const f of ['Core.gs', 'Db.gs', 'Auth.gs', 'Expense.gs', 'Parser.gs', 'Plots.gs', 'Registry.gs', 'Approval.gs', 'Views.gs', 'Setup.gs', 'Import.gs']) {
   vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), ctx, { filename: f });
 }
 

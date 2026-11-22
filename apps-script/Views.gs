@@ -105,7 +105,7 @@ var Views = (function () {
       return {
         id: x.id, plot_no: x.plot_no, street: streets[x.street_id] || '', size_marla: x.size_marla, category: x.category,
         sale_status: x.sale_status, construction_status: x.construction_status, customer: c ? c.name : '',
-        is_corner: bool(x.is_corner), is_park_facing: bool(x.is_park_facing),
+        is_corner: bool(x.is_corner), is_park_facing: bool(x.is_park_facing), facing: x.facing || '',
       };
     });
     var streetList = Db.where('Streets', 'project_id', p.project_id).sort(function (a, b) { return num(a.number) - num(b.number); });

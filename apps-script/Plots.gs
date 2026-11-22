@@ -113,6 +113,7 @@ var Plots = (function () {
       size_marla: str(p.size_marla), area_sqft: str(p.area_sqft), width_ft: str(p.width_ft), depth_ft: str(p.depth_ft),
       category: ENUM.category.indexOf(p.category) >= 0 ? p.category : 'residential',
       is_corner: bool(p.is_corner), is_park_facing: bool(p.is_park_facing), notes: str(p.notes),
+      facing: ['East', 'West', ''].indexOf(str(p.facing)) >= 0 ? str(p.facing) : '',
     };
     if (data.size_marla && !data.area_sqft) {
       var plot0 = Db.get('Plots', p.id), proj = Db.get('Projects', plot0.project_id);

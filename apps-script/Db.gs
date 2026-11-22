@@ -9,7 +9,7 @@ var SCHEMA = {
   Users: ['id', 'name', 'email', 'role', 'department', 'locale', 'is_active', 'salt', 'password_hash', 'created_at'],
   Customers: ['id', 'name', 'name_ur', 'relation', 'father_name', 'cnic', 'phone', 'email', 'address', 'is_filer', 'nominee_name', 'nominee_cnic', 'nominee_relation', 'created_at'],
   Streets: ['id', 'project_id', 'number', 'width_ft'],
-  Plots: ['id', 'project_id', 'street_id', 'plot_no', 'category', 'size_marla', 'area_sqft', 'width_ft', 'depth_ft', 'is_corner', 'is_park_facing', 'sale_status', 'construction_status', 'current_customer_id', 'sold_on', 'payment_cleared_at', 'payment_cleared_by', 'notes', 'created_at', 'updated_at'],
+  Plots: ['id', 'project_id', 'street_id', 'plot_no', 'category', 'size_marla', 'area_sqft', 'width_ft', 'depth_ft', 'is_corner', 'is_park_facing', 'sale_status', 'construction_status', 'current_customer_id', 'sold_on', 'payment_cleared_at', 'payment_cleared_by', 'notes', 'created_at', 'updated_at', 'facing'],
   PlotEvents: ['id', 'plot_id', 'event', 'from_customer_id', 'to_customer_id', 'event_date', 'reference', 'notes', 'meta', 'created_by', 'created_at'],
   Ownerships: ['id', 'plot_id', 'customer_id', 'started_on', 'ended_on', 'start_event', 'end_event'],
   LandPurchases: ['id', 'project_id', 'seller_name', 'seller_father_name', 'seller_cnic', 'seller_phone', 'mauza', 'khewat_no', 'khatooni_no', 'khasra_nos', 'area_sqft', 'agreement_date', 'payment_cleared', 'payment_cleared_at', 'intiqal_done', 'intiqal_done_at', 'notes', 'created_at'],

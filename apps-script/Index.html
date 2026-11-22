@@ -71,7 +71,7 @@ en: {
   dash: { to_verify: 'Director replied – Check & Verify', waiting: '{n} waiting for director', files: 'Open registry files', area: 'Area', construction: 'Construction' },
   area: { total: 'Total land purchased', non: 'Non-saleable', sale: 'Saleable (plots)', unalloc: 'Not yet allocated', kanal: 'Kanal', marla: 'Marla', sqft: 'Sq ft' },
   p: { search: 'Plot no, customer, CNIC', street: 'Street', size: 'Size', category: 'Category', status: 'Status', customer: 'Customer',
-    construction: 'Construction', corner: 'Corner', park_facing: 'Park facing', details: 'Details', actions: 'Actions', sold_on: 'Sold on',
+    construction: 'Construction', facing: 'East / West', east: 'East', west: 'West', corner: 'Corner', park_facing: 'Park facing', details: 'Details', actions: 'Actions', sold_on: 'Sold on',
     sell: 'Sell plot', choose: '— choose customer —', file_no: 'File / form no (optional)', reference: 'Reference',
     payment_clear: 'Payment Clear', payment_clear_help: 'Tick when the full payment is received. The plot moves to the Registry list. No amount is recorded.',
     payment_tick: 'Full payment received', transfer: 'Transfer to another customer', cancel: 'Cancel sale',
@@ -148,7 +148,7 @@ ur: {
   dash: { to_verify: 'ڈائریکٹر کا جواب آ گیا – چیک اور تصدیق کریں', waiting: '{n} ڈائریکٹر کے جواب کے منتظر', files: 'جاری رجسٹری فائلیں', area: 'رقبہ', construction: 'تعمیر' },
   area: { total: 'کل خریدی گئی زمین', non: 'ناقابلِ فروخت', sale: 'قابلِ فروخت (پلاٹس)', unalloc: 'ابھی تقسیم نہیں ہوئی', kanal: 'کنال', marla: 'مرلہ', sqft: 'مربع فٹ' },
   p: { search: 'پلاٹ نمبر، کسٹمر، شناختی کارڈ', street: 'گلی', size: 'سائز', category: 'قسم', status: 'اسٹیٹس', customer: 'کسٹمر',
-    construction: 'تعمیر', corner: 'کارنر', park_facing: 'پارک فیسنگ', details: 'تفصیل', actions: 'کارروائی', sold_on: 'فروخت کی تاریخ',
+    construction: 'تعمیر', facing: 'رخ (مشرق / مغرب)', east: 'مشرق', west: 'مغرب', corner: 'کارنر', park_facing: 'پارک فیسنگ', details: 'تفصیل', actions: 'کارروائی', sold_on: 'فروخت کی تاریخ',
     sell: 'پلاٹ فروخت کریں', choose: '— کسٹمر منتخب کریں —', file_no: 'فائل / فارم نمبر (اختیاری)', reference: 'حوالہ',
     payment_clear: 'پیمنٹ کلیئر', payment_clear_help: 'مکمل ادائیگی ملنے پر ٹک کریں۔ پلاٹ رجسٹری لسٹ میں چلا جائے گا۔ کوئی رقم درج نہیں ہوتی۔',
     payment_tick: 'مکمل ادائیگی وصول ہو گئی', transfer: 'دوسرے کسٹمر کو منتقل کریں', cancel: 'سیل منسوخ کریں',
@@ -528,10 +528,10 @@ VIEWS.plots = d => {
     <select name="category" class="inp">${opts('category', f.category, t('all'))}</select>
     <button class="btn bg-slate-800">${t('filter')}</button></form>
   <div class="card p-0 scroll-table"><table class="t">
-    <tr><th>${t('plot')}</th><th>${t('p.size')}</th><th>${t('p.category')}</th><th>${t('p.status')}</th><th>${t('p.customer')}</th><th>${t('p.construction')}</th></tr>
+    <tr><th>${t('plot')}</th><th>${t('p.size')}</th><th>${t('p.facing')}</th><th>${t('p.category')}</th><th>${t('p.status')}</th><th>${t('p.customer')}</th><th>${t('p.construction')}</th></tr>
     ${d.rows.map(p => `<tr class="hover:bg-slate-50"><td><a class="link num font-medium" onclick="go('#/plot/${p.id}')">${esc(p.plot_no)}</a>
         ${p.is_corner ? `<span class="text-xs text-slate-500">· ${t('p.corner')}</span>` : ''}${p.is_park_facing ? `<span class="text-xs text-slate-500">· ${t('p.park_facing')}</span>` : ''}</td>
-      <td class="num">${p.size_marla ? esc(p.size_marla) + ' M' : '—'}</td><td>${L('category', p.category)}</td><td>${statusChip(p.sale_status)}</td>
+      <td class="num">${p.size_marla ? esc(p.size_marla) + ' M' : '—'}</td><td>${p.facing ? t('p.' + p.facing.toLowerCase()) : '—'}</td><td>${L('category', p.category)}</td><td>${statusChip(p.sale_status)}</td>
       <td>${esc(p.customer) || '—'}</td><td>${L('construction', p.construction_status)}</td></tr>`).join('')}
   </table></div>`;
 };
@@ -565,6 +565,7 @@ VIEWS.plot = d => {
       <div class="font-medium">${t('p.edit')}</div>
       <div class="flex gap-2"><input name="size_marla" value="${esc(p.size_marla)}" placeholder="${t('area.marla')}" class="inp w-24 num"><input name="width_ft" value="${esc(p.width_ft)}" placeholder="W ft" class="inp w-20 num"><input name="depth_ft" value="${esc(p.depth_ft)}" placeholder="D ft" class="inp w-20 num"></div>
       <select name="category" class="inp">${opts('category', p.category)}</select>
+      <select name="facing" class="inp"><option value="">${t('p.facing')}: —</option>${['East', 'West'].map(f => `<option value="${f}" ${p.facing === f ? 'selected' : ''}>${t('p.' + f.toLowerCase())}</option>`).join('')}</select>
       <label class="flex gap-2"><input type="hidden" name="is_corner" value="FALSE"><input type="checkbox" name="is_corner" value="TRUE" ${isTrue(p.is_corner) ? 'checked' : ''}> ${t('p.corner')}</label>
       <label class="flex gap-2"><input type="hidden" name="is_park_facing" value="FALSE"><input type="checkbox" name="is_park_facing" value="TRUE" ${isTrue(p.is_park_facing) ? 'checked' : ''}> ${t('p.park_facing')}</label>
       <button class="btn bg-slate-600">${t('save')}</button></form>`;
@@ -576,6 +577,8 @@ VIEWS.plot = d => {
       <div>${t('p.street')}: <span class="num">${esc(d.street) || '—'}</span></div>
       <div>${t('p.size')}: <span class="num">${esc(p.size_marla) || '—'} M ${p.width_ft ? `(${esc(p.width_ft)} × ${esc(p.depth_ft)})` : ''}</span></div>
       <div>${t('p.category')}: ${L('category', p.category)}</div>
+      ${p.facing ? `<div>${t('p.facing')}: ${t('p.' + p.facing.toLowerCase())}</div>` : ''}
+      ${p.notes ? `<div class="bg-amber-50 border border-amber-200 rounded p-2 whitespace-pre-line text-xs mt-2">${esc(p.notes)}</div>` : ''}
       <div>${t('p.customer')}: ${d.customer ? `<a class="link" onclick="go('#/customer/${d.customer.id}')">${esc(d.customer_label)}</a> <span class="num text-slate-500">${esc(d.customer.cnic)}</span>` : t('company')}</div>
       ${p.sold_on ? `<div>${t('p.sold_on')}: <span class="num">${dmy(p.sold_on)}</span></div>` : ''}
       ${d.active_case ? `<div class="pt-2"><a class="link" onclick="go('#/case/${d.active_case.id}')">${t('p.open_case')} ${esc(d.active_case.reference)} · ${L('caseStatus', d.active_case.status)}</a></div>` : ''}

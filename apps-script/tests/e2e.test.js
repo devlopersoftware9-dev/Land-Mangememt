@@ -191,7 +191,7 @@ ok(pv1.grand_total === 213200 && pv2.grand_total === 213200 + 31000, 'settings c
 
 // ---------------- render every screen with real data (EN + UR)
 {
-  const ui = { document: { documentElement: {}, getElementById: () => ({ innerHTML: '' }), querySelectorAll: () => [] },
+  const ui = { document: { documentElement: {}, getElementById: () => ({ innerHTML: '' }), querySelectorAll: () => [], addEventListener() {} },
     sessionStorage: { getItem: () => null, setItem() {}, removeItem() {} }, localStorage: { getItem: () => null, setItem() {} },
     google: { script: { run: {}, history: { setChangeHandler() {}, push() {} }, url: { getLocation() {} } } }, console, setTimeout, clearTimeout, URL };
   vm.createContext(ui);

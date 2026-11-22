@@ -261,6 +261,17 @@ const L = (group, v) => v ? t('enum.' + group + '.' + v) : '';
 const esc = s => String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
 const fmt = n => Number(n || 0).toLocaleString('en-US');
+/** Accounting format for money boxes: 3100000 -> 3,100,000 while typing. */
+const moneyVal = el => String(el.value || '').replace(/[^\d.]/g, '');
+function formatMoney(el) {
+  const before = el.value.slice(0, el.selectionStart).replace(/[^\d]/g, '').length;
+  const raw = moneyVal(el).split('.')[0];
+  el.value = raw ? Number(raw).toLocaleString('en-US') : '';
+  let pos = 0, seen = 0;
+  while (pos < el.value.length && seen < before) { if (/\d/.test(el.value[pos])) seen++; pos++; }
+  try { el.setSelectionRange(pos, pos); } catch (e) {}
+}
+document.addEventListener('input', e => { if (e.target.classList && e.target.classList.contains('money')) formatMoney(e.target); }, true);
 const isTrue = v => v === true || v === 'TRUE' || v === 'true';
 const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 const dmy = s => s ? String(s).slice(0, 10).split('-').reverse().join('-') : '';
@@ -305,7 +316,8 @@ function formData(form) {
   Array.from(form.elements).forEach(el => {
     if (!el.name || el.disabled) return;
     if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
-    const v = el.type === 'checkbox' && el.value === 'on' ? true : el.value;
+    let v = el.type === 'checkbox' && el.value === 'on' ? true : el.value;
+    if (el.classList.contains('money')) v = String(v).replace(/[^\d.]/g, '');
     const m = /^([^\[]+)\[([^\]]+)\]$/.exec(el.name);
     if (m) { out[m[1]] = out[m[1]] || {}; out[m[1]][m[2]] = v; } else out[el.name] = v;
   });
@@ -700,7 +712,7 @@ function demandModal(id) {
     <div class="text-slate-500">${esc(r.customer)} · ${esc(r.size_marla)} M</div>
     <label>${t('r.mode')}<br><select name="mode" class="inp w-full">${opts('registryMode')}</select></label>
     <div class="flex gap-2"><label class="flex-1">${t('r.demand_date')}<br>${dateInp('demand_date')}</label>
-      <label class="flex-1">${t('r.maliyat')}<br><input name="maliyat" type="number" min="1" required class="inp w-full num"></label></div>
+      <label class="flex-1">${t('r.maliyat')}<br><input name="maliyat" type="text" inputmode="numeric" required class="inp w-full num money"></label></div>
     <button type="submit" class="btn bg-purple-700 w-full">${t('r.create')}</button></form>`);
 }
 
@@ -738,7 +750,7 @@ VIEWS.plot = d => {
     if (['sold', 'payment_cleared', 'registered'].includes(s) && allow('repurchase')) actions += box(t('p.repurchase'), `<p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}<input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'repurchase', null, t('are_you_sure'), 'bg-slate-800');
     if (s === 'payment_cleared' && allow('fard_demand')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
       <div class="font-medium">${t('r.new_demand')}</div><select name="mode" class="inp w-full">${opts('registryMode')}</select>${dateInp('demand_date')}
-      <input name="maliyat" type="number" min="1" required placeholder="${t('r.maliyat')}" class="inp w-full num"><button class="btn bg-purple-700">${t('r.create')}</button></form>`;
+      <input name="maliyat" type="text" inputmode="numeric" required placeholder="${t('r.maliyat')}" class="inp w-full num money"><button class="btn bg-purple-700">${t('r.create')}</button></form>`;
     if (allow('construction')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'construction',{plot_id:'${p.id}'})">
       <div class="font-medium">${t('p.construction')}</div><select name="status" class="inp w-full">${opts('construction', p.construction_status)}</select>${dateInp()}<button class="btn bg-slate-600">${t('save')}</button></form>`;
   }
@@ -809,15 +821,15 @@ function expenseForm(d, kind) {
   const rows = d.rates.filter(r => kind !== 'seller_expense' || r.payer === 'seller');
   return `<form id="exp-${kind}" class="space-y-3 mt-2" onsubmit="return submitForm(event,'registryStep',{case_id:'${c.id}',step:'expense_save',kind:'${kind}'},{confirm:'${esc(t('r.confirm_send'))}'})">
     <div class="flex flex-wrap gap-3 items-end">
-      <label>${t('r.maliyat')}<br><input type="number" name="maliyat" value="${esc(c.maliyat)}" required class="inp w-36 num"></label>
+      <label>${t('r.maliyat')}<br><input type="text" inputmode="numeric" name="maliyat" value="${fmt(c.maliyat)}" required class="inp w-36 num money"></label>
       <label>${t('r.area_marla')}<br><input type="number" step="0.01" name="area_marla" value="${esc(c.area_marla)}" required class="inp w-24 num"></label>
       <label class="flex gap-1 items-center"><input type="hidden" name="buyer_is_filer" value="FALSE"><input type="checkbox" name="buyer_is_filer" value="TRUE" ${d.customer && isTrue(d.customer.is_filer) ? 'checked' : ''}> ${t('r.buyer_filer')}</label>
       <label class="flex gap-1 items-center"><input type="hidden" name="seller_is_filer" value="FALSE"><input type="checkbox" name="seller_is_filer" value="TRUE" ${sellerFiler ? 'checked' : ''}> ${t('r.seller_filer')}</label>
-      <label>${t('r.land_value')}<br><input type="number" name="land_value" class="inp w-36 num"></label></div>
+      <label>${t('r.land_value')}<br><input type="text" inputmode="numeric" name="land_value" class="inp w-36 num money"></label></div>
     <table class="t"><tr><th></th><th>${t('r.item')}</th><th>${t('r.payer')}</th><th class="text-end">${t('r.amount')}</th><th>${t('r.override')}</th></tr>
       ${rows.map(r => `<tr><td><input type="hidden" name="enabled[${r.code}]" value="FALSE"><input type="checkbox" name="enabled[${r.code}]" value="TRUE" ${isTrue(r.default_on) ? 'checked' : ''}></td>
         <td>${esc(S.lang === 'ur' && r.label_ur ? r.label_ur : r.label)}</td><td>${L('payer', r.payer)}</td><td class="text-end num" data-amount="${r.code}">—</td>
-        <td><input type="number" min="0" name="manual[${r.code}]" class="inp w-28 num"></td></tr>`).join('')}
+        <td><input type="text" inputmode="numeric" name="manual[${r.code}]" class="inp w-28 num money"></td></tr>`).join('')}
       <tr class="font-medium"><td></td><td>${t('r.buyer_exp')} / ${t('r.seller_exp_col')}</td><td></td><td class="text-end num" data-total="bs">—</td><td></td></tr>
       <tr class="font-semibold"><td></td><td>${t('r.grand')}</td><td></td><td class="text-end num" data-total="grand">—</td><td></td></tr></table>
     <button class="btn bg-purple-700">${t('r.send_exp')}</button></form>`;
@@ -994,11 +1006,11 @@ VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibol
       <div><h2 class="font-semibold">${t('s.rates')}</h2><p class="text-sm text-slate-500">${t('s.rates_help')}</p></div>
       <div id="rates-btns"></div></div>
     <div class="flex flex-wrap items-end gap-3 mb-3 p-3 rounded" style="background:var(--p-soft)">
-      <label class="text-sm font-medium">${t('s.calc_amount')}<br><input id="calc-maliyat" type="number" value="3100000" class="inp w-40 num text-lg" oninput="calcRates()"></label>
+      <label class="text-sm font-medium">${t('s.calc_amount')}<br><input id="calc-maliyat" type="text" inputmode="numeric" value="3,100,000" class="inp w-40 num text-lg money" oninput="calcRates()"></label>
       <label class="text-sm">${t('r.area_marla')}<br><input id="calc-area" type="number" step="0.01" value="6.25" class="inp w-24 num" oninput="calcRates()"></label>
       <label class="text-sm flex items-center gap-1"><input id="calc-bf" type="checkbox" checked onchange="renderRates();calcRates()"> ${t('r.buyer_filer')}</label>
       <label class="text-sm flex items-center gap-1"><input id="calc-sf" type="checkbox" checked onchange="renderRates();calcRates()"> ${t('r.seller_filer')}</label>
-      <label class="text-sm">${t('r.land_value')}<br><input id="calc-land" type="number" class="inp w-32 num" oninput="calcRates()"></label>
+      <label class="text-sm">${t('r.land_value')}<br><input id="calc-land" type="text" inputmode="numeric" class="inp w-32 num money" oninput="calcRates()"></label>
       <div class="ms-auto text-end text-lg">${t('r.grand')}: <b class="num" id="calc-g">—</b></div>
     </div>
     <div id="rates-table"></div>
@@ -1055,7 +1067,9 @@ function rateText(r) {
   }
 }
 function rateInputs(r) {
-  const inp = (f, v, w) => `<input value="${esc(v)}" class="inp ${w || 'w-20'} num py-0.5" oninput="rd('${r.id}','${f}',this.value)">`;
+  const inp = (f, v, w) => f === 'fixed_amount'
+    ? `<input value="${fmt(v)}" ${'type="text" inputmode="numeric"'} class="inp ${w || 'w-20'} num py-0.5 money" oninput="rd('${r.id}','${f}',moneyVal(this))">`
+    : `<input value="${esc(v)}" class="inp ${w || 'w-20'} num py-0.5" oninput="rd('${r.id}','${f}',this.value)">`;
   switch (r.calc_type) {
     case 'percent': return inp('rate', r.rate) + '% + Rs ' + inp('fixed_amount', r.fixed_amount, 'w-24');
     case 'percent_filer': { const f = rateFiler(r) ? 'rate' : 'non_filer_rate'; return inp(f, r[f]) + `% <span class="text-xs text-slate-400">${rateFiler(r) ? t('r.filer') : t('r.non_filer')}</span>`; }
@@ -1114,8 +1128,8 @@ function calcRates() {
     const v = id => document.getElementById(id);
     if (!v('calc-maliyat') || !S.rateDraft) return;
     try {
-      const r = await call('expensePreview', { kind: 'registry_expense', maliyat: v('calc-maliyat').value, area_marla: v('calc-area').value,
-        buyer_is_filer: v('calc-bf').checked, seller_is_filer: v('calc-sf').checked, land_value: v('calc-land').value, rates: rateEdits() });
+      const r = await call('expensePreview', { kind: 'registry_expense', maliyat: moneyVal(v('calc-maliyat')), area_marla: v('calc-area').value,
+        buyer_is_filer: v('calc-bf').checked, seller_is_filer: v('calc-sf').checked, land_value: moneyVal(v('calc-land')), rates: rateEdits() });
       const lines = {}; r.lines.forEach(l => lines[l.code] = l.amount);
       S.rateCalc = { lines, buyer: r.buyer_total, seller: r.seller_total, grand: r.grand_total };
       applyRateCalc();

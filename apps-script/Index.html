@@ -120,7 +120,8 @@ en: {
     help_no: 'Director rejected. On Verify the file goes back so it can be corrected and sent again.',
     resolve: 'Record decision by hand', resolve_help: 'Only if the reply was unclear or from another email, and you confirmed with the director yourself.',
     how_confirmed: 'How was it confirmed? (e.g. phone call 21-11-2026 3pm)', open: 'Open & Check', inbound: 'Emails received' },
-  s: { calc_amount: 'Total amount (Maliyat) Rs', perms: 'Permissions (who can do what)', perms_help: 'Tick which role may use each checkbox / button. Admin can always do everything.', action: 'Action',
+  s: { edit_rates: 'Change rates', cancel_edit: 'Cancel', show_all: 'Show all ({n} lines with 0 hidden)', hide_zero: 'Hide 0 lines',
+    calc_amount: 'Total amount (Maliyat) Rs', perms: 'Permissions (who can do what)', perms_help: 'Tick which role may use each checkbox / button. Admin can always do everything.', action: 'Action',
     group_plots: 'Plots', group_land: 'Land', group_registry: 'Registry',
     param_base: 'Base Rs', param_upto: 'Upto Rs', param_step: '+ Rs', param_per: 'per Rs', param_free_upto_marla: 'Free upto (marla)',
     rates: 'Registry rates', rates_help: 'Change after a budget. Saved expenses keep their old amounts.', filer_rate: 'Rate / Filer', nf_rate: 'Non-filer',
@@ -209,7 +210,8 @@ ur: {
     help_no: 'ڈائریکٹر نے نامنظور کیا۔ تصدیق پر فائل درستگی کے لیے واپس آ جائے گی۔',
     resolve: 'فیصلہ ہاتھ سے درج کریں', resolve_help: 'صرف تب، جب جواب واضح نہ ہو یا کسی اور ای میل سے آیا ہو، اور آپ نے خود ڈائریکٹر سے تصدیق کر لی ہو۔',
     how_confirmed: 'تصدیق کیسے ہوئی؟ (مثلاً فون کال 21-11-2026 سہ پہر 3 بجے)', open: 'کھولیں اور چیک کریں', inbound: 'موصول ای میلز' },
-  s: { calc_amount: 'کل رقم (مالیت) روپے', perms: 'اجازتیں (کون کیا کر سکتا ہے)', perms_help: 'ہر چیک باکس / بٹن کے لیے رول پر ٹک کریں۔ ایڈمن ہمیشہ سب کر سکتا ہے۔', action: 'کام',
+  s: { edit_rates: 'ریٹ تبدیل کریں', cancel_edit: 'منسوخ', show_all: 'سب دکھائیں ({n} صفر والی لائنیں چھپی ہیں)', hide_zero: 'صفر والی لائنیں چھپائیں',
+    calc_amount: 'کل رقم (مالیت) روپے', perms: 'اجازتیں (کون کیا کر سکتا ہے)', perms_help: 'ہر چیک باکس / بٹن کے لیے رول پر ٹک کریں۔ ایڈمن ہمیشہ سب کر سکتا ہے۔', action: 'کام',
     group_plots: 'پلاٹس', group_land: 'زمین', group_registry: 'رجسٹری',
     param_base: 'بنیادی رقم', param_upto: 'تک', param_step: '+ روپے', param_per: 'فی', param_free_upto_marla: 'فری (مرلہ تک)',
     rates: 'رجسٹری ریٹس', rates_help: 'بجٹ کے بعد یہاں تبدیل کریں۔ پرانے محفوظ اخراجات اپنی رقم پر رہیں گے۔', filer_rate: 'ریٹ / فائلر', nf_rate: 'نان فائلر',
@@ -988,26 +990,19 @@ VIEWS.land = d => {
 };
 
 VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>
-  <section class="card mb-6"><h2 class="font-semibold mb-1">${t('s.rates')}</h2><p class="text-sm text-slate-500 mb-3">${t('s.rates_help')}</p>
-    <form id="rates-form" onsubmit="return saveRates(event)" oninput="calcRates()">
-    <div class="flex flex-wrap items-end gap-3 mb-4 p-3 rounded" style="background:var(--p-soft)">
-      <label class="text-sm font-medium">${t('s.calc_amount')}<br><input id="calc-maliyat" type="number" value="3100000" class="inp w-40 num text-lg"></label>
-      <label class="text-sm">${t('r.area_marla')}<br><input id="calc-area" type="number" step="0.01" value="6.25" class="inp w-24 num"></label>
-      <label class="text-sm flex items-center gap-1"><input id="calc-bf" type="checkbox" checked> ${t('r.buyer_filer')}</label>
-      <label class="text-sm flex items-center gap-1"><input id="calc-sf" type="checkbox" checked> ${t('r.seller_filer')}</label>
-      <label class="text-sm">${t('r.land_value')}<br><input id="calc-land" type="number" class="inp w-32 num"></label>
-      <div class="ms-auto text-sm text-end"><div>${t('r.buyer_exp')}: <b class="num" id="calc-b">—</b> · ${t('r.seller_exp_col')}: <b class="num" id="calc-s">—</b></div>
-        <div class="text-lg">${t('r.grand')}: <b class="num" id="calc-g">—</b></div></div>
+  <section class="card mb-6"><div class="flex flex-wrap justify-between items-start gap-2 mb-3">
+      <div><h2 class="font-semibold">${t('s.rates')}</h2><p class="text-sm text-slate-500">${t('s.rates_help')}</p></div>
+      <div id="rates-btns"></div></div>
+    <div class="flex flex-wrap items-end gap-3 mb-3 p-3 rounded" style="background:var(--p-soft)">
+      <label class="text-sm font-medium">${t('s.calc_amount')}<br><input id="calc-maliyat" type="number" value="3100000" class="inp w-40 num text-lg" oninput="calcRates()"></label>
+      <label class="text-sm">${t('r.area_marla')}<br><input id="calc-area" type="number" step="0.01" value="6.25" class="inp w-24 num" oninput="calcRates()"></label>
+      <label class="text-sm flex items-center gap-1"><input id="calc-bf" type="checkbox" checked onchange="renderRates();calcRates()"> ${t('r.buyer_filer')}</label>
+      <label class="text-sm flex items-center gap-1"><input id="calc-sf" type="checkbox" checked onchange="renderRates();calcRates()"> ${t('r.seller_filer')}</label>
+      <label class="text-sm">${t('r.land_value')}<br><input id="calc-land" type="number" class="inp w-32 num" oninput="calcRates()"></label>
+      <div class="ms-auto text-end text-lg">${t('r.grand')}: <b class="num" id="calc-g">—</b></div>
     </div>
-    <div class="overflow-x-auto"><table class="t">
-      <thead><tr><th>${t('r.item')}</th><th>${t('r.payer')}</th><th>${t('s.filer_rate')}</th><th>${t('s.nf_rate')}</th><th>${t('s.fixed')}</th><th>${t('s.params')}</th><th class="text-end">${t('r.amount')}</th></tr></thead>
-      ${rates.map(r => { const ps = r.params ? JSON.parse(r.params) : {}; return `<tr data-id="${r.id}" class="${isTrue(r.is_active) ? '' : 'opacity-40'}"><td>${esc(S.lang === 'ur' && r.label_ur ? r.label_ur : r.label)}</td><td>${L('payer', r.payer)}</td>
-        <td>${['percent', 'percent_filer', 'percent_land'].includes(r.calc_type) ? `<input data-f="rate" value="${esc(r.rate)}" class="inp w-20 num">%` : ''}</td>
-        <td>${r.calc_type === 'percent_filer' ? `<input data-f="non_filer_rate" value="${esc(r.non_filer_rate)}" class="inp w-20 num">%` : ''}</td>
-        <td>${['fixed', 'percent', 'excise'].includes(r.calc_type) ? `<input data-f="fixed_amount" value="${esc(r.fixed_amount)}" class="inp w-24 num">` : ''}</td>
-        <td class="text-xs">${Object.keys(ps).map(k => `<label class="block">${t('s.param_' + k)} <input data-p="${k}" value="${esc(ps[k])}" class="inp w-24 num"></label>`).join('')}</td>
-        <td class="text-end num font-medium" data-amt="${r.code}">—</td></tr>`; }).join('')}
-    </table></div><button class="btn bg-p mt-3">${t('save')}</button></form></section>
+    <div id="rates-table"></div>
+  </section>
   <section class="card mb-6"><h2 class="font-semibold mb-1">${t('s.perms')}</h2><p class="text-sm text-slate-500 mb-3">${t('s.perms_help')}</p>
     <form onsubmit="return savePerms(event)"><div class="overflow-x-auto"><table class="t">
       <thead><tr><th>${t('s.action')}</th>${S.enums.roles.map(r => `<th class="text-center">${L('roles', r)}</th>`).join('')}</tr></thead>
@@ -1040,41 +1035,101 @@ function fillUser(sel) {
   f.name.value = u ? u.name : ''; f.email.value = u ? u.email : ''; f.role.value = u ? u.role : 'viewer'; f.department.value = u ? (u.department || '') : '';
 }
 
-async function saveRates(ev) {
-  ev.preventDefault();
-  const rows = Array.from(ev.target.querySelectorAll('tr[data-id]')).map(tr => {
-    const o = { id: tr.dataset.id };
-    tr.querySelectorAll('[data-f]').forEach(i => { o[i.dataset.f] = i.value; });
-    const ps = tr.querySelectorAll('[data-p]'); if (ps.length) { o.params = {}; ps.forEach(i => o.params[i.dataset.p] = num(i.value)); }
-    return o;
-  });
-  try { await call('saveRates', { rates: rows }); toast(t('saved')); load(true); } catch (e) { toast(e.message, true); }
-  return false;
+
+/** Settings > Registry rates: compact table (Item | Rate | Buyer | Seller), view / edit mode. */
+function initRates(rates) {
+  S.rateDraft = rates.map(r => Object.assign({}, r, { params: r.params ? JSON.parse(r.params) : {} }));
+  S.rateEdit = false; S.showZero = false; S.rateCalc = {};
+  renderRates(); calcRates();
+}
+const rateFiler = r => r.payer === 'buyer' ? document.getElementById('calc-bf').checked : document.getElementById('calc-sf').checked;
+function rateText(r) {
+  const pct = v => (v === '' || v === undefined ? '0' : String(num(v))) + '%';
+  switch (r.calc_type) {
+    case 'percent': return pct(r.rate) + (num(r.fixed_amount) ? ' + ' + fmt(r.fixed_amount) : '');
+    case 'percent_filer': return pct(rateFiler(r) ? r.rate : r.non_filer_rate) + ` <span class="text-xs text-slate-400">${rateFiler(r) ? t('r.filer') : t('r.non_filer')}</span>`;
+    case 'fixed': return 'Rs ' + fmt(r.fixed_amount);
+    case 'excise': return 'Rs ' + fmt(r.fixed_amount);
+    case 'percent_land': return pct(r.rate) + ` <span class="text-xs text-slate-400">${t('r.land_value')}</span>`;
+    default: return '';
+  }
+}
+function rateInputs(r) {
+  const inp = (f, v, w) => `<input value="${esc(v)}" class="inp ${w || 'w-20'} num py-0.5" oninput="rd('${r.id}','${f}',this.value)">`;
+  switch (r.calc_type) {
+    case 'percent': return inp('rate', r.rate) + '% + Rs ' + inp('fixed_amount', r.fixed_amount, 'w-24');
+    case 'percent_filer': { const f = rateFiler(r) ? 'rate' : 'non_filer_rate'; return inp(f, r[f]) + `% <span class="text-xs text-slate-400">${rateFiler(r) ? t('r.filer') : t('r.non_filer')}</span>`; }
+    case 'fixed': case 'excise': return 'Rs ' + inp('fixed_amount', r.fixed_amount, 'w-24');
+    case 'percent_land': return inp('rate', r.rate) + '%';
+    default: return '';
+  }
+}
+function rulesBox(r) {
+  const keys = Object.keys(r.params || {});
+  if (!keys.length) return '';
+  return `<details class="inline-block ms-1"><summary class="cursor-pointer select-none list-none inline">⚙</summary>
+    <div class="mt-1 p-2 border rounded bg-white text-xs space-y-1">${keys.map(k => `<label class="flex items-center justify-between gap-2">${t('s.param_' + k)}
+      ${S.rateEdit ? `<input value="${esc(r.params[k])}" class="inp w-24 num py-0.5" oninput="rdp('${r.id}','${k}',this.value)">` : `<b class="num">${fmt(r.params[k])}</b>`}</label>`).join('')}</div></details>`;
+}
+function rd(id, f, v) { const r = S.rateDraft.find(x => x.id === id); r[f] = v; calcRates(); }
+function rdp(id, k, v) { const r = S.rateDraft.find(x => x.id === id); r.params[k] = num(v); calcRates(); }
+
+function renderRates() {
+  const box = document.getElementById('rates-table'); if (!box || !S.rateDraft) return;
+  const rows = S.rateDraft.filter(r => isTrue(r.is_active)).sort((a, b) => num(a.sort) - num(b.sort));
+  box.innerHTML = `<div class="overflow-x-auto"><table class="t">
+    <thead><tr><th>${t('r.item')}</th><th>${t('r.rate')}</th><th class="text-end">${t('r.buyer_exp')}</th><th class="text-end">${t('r.seller_exp_col')}</th></tr></thead>
+    <tbody>${rows.map(r => `<tr data-code="${r.code}">
+      <td>${esc(S.lang === 'ur' && r.label_ur ? r.label_ur : r.label)}${rulesBox(r)}</td>
+      <td class="num">${S.rateEdit ? rateInputs(r) : rateText(r)}</td>
+      <td class="text-end num font-medium" data-amt-b="${r.code}">${r.payer === 'buyer' ? '—' : ''}</td>
+      <td class="text-end num font-medium" data-amt-s="${r.code}">${r.payer === 'seller' ? '—' : ''}</td></tr>`).join('')}
+      <tr class="font-semibold"><td>${t('r.total')}</td><td></td><td class="text-end num" id="calc-b">—</td><td class="text-end num" id="calc-s">—</td></tr></tbody></table></div>
+    <div class="flex justify-between items-center mt-2 text-sm"><a class="link" id="zero-link" onclick="S.showZero=!S.showZero;calcRates()"></a></div>`;
+  document.getElementById('rates-btns').innerHTML = S.rateEdit
+    ? `<button class="btn bg-p" onclick="saveRates()">${t('save')}</button> <button class="inp" onclick="initRates(S.data[0])">${t('s.cancel_edit')}</button>`
+    : `<button class="inp" onclick="S.rateEdit=true;renderRates();calcRates()">✏ ${t('s.edit_rates')}</button>`;
+  applyRateCalc();
 }
 
-/** Settings: live calculation of every rate line for the test amount (uses unsaved edits too). */
-function rateEdits() {
-  return Array.from(document.querySelectorAll('#rates-form tr[data-id]')).map(tr => {
-    const o = { id: tr.dataset.id };
-    tr.querySelectorAll('[data-f]').forEach(i => { o[i.dataset.f] = i.value; });
-    const ps = tr.querySelectorAll('[data-p]'); if (ps.length) { o.params = {}; ps.forEach(i => o.params[i.dataset.p] = num(i.value)); }
-    return o;
+function applyRateCalc() {
+  const c = S.rateCalc || {}; let hidden = 0;
+  document.querySelectorAll('#rates-table tr[data-code]').forEach(tr => {
+    const code = tr.dataset.code, amt = c.lines ? c.lines[code] : undefined;
+    const b = tr.querySelector('[data-amt-b]'), s2 = tr.querySelector('[data-amt-s]');
+    if (b.textContent !== '') b.textContent = amt === undefined ? '—' : fmt(amt);
+    if (s2.textContent !== '') s2.textContent = amt === undefined ? '—' : fmt(amt);
+    const hide = c.lines && !S.showZero && !S.rateEdit && !amt;
+    tr.style.display = hide ? 'none' : ''; if (hide) hidden++;
   });
+  const v = id => document.getElementById(id);
+  if (c.lines) { v('calc-b').textContent = fmt(c.buyer); v('calc-s').textContent = fmt(c.seller); v('calc-g').textContent = 'Rs. ' + fmt(c.grand); }
+  const zl = v('zero-link');
+  if (zl) zl.textContent = S.rateEdit ? '' : S.showZero ? t('s.hide_zero') : hidden ? t('s.show_all', { n: hidden }) : '';
 }
+
 function calcRates() {
   clearTimeout(calcRates._t);
   calcRates._t = setTimeout(async () => {
     const v = id => document.getElementById(id);
-    if (!v('calc-maliyat')) return;
+    if (!v('calc-maliyat') || !S.rateDraft) return;
     try {
       const r = await call('expensePreview', { kind: 'registry_expense', maliyat: v('calc-maliyat').value, area_marla: v('calc-area').value,
         buyer_is_filer: v('calc-bf').checked, seller_is_filer: v('calc-sf').checked, land_value: v('calc-land').value, rates: rateEdits() });
-      document.querySelectorAll('[data-amt]').forEach(td => td.textContent = '—');
-      r.lines.forEach(l => { const td = document.querySelector(`[data-amt="${l.code}"]`); if (td) td.textContent = fmt(l.amount); });
-      v('calc-b').textContent = fmt(r.buyer_total); v('calc-s').textContent = fmt(r.seller_total); v('calc-g').textContent = 'Rs. ' + fmt(r.grand_total);
+      const lines = {}; r.lines.forEach(l => lines[l.code] = l.amount);
+      S.rateCalc = { lines, buyer: r.buyer_total, seller: r.seller_total, grand: r.grand_total };
+      applyRateCalc();
     } catch (e) {}
-  }, 350);
+  }, 300);
 }
+function rateEdits() {
+  return (S.rateDraft || []).map(r => ({ id: r.id, rate: r.rate, non_filer_rate: r.non_filer_rate, fixed_amount: r.fixed_amount, params: Object.keys(r.params || {}).length ? r.params : undefined }));
+}
+async function saveRates() {
+  try { await call('saveRates', { rates: rateEdits() }); toast(t('saved')); S.data[0] = await call('rates'); initRates(S.data[0]); }
+  catch (e) { toast(e.message, true); }
+}
+
 async function savePerms(ev) {
   ev.preventDefault();
   const map = {};
@@ -1087,7 +1142,7 @@ async function savePerms(ev) {
 /** Live totals on the expense form. */
 function afterRender() {
   if (S.view === 'plots') gridRender();
-  if (S.view === 'settings') calcRates();
+  if (S.view === 'settings') initRates(S.data[0]);
   document.querySelectorAll('form[id^="exp-"]').forEach(form => {
     const kind = form.id.replace('exp-', '');
     let timer;

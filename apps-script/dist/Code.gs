@@ -1716,7 +1716,7 @@ var Views = (function () {
     }).reverse();
     return {
       case: c, plot: plot, project: project, customer: cust, customer_label: customerLabel(cust),
-      allocations: alloc, intiqals: intiqalRows(project.id),
+      allocations: alloc, intiqals: intiqalRows(project.id), purchases: Db.where('LandPurchases', 'project_id', project.id),
       approvals: Db.where('Approvals', 'case_id', id).map(function (a) { return Object.assign(strip(a), { verifier: nameOf('Users', a.verified_by) }); }).reverse(),
       expenses: expenses, rates: Db.all('Rates').filter(function (r) { return bool(r.is_active); }).sort(function (a, b) { return num(a.sort) - num(b.sort); }),
       marla_sqft: num(project.marla_sqft || 270),

@@ -102,7 +102,7 @@ en: {
     intiqals: 'From intiqal(s)', fard: 'Fard', fard_no: 'Fard no', registry_no: 'Registry no', registry_date: 'Registry date', office: 'Sub-registrar office',
     copy_url: 'Link to scanned copy (Drive)', next: 'Next step', send_fard_help: 'An email with plot, area and maliyat goes to the director for Fard approval.',
     send_fard: 'Send Fard approval email', waiting: 'Waiting for the director to answer by email.', replied: 'Director has replied. Check and verify to move forward.',
-    jari_help: 'Select intiqal(s). Total must be {area} ({sqft} sq ft). 2-3 intiqals can be combined.', take: 'Take (sq ft)', jari_msg: 'Fard jari message for registry officer',
+    jari_help: 'Select intiqal(s). Total must be {area} ({sqft} sq ft). 2-3 intiqals can be combined.', take: 'Take (sq ft)', no_intiqal: 'No intiqal entered yet. Add the intiqal first (button below or Land page), then select it here.', auto_fill: 'Auto fill', add_intiqal_here: 'Add intiqal', alloc_total: 'Selected', jari_msg: 'Fard jari message for registry officer',
     jari_default: 'Please get fard issued for Plot {plot} ({area}) in favour of {customer}.', issue_jari: 'Issue "Fard Jari" message', waiting_role: 'Waiting for {role}.',
     fard_received: 'Fard received', hand_fard: 'Fard handed over to client', seller_exp_opt: 'Seller expense approval (e.g. 236-C) – optional',
     client_reg_help: 'Client got the registry done himself. Record its details.', record_client: 'Record client registry',
@@ -192,7 +192,7 @@ ur: {
     intiqals: 'انتقال نمبر', fard: 'فرد', fard_no: 'فرد نمبر', registry_no: 'رجسٹری نمبر', registry_date: 'رجسٹری کی تاریخ', office: 'سب رجسٹرار آفس',
     copy_url: 'اسکین کاپی کا لنک (ڈرائیو)', next: 'اگلا مرحلہ', send_fard_help: 'پلاٹ، رقبہ اور مالیت کے ساتھ ڈائریکٹر کو فرد منظوری کی ای میل جائے گی۔',
     send_fard: 'فرد منظوری کی ای میل بھیجیں', waiting: 'ڈائریکٹر کے ای میل جواب کا انتظار ہے۔', replied: 'ڈائریکٹر نے جواب دے دیا ہے۔ آگے بڑھنے کے لیے چیک کر کے تصدیق کریں۔',
-    jari_help: 'انتقال منتخب کریں۔ کل رقبہ {area} ({sqft} مربع فٹ) ہونا چاہیے۔ 2-3 انتقال ملائے جا سکتے ہیں۔', take: 'لینا ہے (مربع فٹ)', jari_msg: 'رجسٹری آفیسر کے لیے فرد جاری کا پیغام',
+    jari_help: 'انتقال منتخب کریں۔ کل رقبہ {area} ({sqft} مربع فٹ) ہونا چاہیے۔ 2-3 انتقال ملائے جا سکتے ہیں۔', take: 'لینا ہے (مربع فٹ)', no_intiqal: 'ابھی کوئی انتقال درج نہیں۔ پہلے انتقال درج کریں (نیچے بٹن یا زمین والا صفحہ)، پھر یہاں منتخب کریں۔', auto_fill: 'خودکار بھریں', add_intiqal_here: 'انتقال درج کریں', alloc_total: 'منتخب', jari_msg: 'رجسٹری آفیسر کے لیے فرد جاری کا پیغام',
     jari_default: 'پلاٹ {plot} ({area}) کی فرد {customer} کے حق میں جاری کروائیں۔', issue_jari: '"فرد جاری" کا پیغام جاری کریں', waiting_role: '{role} کا انتظار ہے۔',
     fard_received: 'فرد وصول ہو گئی', hand_fard: 'فرد کلائنٹ کے حوالے کر دی', seller_exp_opt: 'فروخت کنندہ کے اخراجات کی منظوری (مثلاً 236-C) – اختیاری',
     client_reg_help: 'کلائنٹ نے رجسٹری خود کروائی۔ تفصیل درج کریں۔', record_client: 'کلائنٹ کی رجسٹری درج کریں',
@@ -725,6 +725,29 @@ function pendChip(id) {
   return `<span class="chip ${can ? 'cursor-pointer' : ''}" style="background:#f59e0b22;color:#b45309;border:1px solid #f59e0b88" title="${t('g.pending_click')}" ${can ? `onclick="payModal(['${id}'])"` : ''}>⚠ ${t('g.pending')}</span>`;
 }
 
+// ---- fard jari: intiqal allocation helpers
+function allocTotal(need) {
+  const tot = [...document.querySelectorAll('input.alloc')].reduce((s, el) => s + num(el.value), 0);
+  const el = document.getElementById('alloc-total'); if (!el) return;
+  const ok = Math.abs(tot - need) < 0.5;
+  el.innerHTML = `${t('r.alloc_total')}: <b>${fmt(Math.round(tot * 100) / 100)}</b> / ${fmt(need)} sq ft ${ok ? '✅' : '⚠'}`;
+  el.style.color = ok ? '#047857' : '#b45309';
+}
+function allocAuto(need) {
+  let left = num(need);
+  document.querySelectorAll('input.alloc').forEach(el => {
+    if (el.disabled) return;
+    const take = Math.min(left, num(el.dataset.bal));
+    el.value = take > 0 ? Math.round(take * 100) / 100 : ''; left -= take;
+  });
+  allocTotal(need);
+}
+function addIntiqalModal() {
+  modal(t('land.add_intiqal').replace(/^\+\s*/, ''), `<form class="grid grid-cols-2 gap-2 text-sm" onsubmit="closeModalAfter(event,'saveIntiqal',{project_id:'${S.data.project ? S.data.project.id : S.projectId}'})">${landFields('intiqal', S.data)}
+    <div class="col-span-2 flex justify-end mt-2"><button type="submit" class="btn bg-p">${t('save')}</button></div></form>`);
+  const f = document.querySelector('#modal form'); f.kanal.parentElement.classList.add('col-span-2');
+}
+
 function demandModal(id) {
   const r = S.grid.rows.find(x => x.id === id);
   modal(t('g.demand_title', { plot: r.plot_no }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "demand", ["${id}"])'>
@@ -881,7 +904,12 @@ VIEWS.case = d => {
       next = allow('fard_jari') ? stepForm(c.id, 'fard_jari', `<p>${t('r.jari_help', { area: area(c.area_sqft, ms), sqft: c.area_sqft })}</p>
         <table class="t"><tr><th>${t('land.intiqal_no')}</th><th>${t('land.holder')}</th><th>${t('land.balance')}</th><th>${t('r.take')}</th></tr>
         ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td>${esc(i.holder_name)}</td><td class="num">${area(Math.max(0, i.balance), ms)}</td>
-          <td><input type="number" step="0.01" min="0" max="${i.balance}" name="allocations[${i.id}]" class="inp w-32 num" ${i.balance <= 0 ? 'disabled' : ''}></td></tr>`).join('')}</table>
+          <td><input type="number" step="0.01" min="0" max="${i.balance}" name="allocations[${i.id}]" data-bal="${Math.max(0, i.balance)}" class="inp w-32 num alloc" oninput="allocTotal(${c.area_sqft})" ${i.balance <= 0 ? 'disabled' : ''}></td></tr>`).join('')
+          || `<tr><td colspan="4" class="text-amber-700 py-3">⚠ ${t('r.no_intiqal')}</td></tr>`}</table>
+        <div class="flex flex-wrap items-center gap-3 text-sm">
+          ${d.intiqals.some(i => i.balance > 0) ? `<button type="button" class="inp" onclick="allocAuto(${c.area_sqft})">⚡ ${t('r.auto_fill')}</button>` : ''}
+          ${allow('land') ? `<button type="button" class="inp" onclick="addIntiqalModal()">+ ${t('r.add_intiqal_here')}</button>` : ''}
+          <span id="alloc-total" class="num text-slate-500"></span></div>
         <textarea name="message" required rows="3" class="inp w-full">${esc(t('r.jari_default', { plot: d.plot.plot_no, area: area(c.area_sqft, ms), customer: d.customer_label }))}</textarea>`, t('r.issue_jari'))
         : `<p>${t('r.waiting_role', { role: L('roles', 'land_management') })}</p>`; break;
     case 'fard_jari_issued': next = stepForm(c.id, 'fard_received', `<input name="fard_no" placeholder="${t('r.fard_no')}" class="inp num"> ${dateInp()}`, t('r.fard_received')); break;

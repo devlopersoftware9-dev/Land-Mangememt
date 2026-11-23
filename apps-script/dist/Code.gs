@@ -1631,9 +1631,16 @@ var Views = (function () {
   }
 
   function intiqalRows(projectId) {
+    var cases = {}; Db.all('RegistryCases').forEach(function (c) { cases[c.id] = c; });
     return Db.where('Intiqals', 'project_id', projectId).map(function (i) {
-      var issued = Land.issued(i.id);
-      return Object.assign({}, i, { issued: issued, balance: num(i.area_sqft) - issued });
+      var reg = 0, proc = 0, tma = 0;
+      Db.where('CaseIntiqals', 'intiqal_id', i.id).forEach(function (ci) {
+        var c = cases[ci.case_id]; if (!c || c.status === 'cancelled') return;
+        if (Registry.REG_DONE.indexOf(c.status) >= 0) reg += num(ci.area_sqft); else proc += num(ci.area_sqft);
+      });
+      Db.where('TmaTransfers', 'intiqal_id', i.id).forEach(function (t) { tma += num(t.area_sqft); });
+      var issued = reg + proc + tma;
+      return Object.assign({}, i, { registered: reg, in_process: proc, tma: tma, issued: issued, balance: num(i.area_sqft) - issued });
     });
   }
 

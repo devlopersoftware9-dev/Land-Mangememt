@@ -354,6 +354,13 @@ ok(pv1.grand_total === 213200 && pv2.grand_total === 213200 + 31000, 'settings c
       catch (e) { ok(false, `render ${lang} ${name}: ${e.message}`); }
     }
   }
+  // dashboard boxes render in every format A-H (both languages)
+  for (const lang of ['en', 'ur']) for (const f of ['A','B','C','D','E','F','G','H']) {
+    ui.S.lang = lang; ui.S.theme = { tileFmt: f };
+    try { const html = ui.VIEWS.dashboard(screens.dashboard); ok(!/undefined|NaN|\[object Object\]/.test(html.replace(/=== undefined|!== undefined/g, '')) && /S\.gf=\{status:/.test(html), `dashboard tiles ${lang} ${f}`); }
+    catch (e) { ok(false, `dashboard tiles ${lang} ${f}: ${e.message}`); }
+  }
+  ui.S.theme = {};
   // case screen at every step type renders
   const c2 = api(admin, 'registryCase', { id: case2 });
   for (const st of ['demand','fard_approval_pending','fard_approval_review','fard_approved','fard_jari_issued','fard_received','fard_handed_over','expense_approved','expense_paid','registry_done','registry_recorded']) {

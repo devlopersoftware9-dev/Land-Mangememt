@@ -1671,16 +1671,17 @@ var Views = (function () {
   }
 
   function dashboard(projectId) {
-    var plots = plotsOf(projectId), byStatus = {}, byConstruction = {};
+    var plots = plotsOf(projectId), byStatus = {}, areaByStatus = {}, byConstruction = {};
     plots.forEach(function (p) {
       byStatus[p.sale_status] = (byStatus[p.sale_status] || 0) + 1;
+      areaByStatus[p.sale_status] = (areaByStatus[p.sale_status] || 0) + num(p.area_sqft);
       byConstruction[p.construction_status] = (byConstruction[p.construction_status] || 0) + 1;
     });
     var caseCounts = {};
     casesOf(projectId).forEach(function (c) { if (ENUM.finalCase.indexOf(c.status) < 0) caseCounts[c.status] = (caseCounts[c.status] || 0) + 1; });
     var approvals = approvalsOf(projectId);
     return {
-      byStatus: byStatus, byConstruction: byConstruction, caseCounts: caseCounts, actors: CASE_ACTOR,
+      byStatus: byStatus, areaByStatus: areaByStatus, byConstruction: byConstruction, caseCounts: caseCounts, actors: CASE_ACTOR,
       toVerify: approvals.filter(function (a) { return ['director_approved', 'director_rejected', 'needs_review'].indexOf(a.status) >= 0; }),
       waitingDirector: approvals.filter(function (a) { return a.status === 'sent'; }).length,
       intiqals: intiqalRows(projectId), area: areaSummary(projectId),

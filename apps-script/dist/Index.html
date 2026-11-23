@@ -78,7 +78,7 @@
 .hf-list { max-height: 260px; overflow: auto; border-top: 1px solid #e2e8f0; margin-top: 4px; padding-top: 4px; }
 .hf-row { display: flex; align-items: center; gap: 6px; padding: 3px 2px; cursor: pointer; }
 .hf-row:hover { background: #f1f5f9; }
-.card.tile { padding: var(--tile-pad, 16px); }
+.tile { padding: var(--tile-pad, 16px); }
 .tile-num { font-size: var(--tile-num, 24px); line-height: 1.2; }
 .tile-lbl { font-size: var(--tile-lbl, 14px); }
 .qc-step { display: inline-block; border-radius: 999px; padding: 3px 10px; background: #f1f5f9; color: #334155; }
@@ -176,7 +176,7 @@ en: {
     sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
     sell_title: 'Sell plot {plots}', pay_title: 'Payment Clear: {plots}', demand_title: 'Fard demand – Plot {plot}', sold_menu: 'Plot {plot} – {name}',
     transfer_open: 'Transfer / full details', done_n: 'Done ({n}).', need_payment: 'Payment Clear first', need_sold: 'Sell first' },
-  theme: { nav_style: 'Menu bar style', nav_pills: 'Pills', nav_underline: 'Underline', nav_boxed: 'Folder tabs', nav_solid: 'Coloured bar', chip_style: 'Filter box style', chip_status: 'Status colours', chip_soft: 'Soft', chip_outline: 'Outline', chip_square: 'Square', sz_navSize: 'Menu text size', sz_chipSize: 'Filter box text size', sizes: 'Sizes', sz_tilePad: 'Dashboard box size', sz_tileNum: 'Box number size', sz_tileLbl: 'Box title size', sz_font: 'Text size (whole app)', sz_reset: 'Reset sizes', title: 'Theme', presets: 'Ready colour schemes', custom: 'Your own colours', header: 'Top bar', primary: 'Buttons / links / tabs',
+  theme: { tile_fmt: 'Dashboard box format', tf_A: 'A · Icon', tf_B: 'B · Solid colour', tf_C: 'C · Progress bar', tf_D: 'D · One long bar', tf_E: 'E · Donut', tf_F: 'F · Plots + marla', tf_G: 'G · Minimal', tf_H: 'H · Journey', nav_style: 'Menu bar style', nav_pills: 'Pills', nav_underline: 'Underline', nav_boxed: 'Folder tabs', nav_solid: 'Coloured bar', chip_style: 'Filter box style', chip_status: 'Status colours', chip_soft: 'Soft', chip_outline: 'Outline', chip_square: 'Square', sz_navSize: 'Menu text size', sz_chipSize: 'Filter box text size', sizes: 'Sizes', sz_tilePad: 'Dashboard box size', sz_tileNum: 'Box number size', sz_tileLbl: 'Box title size', sz_font: 'Text size (whole app)', sz_reset: 'Reset sizes', title: 'Theme', presets: 'Ready colour schemes', custom: 'Your own colours', header: 'Top bar', primary: 'Buttons / links / tabs',
     table: 'Table header', background: 'Page background', done: 'Done', reset: 'Reset', save_all: 'Make default for everyone', saved_all: 'Saved as default for all users.',
     note: 'Your choice is saved on this computer. Admin can make it the default for everyone.' },
   app: 'Land Management', login: 'Login', logout: 'Logout', email: 'Email', password: 'Password', save: 'Save', saved: 'Saved.', edit: 'Edit', delete: 'Delete', deleted: 'Deleted.',
@@ -268,7 +268,7 @@ ur: {
     sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
     sell_title: 'پلاٹ {plots} فروخت کریں', pay_title: 'پیمنٹ کلیئر: {plots}', demand_title: 'فرد ڈیمانڈ – پلاٹ {plot}', sold_menu: 'پلاٹ {plot} – {name}',
     transfer_open: 'منتقلی / مکمل تفصیل', done_n: 'ہو گیا ({n})۔', need_payment: 'پہلے پیمنٹ کلیئر کریں', need_sold: 'پہلے فروخت کریں' },
-  theme: { nav_style: 'مینو بار کا انداز', nav_pills: 'گول بٹن', nav_underline: 'نیچے لکیر', nav_boxed: 'فولڈر ٹیبز', nav_solid: 'رنگین پٹی', chip_style: 'فلٹر باکس کا انداز', chip_status: 'اسٹیٹس کے رنگ', chip_soft: 'ہلکا', chip_outline: 'خاکہ', chip_square: 'چوکور', sz_navSize: 'مینو کی لکھائی', sz_chipSize: 'فلٹر باکس کی لکھائی', sizes: 'سائز', sz_tilePad: 'ڈیش بورڈ باکس کا سائز', sz_tileNum: 'باکس میں نمبر کا سائز', sz_tileLbl: 'باکس کے عنوان کا سائز', sz_font: 'لکھائی کا سائز (پوری ایپ)', sz_reset: 'سائز واپس', title: 'رنگ', presets: 'تیار رنگ', custom: 'اپنی مرضی کے رنگ', header: 'اوپر والی پٹی', primary: 'بٹن / لنک / ٹیب',
+  theme: { tile_fmt: 'ڈیش بورڈ باکس کا فارمیٹ', tf_A: 'A · آئیکن', tf_B: 'B · گہرا رنگ', tf_C: 'C · پروگریس بار', tf_D: 'D · ایک لمبی پٹی', tf_E: 'E · گول چارٹ', tf_F: 'F · پلاٹ + مرلہ', tf_G: 'G · سادہ', tf_H: 'H · سفر', nav_style: 'مینو بار کا انداز', nav_pills: 'گول بٹن', nav_underline: 'نیچے لکیر', nav_boxed: 'فولڈر ٹیبز', nav_solid: 'رنگین پٹی', chip_style: 'فلٹر باکس کا انداز', chip_status: 'اسٹیٹس کے رنگ', chip_soft: 'ہلکا', chip_outline: 'خاکہ', chip_square: 'چوکور', sz_navSize: 'مینو کی لکھائی', sz_chipSize: 'فلٹر باکس کی لکھائی', sizes: 'سائز', sz_tilePad: 'ڈیش بورڈ باکس کا سائز', sz_tileNum: 'باکس میں نمبر کا سائز', sz_tileLbl: 'باکس کے عنوان کا سائز', sz_font: 'لکھائی کا سائز (پوری ایپ)', sz_reset: 'سائز واپس', title: 'رنگ', presets: 'تیار رنگ', custom: 'اپنی مرضی کے رنگ', header: 'اوپر والی پٹی', primary: 'بٹن / لنک / ٹیب',
     table: 'ٹیبل کا ہیڈر', background: 'پیج کا پس منظر', done: 'ٹھیک ہے', reset: 'پہلے جیسا', save_all: 'سب کے لیے ڈیفالٹ بنائیں', saved_all: 'سب یوزرز کے لیے محفوظ ہو گیا۔',
     note: 'آپ کی پسند اسی کمپیوٹر پر محفوظ رہے گی۔ ایڈمن اسے سب کے لیے ڈیفالٹ بنا سکتا ہے۔' },
   app: 'لینڈ مینجمنٹ', login: 'لاگ اِن', logout: 'لاگ آؤٹ', email: 'ای میل', password: 'پاس ورڈ', save: 'محفوظ کریں', saved: 'محفوظ ہو گیا۔', edit: 'ترمیم', delete: 'حذف کریں', deleted: 'حذف ہو گیا۔',
@@ -560,6 +560,8 @@ function openTheme() {
       ${chips(NAV_STYLES.map(k => [k, t('theme.nav_' + k)]), document.documentElement.dataset.nav, 'setNavStyle')}
       <div class="text-sm text-slate-500 mt-3 mb-1">${t('theme.chip_style')}</div>
       ${chips(CHIP_STYLES.map(k => [k, t('theme.chip_' + k)]), document.documentElement.dataset.chip, 'setChipStyle')}
+      <div class="text-sm text-slate-500 mt-4 mb-1">${t('theme.tile_fmt')}</div>
+      ${chips(TILE_FORMATS.map(k => [k, t('theme.tf_' + k)]), tileFormat(), 'setTileFormat')}
       <div class="text-sm text-slate-500 mt-4 mb-1">${t('qc.format_setting')}</div>
       ${chips(Object.keys(QC_FORMATS).map(k => [k, t('qc.f_' + k)]), qcFormat(), 'setQcFormat')}
       <div class="text-sm text-slate-500 mt-4 mb-1">${t('theme.sizes')}</div>
@@ -805,12 +807,63 @@ function viewLogin() {
 
 const VIEWS = {};
 
+// ---- Dashboard status boxes: 8 formats (A-H), chosen in Theme settings
+const TILE_FORMATS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+const TILE_ICONS = {
+  available: '<path d="M4 4h16v16H4zM8 12l3 3 5-6" fill="none" stroke="currentColor" stroke-width="2"/>',
+  sold: '<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2"/>',
+  payment_cleared: '<path d="M3 6h18v12H3zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 9v6M18 9v6" fill="none" stroke="currentColor" stroke-width="2"/>',
+  registry_in_process: '<path d="M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h5" fill="none" stroke="currentColor" stroke-width="2"/>',
+  registered: '<path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8l5.5-.8z" fill="none" stroke="currentColor" stroke-width="2"/>',
+  blocked: '<path d="M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2"/>',
+};
+const tileIcon = s => `<svg viewBox="0 0 24 24" width="22" height="22">${TILE_ICONS[s] || ''}</svg>`;
+const tileFormat = () => { const f = (S.theme || {}).tileFmt; return TILE_FORMATS.includes(f) ? f : 'A'; };
+function setTileFormat(f) {
+  applyTheme(Object.assign({}, S.theme, { tileFmt: f }));
+  try { localStorage.setItem('lm_theme', JSON.stringify(S.theme)); } catch (e) {}
+  if (document.getElementById('theme-panel')) openTheme();
+  if (/^#\/?$/.test(S.route || '#/')) load();
+}
+const tileGo = s => `onclick="S.gf={status:'${s}'};go('#/plots')"`;
+function hexA(h, a) { const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+function dashTiles(d) {
+  const st = S.enums.plotStatus || [], cnt = s => d.byStatus[s] || 0, tot = st.reduce((a, s) => a + cnt(s), 0) || 1;
+  const ms = d.marla_sqft || 270, marla = s => fmt(Math.round(((d.areaByStatus || {})[s] || 0) / ms * 100) / 100);
+  const lbl = s => L('plotStatus', s), pct = s => Math.round(cnt(s) / tot * 100);
+  const grid = inner => `<div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">${inner}</div>`;
+  switch (tileFormat()) {
+    case 'B': return grid(st.map(s => `<a class="tile rounded-xl cursor-pointer text-white shadow-sm" style="background:${COLORS[s]}" ${tileGo(s)}>
+      <div class="tile-lbl opacity-90">${lbl(s)}</div><div class="tile-num font-semibold num">${cnt(s)}</div></a>`).join(''));
+    case 'C': return grid(st.map(s => `<a class="card tile cursor-pointer" ${tileGo(s)}><div class="flex justify-between items-baseline">
+      <span class="tile-lbl text-slate-500">${lbl(s)}</span><span class="text-xs text-slate-400 num">${pct(s)}%</span></div>
+      <div class="tile-num font-semibold num">${cnt(s)}</div><div class="h-2 rounded-full bg-slate-100 mt-1 overflow-hidden"><div class="h-2 rounded-full" style="width:${pct(s)}%;background:${COLORS[s]}"></div></div></a>`).join(''));
+    case 'D': return `<div class="card mb-6"><div class="flex h-8 rounded-lg overflow-hidden mb-3">${st.filter(s => cnt(s)).map(s => `<a class="cursor-pointer flex items-center justify-center text-white text-xs font-semibold num" title="${lbl(s)}" style="width:${cnt(s) / tot * 100}%;background:${COLORS[s]}" ${tileGo(s)}>${pct(s) >= 6 ? cnt(s) : ''}</a>`).join('')}</div>
+      <div class="flex flex-wrap gap-x-5 gap-y-1">${st.map(s => `<a class="tile-lbl cursor-pointer flex items-center gap-1" ${tileGo(s)}><span class="inline-block w-3 h-3 rounded-full" style="background:${COLORS[s]}"></span>${lbl(s)} <b class="num">${cnt(s)}</b></a>`).join('')}</div></div>`;
+    case 'E': { let off = 25; const R = 15.9155;
+      const arcs = st.filter(s => cnt(s)).map(s => { const v = cnt(s) / tot * 100, c = `<circle class="cursor-pointer" ${tileGo(s)} cx="21" cy="21" r="${R}" fill="none" stroke="${COLORS[s]}" stroke-width="6" stroke-dasharray="${v} ${100 - v}" stroke-dashoffset="${off}"><title>${lbl(s)}: ${cnt(s)}</title></circle>`; off -= v; return c; }).join('');
+      return `<div class="card mb-6 flex flex-wrap items-center gap-6"><svg width="140" height="140" viewBox="0 0 42 42"><circle cx="21" cy="21" r="${R}" fill="none" stroke="#e2e8f0" stroke-width="6"/>${arcs}
+        <text x="21" y="22" text-anchor="middle" style="font-size:7px;font-weight:600">${st.reduce((a, s) => a + cnt(s), 0)}</text><text x="21" y="27.5" text-anchor="middle" style="font-size:3.5px;fill:#64748b">${t('nav.plots')}</text></svg>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 flex-1">${st.map(s => `<a class="tile-lbl cursor-pointer flex items-center gap-2" ${tileGo(s)}><span class="inline-block w-3 h-3 rounded-full" style="background:${COLORS[s]}"></span>${lbl(s)} <b class="num ms-auto">${cnt(s)}</b></a>`).join('')}</div></div>`; }
+    case 'F': return grid(st.map(s => `<a class="card tile border-t-4 cursor-pointer" style="border-color:${COLORS[s]}" ${tileGo(s)}>
+      <div class="tile-lbl text-slate-500">${lbl(s)}</div><div class="tile-num font-semibold num">${cnt(s)} <span class="text-sm font-normal text-slate-500">${t('nav.plots')}</span></div>
+      <div class="text-sm num" style="color:${COLORS[s]}">${marla(s)} ${t('area.marla')}</div></a>`).join(''));
+    case 'G': return grid(st.map(s => `<a class="tile rounded-xl cursor-pointer text-center" style="background:${hexA(COLORS[s], .13)}" ${tileGo(s)}>
+      <div class="tile-num font-semibold num" style="color:${COLORS[s]}">${cnt(s)}</div><div class="tile-lbl text-slate-600">${lbl(s)}</div></a>`).join(''));
+    case 'H': { const flow = st.filter(s => s !== 'blocked'), side = st.filter(s => s === 'blocked');
+      return `<div class="card mb-6 flex flex-wrap items-center gap-2">${flow.map((s, i) => `${i ? '<span class="text-slate-300 text-2xl">&rarr;</span>' : ''}<a class="tile flex-1 text-center cursor-pointer rounded-lg hover:bg-slate-50" style="min-width:90px" ${tileGo(s)}>
+        <div class="tile-num font-semibold num" style="color:${COLORS[s]}">${cnt(s)}</div><div class="tile-lbl text-slate-600">${lbl(s)}</div></a>`).join('')}
+        ${side.map(s => `<a class="tile text-center cursor-pointer rounded-lg border-s ps-4 hover:bg-slate-50" ${tileGo(s)}><div class="tile-num font-semibold num" style="color:${COLORS[s]}">${cnt(s)}</div><div class="tile-lbl text-slate-600">${lbl(s)}</div></a>`).join('')}</div>`; }
+    default: return grid(st.map(s => `<a class="card tile cursor-pointer flex items-center gap-3" ${tileGo(s)}>
+      <span class="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background:${hexA(COLORS[s], .15)};color:${COLORS[s]}">${tileIcon(s)}</span>
+      <span><span class="tile-lbl text-slate-500 block">${lbl(s)}</span><span class="tile-num font-semibold num">${cnt(s)}</span></span></a>`).join(''));
+  }
+}
+
 VIEWS.dashboard = d => {
   const ms = d.marla_sqft;
   return `<div class="flex flex-wrap items-center gap-3 mb-4"><h1 class="text-xl font-semibold">${t('nav.dashboard')}</h1>${qcBox()}</div>
-  <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">${(S.enums.plotStatus || []).map(s => `
-      <a class="card tile border-t-4 cursor-pointer" style="border-color:${COLORS[s]}" onclick="S.gf={status:'${s}'};go('#/plots')">
-        <div class="tile-lbl text-slate-500">${L('plotStatus', s)}</div><div class="tile-num font-semibold num">${d.byStatus[s] || 0}</div></a>`).join('')}</div>
+  ${dashTiles(d)}
   <section class="card mb-6"><h2 class="font-semibold mb-2">${t('land.intiqals')} ${projTag()}</h2>
     ${intiqalTable(d.intiqals, ms)}</section>
   <div class="grid md:grid-cols-2 gap-6">

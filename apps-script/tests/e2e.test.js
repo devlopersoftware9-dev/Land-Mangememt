@@ -19,6 +19,7 @@ class Sheet {
   getRange(r, c, nr, nc) { return new Range(this, r, c, nr || 1, nc || 1); }
   getLastRow() { return this.rows.length; }
   appendRow(v) { this.rows.push(v.slice()); }
+  deleteRow(r) { this.rows.splice(r - 1, 1); }
   getMaxColumns() { return 50; } getMaxRows() { return 1000; } setFrozenRows() {}
 }
 const sheets = {};
@@ -154,6 +155,26 @@ ok(pv.ownerships.map(o => o.holder || 'Company').join(' > ') === 'Company > Bila
 ok(pv.events.map(e => e.event).join(',') === 'sold,transferred,payment_cleared,registry_started,registered,repurchased', 'events: ' + pv.events.map(e => e.event).join(','));
 const land = api(lm, 'land', { project_id: pid });
 ok(land.intiqals[0].balance === 0 && land.intiqals[1].balance === 2092.5, 'intiqal balances updated');
+// edit / delete land records
+const pur = land.purchases[0];
+api(lm, 'savePurchase', { id: pur.id, project_id: pid, seller_name: 'Qamar Zaman', kanal: 12 });
+let land2 = api(lm, 'land', { project_id: pid });
+ok(land2.purchases.length === 1 && land2.purchases[0].seller_name === 'Qamar Zaman' && Number(land2.purchases[0].area_sqft) === 12 * 20 * 270, 'purchase edited: ' + JSON.stringify(land2.purchases[0].area_sqft));
+ok(apiErr(lm, 'saveIntiqal', { id: land.intiqals[0].id, project_id: pid, intiqal_no: '1001', holder_name: 'Q', marla: 1 }).code === 'err.area_below_issued', 'intiqal area below issued blocked');
+ok(apiErr(lm, 'deleteLand', { kind: 'intiqal', id: land.intiqals[0].id }).code === 'err.in_use', 'used intiqal cannot be deleted');
+api(lm, 'saveIntiqal', { project_id: pid, intiqal_no: '1003', holder_name: 'Temp', land_purchase_id: pur.id, marla: 2 });
+ok(apiErr(lm, 'deleteLand', { kind: 'purchase', id: pur.id }).code === 'err.in_use', 'linked purchase cannot be deleted');
+const tmp = api(lm, 'land', { project_id: pid }).intiqals.find(i => i.intiqal_no === '1003');
+api(lm, 'saveIntiqal', { id: tmp.id, project_id: pid, intiqal_no: '1003', holder_name: 'Temp2', marla: 3 });
+ok(api(lm, 'land', { project_id: pid }).intiqals.find(i => i.id === tmp.id).holder_name === 'Temp2', 'intiqal edited');
+api(lm, 'deleteLand', { kind: 'intiqal', id: tmp.id });
+ok(!api(lm, 'land', { project_id: pid }).intiqals.some(i => i.id === tmp.id), 'unused intiqal deleted');
+api(lm, 'saveParcel', { project_id: pid, type: 'road', name: 'Raasta X', marla: 5 });
+const par = api(lm, 'land', { project_id: pid }).parcels.find(x => x.name === 'Raasta X');
+api(lm, 'saveParcel', { id: par.id, project_id: pid, type: 'park', name: 'Park X', marla: 6 });
+ok(api(lm, 'land', { project_id: pid }).parcels.find(x => x.id === par.id).name === 'Park X', 'parcel edited');
+api(lm, 'deleteLand', { kind: 'parcel', id: par.id });
+ok(!api(lm, 'land', { project_id: pid }).parcels.some(x => x.id === par.id), 'parcel deleted');
 const dash = api(acc, 'dashboard', { project_id: pid });
 ok(dash.byStatus.available === 297, 'dashboard counts');
 ok(!JSON.stringify(api(acc, 'approval', { id: cs.approvals[0].id })).includes('token_hash'), 'token hashes never sent to browser');

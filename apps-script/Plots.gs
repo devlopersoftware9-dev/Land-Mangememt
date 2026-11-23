@@ -158,12 +158,19 @@ var Land = (function () {
 
   function savePurchase(u, p) {
     var pid = required(p.project_id, 'project');
-    var rec = Db.insert('LandPurchases', {
+    var data = {
       project_id: pid, seller_name: required(p.seller_name, 'seller'), seller_father_name: str(p.seller_father_name),
       seller_cnic: str(p.seller_cnic), seller_phone: str(p.seller_phone), mauza: str(p.mauza), khewat_no: str(p.khewat_no),
       khatooni_no: str(p.khatooni_no), khasra_nos: str(p.khasra_nos), area_sqft: sqft(pid, p), agreement_date: str(p.agreement_date),
-      payment_cleared: false, intiqal_done: false, notes: str(p.notes),
-    });
+      notes: str(p.notes),
+    };
+    if (p.id) {
+      var old = Db.get('LandPurchases', p.id);
+      Db.update('LandPurchases', p.id, data);
+      audit(u, 'land.purchase.edited', 'LandPurchases', p.id, { before: { seller: old.seller_name, area_sqft: old.area_sqft, khasra: old.khasra_nos }, after: { seller: data.seller_name, area_sqft: data.area_sqft, khasra: data.khasra_nos } });
+      return true;
+    }
+    var rec = Db.insert('LandPurchases', Object.assign(data, { payment_cleared: false, intiqal_done: false }));
     audit(u, 'land.purchase', 'LandPurchases', rec.id);
     return true;
   }
@@ -181,12 +188,20 @@ var Land = (function () {
   function saveIntiqal(u, p) {
     var pid = required(p.project_id, 'project');
     var no = required(p.intiqal_no, 'intiqal_no');
-    if (Db.where('Intiqals', 'project_id', pid).some(function (i) { return i.intiqal_no === no; })) fail('err.duplicate', { field: 'intiqal_no' });
-    var rec = Db.insert('Intiqals', {
+    if (Db.where('Intiqals', 'project_id', pid).some(function (i) { return i.intiqal_no === no && i.id !== String(p.id || ''); })) fail('err.duplicate', { field: 'intiqal_no' });
+    var data = {
       project_id: pid, land_purchase_id: str(p.land_purchase_id), intiqal_no: no, intiqal_date: str(p.intiqal_date),
       holder_name: required(p.holder_name, 'holder'), holder_cnic: str(p.holder_cnic), holder_is_filer: bool(p.holder_is_filer),
       holder_acquired_on: str(p.holder_acquired_on), khasra_nos: str(p.khasra_nos), area_sqft: sqft(pid, p), notes: str(p.notes),
-    });
+    };
+    if (p.id) {
+      var used = issued(p.id);
+      if (data.area_sqft + 0.01 < used) fail('err.area_below_issued', { issued: Math.round(used / num(Db.get('Projects', pid).marla_sqft || 270) * 100) / 100 });
+      Db.update('Intiqals', p.id, data);
+      audit(u, 'land.intiqal.edited', 'Intiqals', p.id, data);
+      return true;
+    }
+    var rec = Db.insert('Intiqals', data);
     audit(u, 'land.intiqal', 'Intiqals', rec.id);
     return true;
   }
@@ -194,7 +209,23 @@ var Land = (function () {
   function saveParcel(u, p) {
     var pid = required(p.project_id, 'project');
     if (ENUM.parcelType.indexOf(p.type) < 0) fail('err.required', { field: 'type' });
-    Db.insert('Parcels', { project_id: pid, type: p.type, name: required(p.name, 'name'), area_sqft: sqft(pid, p), width_ft: str(p.width_ft), notes: str(p.notes) });
+    var data = { project_id: pid, type: p.type, name: required(p.name, 'name'), area_sqft: sqft(pid, p), width_ft: str(p.width_ft), notes: str(p.notes) };
+    if (p.id) { Db.update('Parcels', p.id, data); audit(u, 'land.parcel.edited', 'Parcels', p.id, data); return true; }
+    Db.insert('Parcels', data);
+    return true;
+  }
+
+  /** Delete a wrong entry. Blocked when other records depend on it (intiqal used for a fard, purchase linked to an intiqal). */
+  function remove(u, p) {
+    var table = { purchase: 'LandPurchases', intiqal: 'Intiqals', parcel: 'Parcels' }[p.kind];
+    if (!table) fail('err.unknown_action');
+    var rec = Db.get(table, p.id);
+    if (table === 'Intiqals' && Db.where('CaseIntiqals', 'intiqal_id', rec.id).length) fail('err.in_use');
+    if (table === 'LandPurchases' && Db.where('Intiqals', 'land_purchase_id', rec.id).length) fail('err.in_use');
+    var sh = SpreadsheetApp.getActive().getSheetByName(table);
+    sh.deleteRow(rec._row);
+    Db.clearCache();
+    audit(u, 'land.' + p.kind + '.deleted', table, rec.id, rec);
     return true;
   }
 
@@ -210,7 +241,7 @@ var Land = (function () {
 
   function balance(intiqal) { return num(intiqal.area_sqft) - issued(intiqal.id); }
 
-  return { savePurchase: savePurchase, tickPurchase: tickPurchase, saveIntiqal: saveIntiqal, saveParcel: saveParcel, issued: issued, balance: balance };
+  return { savePurchase: savePurchase, tickPurchase: tickPurchase, saveIntiqal: saveIntiqal, saveParcel: saveParcel, remove: remove, issued: issued, balance: balance };
 })();
 
 /** Settings: rates and approval emails. */

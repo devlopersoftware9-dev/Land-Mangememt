@@ -898,6 +898,7 @@ var Land = (function () {
       holder_name: required(p.holder_name, 'holder'), holder_cnic: str(p.holder_cnic), holder_is_filer: bool(p.holder_is_filer),
       holder_acquired_on: str(p.holder_acquired_on), khasra_nos: str(p.khasra_nos), area_sqft: sqft(pid, p), notes: str(p.notes),
     };
+    if (data.area_sqft <= 0) fail('err.area_required');
     if (p.id) {
       var used = issued(p.id);
       if (data.area_sqft + 0.01 < used) fail('err.area_below_issued', { issued: Math.round(used / num(Db.get('Projects', pid).marla_sqft || 270) * 100) / 100 });

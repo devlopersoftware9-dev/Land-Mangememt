@@ -102,7 +102,7 @@ en: {
     intiqals: 'From intiqal(s)', fard: 'Fard', fard_no: 'Fard no', registry_no: 'Registry no', registry_date: 'Registry date', office: 'Sub-registrar office',
     copy_url: 'Link to scanned copy (Drive)', next: 'Next step', send_fard_help: 'An email with plot, area and maliyat goes to the director for Fard approval.',
     send_fard: 'Send Fard approval email', waiting: 'Waiting for the director to answer by email.', replied: 'Director has replied. Check and verify to move forward.',
-    jari_help: 'Select intiqal(s). Total must be {area} ({sqft} sq ft). 2-3 intiqals can be combined.', take: 'Take (sq ft)', no_intiqal: 'No intiqal entered yet. Add the intiqal first (button below or Land page), then select it here.', auto_fill: 'Auto fill', add_intiqal_here: 'Add intiqal', alloc_total: 'Selected', jari_msg: 'Fard jari message for registry officer',
+    jari_help: 'Select intiqal(s). Total must be {area} ({sqft} sq ft). 2-3 intiqals can be combined.', take: 'Take (sq ft)', no_intiqal: 'No intiqal entered yet. Add the intiqal first (button below or Land page), then select it here.', auto_fill: 'Auto fill', intiqal_no_area: 'Area not entered – click Edit and add kanal/marla', add_intiqal_here: 'Add intiqal', alloc_total: 'Selected', jari_msg: 'Fard jari message for registry officer',
     jari_default: 'Please get fard issued for Plot {plot} ({area}) in favour of {customer}.', issue_jari: 'Issue "Fard Jari" message', waiting_role: 'Waiting for {role}.',
     fard_received: 'Fard received', hand_fard: 'Fard handed over to client', seller_exp_opt: 'Seller expense approval (e.g. 236-C) – optional',
     client_reg_help: 'Client got the registry done himself. Record its details.', record_client: 'Record client registry',
@@ -142,7 +142,7 @@ en: {
     payer: { buyer: 'Buyer', seller: 'Seller' },
     result: { approved: 'Approved', rejected: 'Rejected', unclear: 'Unclear', unknown_sender: 'Unknown sender', unmatched: 'Not matched', not_authenticated: 'Not verified', already_decided: 'Already answered', duplicate: 'Duplicate' },
   },
-  err: { pending_amount: 'Enter the pending payment amount.', in_use: 'This record is used elsewhere (intiqal / fard jari), so it cannot be deleted.', area_below_issued: 'Area cannot be less than the area already issued ({issued} marla).', required: '{field} is required.', date: '{field}: enter a valid date.', login: 'Email or password is wrong.', session: 'Please log in again.',
+  err: { area_required: 'Enter the area (kanal / marla / sq ft).', pending_amount: 'Enter the pending payment amount.', in_use: 'This record is used elsewhere (intiqal / fard jari), so it cannot be deleted.', area_below_issued: 'Area cannot be less than the area already issued ({issued} marla).', required: '{field} is required.', date: '{field}: enter a valid date.', login: 'Email or password is wrong.', session: 'Please log in again.',
     not_allowed: 'Your role is not allowed to do this.', not_found: 'Record not found.', busy: 'System is busy, try again.', server: 'Error: {msg}',
     plot_status: 'Plot {plot} is "{status}", so this is not possible.', same_customer: 'Plot is already with this customer.',
     payment_not_cleared: 'Payment of plot {plot} is not cleared yet.', maliyat: 'Registry maliyat is required.', plot_size_missing: 'Enter the size of plot {plot} first.',
@@ -192,7 +192,7 @@ ur: {
     intiqals: 'انتقال نمبر', fard: 'فرد', fard_no: 'فرد نمبر', registry_no: 'رجسٹری نمبر', registry_date: 'رجسٹری کی تاریخ', office: 'سب رجسٹرار آفس',
     copy_url: 'اسکین کاپی کا لنک (ڈرائیو)', next: 'اگلا مرحلہ', send_fard_help: 'پلاٹ، رقبہ اور مالیت کے ساتھ ڈائریکٹر کو فرد منظوری کی ای میل جائے گی۔',
     send_fard: 'فرد منظوری کی ای میل بھیجیں', waiting: 'ڈائریکٹر کے ای میل جواب کا انتظار ہے۔', replied: 'ڈائریکٹر نے جواب دے دیا ہے۔ آگے بڑھنے کے لیے چیک کر کے تصدیق کریں۔',
-    jari_help: 'انتقال منتخب کریں۔ کل رقبہ {area} ({sqft} مربع فٹ) ہونا چاہیے۔ 2-3 انتقال ملائے جا سکتے ہیں۔', take: 'لینا ہے (مربع فٹ)', no_intiqal: 'ابھی کوئی انتقال درج نہیں۔ پہلے انتقال درج کریں (نیچے بٹن یا زمین والا صفحہ)، پھر یہاں منتخب کریں۔', auto_fill: 'خودکار بھریں', add_intiqal_here: 'انتقال درج کریں', alloc_total: 'منتخب', jari_msg: 'رجسٹری آفیسر کے لیے فرد جاری کا پیغام',
+    jari_help: 'انتقال منتخب کریں۔ کل رقبہ {area} ({sqft} مربع فٹ) ہونا چاہیے۔ 2-3 انتقال ملائے جا سکتے ہیں۔', take: 'لینا ہے (مربع فٹ)', no_intiqal: 'ابھی کوئی انتقال درج نہیں۔ پہلے انتقال درج کریں (نیچے بٹن یا زمین والا صفحہ)، پھر یہاں منتخب کریں۔', auto_fill: 'خودکار بھریں', intiqal_no_area: 'رقبہ درج نہیں – ترمیم پر کلک کر کے کنال/مرلہ لکھیں', add_intiqal_here: 'انتقال درج کریں', alloc_total: 'منتخب', jari_msg: 'رجسٹری آفیسر کے لیے فرد جاری کا پیغام',
     jari_default: 'پلاٹ {plot} ({area}) کی فرد {customer} کے حق میں جاری کروائیں۔', issue_jari: '"فرد جاری" کا پیغام جاری کریں', waiting_role: '{role} کا انتظار ہے۔',
     fard_received: 'فرد وصول ہو گئی', hand_fard: 'فرد کلائنٹ کے حوالے کر دی', seller_exp_opt: 'فروخت کنندہ کے اخراجات کی منظوری (مثلاً 236-C) – اختیاری',
     client_reg_help: 'کلائنٹ نے رجسٹری خود کروائی۔ تفصیل درج کریں۔', record_client: 'کلائنٹ کی رجسٹری درج کریں',
@@ -232,7 +232,7 @@ ur: {
     payer: { buyer: 'خریدار', seller: 'فروخت کنندہ' },
     result: { approved: 'منظور', rejected: 'نامنظور', unclear: 'غیر واضح', unknown_sender: 'نامعلوم بھیجنے والا', unmatched: 'میچ نہیں ہوا', not_authenticated: 'تصدیق نہیں ہوئی', already_decided: 'پہلے ہی جواب دیا جا چکا', duplicate: 'دوہری' },
   },
-  err: { pending_amount: 'باقی پیمنٹ کی رقم درج کریں۔', in_use: 'یہ ریکارڈ کہیں اور استعمال ہو رہا ہے (انتقال / فرد جاری)، اس لیے حذف نہیں ہو سکتا۔', area_below_issued: 'رقبہ جاری شدہ رقبے ({issued} مرلہ) سے کم نہیں ہو سکتا۔', required: '{field} ضروری ہے۔', date: '{field}: درست تاریخ درج کریں۔', login: 'ای میل یا پاس ورڈ غلط ہے۔', session: 'دوبارہ لاگ اِن کریں۔',
+  err: { area_required: 'رقبہ درج کریں (کنال / مرلہ / مربع فٹ)۔', pending_amount: 'باقی پیمنٹ کی رقم درج کریں۔', in_use: 'یہ ریکارڈ کہیں اور استعمال ہو رہا ہے (انتقال / فرد جاری)، اس لیے حذف نہیں ہو سکتا۔', area_below_issued: 'رقبہ جاری شدہ رقبے ({issued} مرلہ) سے کم نہیں ہو سکتا۔', required: '{field} ضروری ہے۔', date: '{field}: درست تاریخ درج کریں۔', login: 'ای میل یا پاس ورڈ غلط ہے۔', session: 'دوبارہ لاگ اِن کریں۔',
     not_allowed: 'آپ کے رول کو اس کی اجازت نہیں۔', not_found: 'ریکارڈ نہیں ملا۔', busy: 'سسٹم مصروف ہے، دوبارہ کوشش کریں۔', server: 'خرابی: {msg}',
     plot_status: 'پلاٹ {plot} اس وقت "{status}" ہے، یہ ممکن نہیں۔', same_customer: 'پلاٹ پہلے ہی اسی کسٹمر کے پاس ہے۔',
     payment_not_cleared: 'پلاٹ {plot} کی پیمنٹ ابھی کلیئر نہیں ہوئی۔', maliyat: 'رجسٹری مالیت ضروری ہے۔', plot_size_missing: 'پہلے پلاٹ {plot} کا سائز درج کریں۔',
@@ -902,10 +902,10 @@ VIEWS.case = d => {
       next = `<p class="mb-2">${t('r.replied')}</p>${d.approvals[0] ? `<button class="btn bg-amber-600" onclick="go('#/approval/${d.approvals[0].id}')">${t('a.open')}</button>` : ''}`; break;
     case 'fard_approved':
       next = allow('fard_jari') ? stepForm(c.id, 'fard_jari', `<p>${t('r.jari_help', { area: area(c.area_sqft, ms), sqft: c.area_sqft })}</p>
-        <table class="t"><tr><th>${t('land.intiqal_no')}</th><th>${t('land.holder')}</th><th>${t('land.balance')}</th><th>${t('r.take')}</th></tr>
+        <table class="t"><tr><th>${t('land.intiqal_no')}</th><th>${t('land.holder')}</th><th>${t('land.balance')}</th><th>${t('r.take')}</th>${allow('land') ? '<th></th>' : ''}</tr>
         ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td>${esc(i.holder_name)}</td><td class="num">${area(Math.max(0, i.balance), ms)}</td>
-          <td><input type="number" step="0.01" min="0" max="${i.balance}" name="allocations[${i.id}]" data-bal="${Math.max(0, i.balance)}" class="inp w-32 num alloc" oninput="allocTotal(${c.area_sqft})" ${i.balance <= 0 ? 'disabled' : ''}></td></tr>`).join('')
-          || `<tr><td colspan="4" class="text-amber-700 py-3">⚠ ${t('r.no_intiqal')}</td></tr>`}</table>
+          <td><input type="number" step="0.01" min="0" max="${i.balance}" name="allocations[${i.id}]" data-bal="${Math.max(0, i.balance)}" class="inp w-32 num alloc" oninput="allocTotal(${c.area_sqft})" ${i.balance <= 0 ? 'disabled' : ''}>${num(i.area_sqft) <= 0 ? `<div class="text-xs text-amber-700">⚠ ${t('r.intiqal_no_area')}</div>` : ''}</td>${allow('land') ? `<td>${landEditBtn('intiqal', i.id)}</td>` : ''}</tr>`).join('')
+          || `<tr><td colspan="5" class="text-amber-700 py-3">⚠ ${t('r.no_intiqal')}</td></tr>`}</table>
         <div class="flex flex-wrap items-center gap-3 text-sm">
           ${d.intiqals.some(i => i.balance > 0) ? `<button type="button" class="inp" onclick="allocAuto(${c.area_sqft})">⚡ ${t('r.auto_fill')}</button>` : ''}
           ${allow('land') ? `<button type="button" class="inp" onclick="addIntiqalModal()">+ ${t('r.add_intiqal_here')}</button>` : ''}

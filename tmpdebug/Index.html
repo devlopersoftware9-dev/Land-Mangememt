@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Theme colours – changed live by the 🎨 Theme panel */
+  :root { --p: #0f766e; --p-soft: #ccfbf1; --hdr: #134e4a; --hdr-text: #ffffff; --th: #0f766e; --th-text: #ffffff; --bg: #f1f5f9; --stripe: #f8fafc; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); }
+  html[dir=rtl] body { font-family: 'Noto Nastaliq Urdu', serif; line-height: 2.1; }
+  .num { direction: ltr; unicode-bidi: embed; font-family: 'Inter', sans-serif; }
+  .card { background: #fff; border-radius: .6rem; box-shadow: 0 1px 3px rgba(15,23,42,.08); border: 1px solid #e2e8f0; padding: 1rem; }
+  .card h2 { color: var(--p); }
+  .inp { border: 1px solid #cbd5e1; border-radius: .375rem; padding: .3rem .6rem; background: #fff; }
+  .inp:focus { outline: 2px solid var(--p); outline-offset: 0; border-color: var(--p); }
+  .btn { border-radius: .375rem; padding: .4rem 1rem; color: #fff; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+  .btn:hover { filter: brightness(1.08); }
+  .bg-p { background: var(--p); } .text-p { color: var(--p); } .hover\:text-p:hover { color: var(--p); }
+  a.link { color: var(--p); cursor: pointer; font-weight: 500; } a.link:hover { text-decoration: underline; }
+
+  /* Header + tabs */
+  .topbar { background: var(--hdr); color: var(--hdr-text); }
+  .topbar .inp { background: rgba(255,255,255,.12); color: var(--hdr-text); border-color: rgba(255,255,255,.3); }
+  .topbar .inp option { color: #0f172a; }
+  .tabbar { background: #fff; border-bottom: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .tab { display: inline-flex; align-items: center; gap: .45rem; padding: .7rem 1rem; color: #475569; border-bottom: 3px solid transparent; font-weight: 500; cursor: pointer; white-space: nowrap; }
+  .tab:hover { color: var(--p); background: var(--stripe); }
+  .tab.active { color: var(--p); border-bottom-color: var(--p); background: var(--p-soft); }
+  .tab svg { width: 1.1rem; height: 1.1rem; }
+  .badge-n { background: #dc2626; color: #fff; border-radius: 9999px; font-size: .7rem; padding: 0 .4rem; }
+
+  /* Tables: real grid */
+  table.t { width: 100%; font-size: .875rem; border-collapse: separate; border-spacing: 0; border: 1px solid #cbd5e1; border-radius: .5rem; overflow: hidden; }
+  table.t th { text-align: start; background: var(--th); color: var(--th-text); font-weight: 600; padding: .55rem .7rem; border-inline-end: 1px solid rgba(255,255,255,.25); white-space: nowrap; }
+  table.t td { padding: .5rem .7rem; border-top: 1px solid #e2e8f0; border-inline-end: 1px solid #e2e8f0; vertical-align: top; background: #fff; }
+  table.t th:last-child, table.t td:last-child { border-inline-end: 0; }
+  table.t tr:nth-child(even) td { background: var(--stripe); }
+  table.t tr:hover td { background: var(--p-soft); }
+  .card.p-0 { padding: 0; }
+  table.t tr.sel td { background: var(--p-soft) !important; }
+  input[type=checkbox] { accent-color: var(--p); }
+  table.t thead th { position: sticky; top: 0; z-index: 2; }
+  .border, .border-b, .border-t, .divide-y > * { border-color: #e2e8f0; }
+  .scroll-table { max-height: 70vh; overflow: auto; border-radius: .5rem; }
+  .scroll-table table.t th { position: sticky; top: 0; z-index: 1; }
+  .chip { display: inline-flex; align-items: center; gap: .35rem; border-radius: 9999px; padding: .05rem .65rem; font-size: .78rem; font-weight: 500; }
+  .dot { width: .6rem; height: .6rem; border-radius: 9999px; display: inline-block; }
+
+  /* Theme panel */
+  .swatch { width: 2.2rem; height: 2.2rem; border-radius: .5rem; border: 2px solid #fff; box-shadow: 0 0 0 1px #cbd5e1; cursor: pointer; }
+  .swatch:hover { transform: scale(1.08); }
+  input[type=color] { width: 3rem; height: 2rem; border: 1px solid #cbd5e1; border-radius: .375rem; padding: 0; background: #fff; cursor: pointer; }
+</style>
+</head>
+<body class="text-slate-800 min-h-screen">
+<script>
+// Never show a blank page: if the app fails to start, show the error and a reload button.
+window.__appErr = function (msg) {
+  var el = document.getElementById('boot-error'); if (!el) { el = document.createElement('div'); el.id = 'boot-error'; document.body.appendChild(el); }
+  el.innerHTML = '<div style="max-width:560px;margin:60px auto;padding:20px;background:#fff;border:1px solid #fca5a5;border-radius:10px;font-family:Arial"><b style="color:#b91c1c">Something went wrong / کچھ مسئلہ ہو گیا</b><pre style="white-space:pre-wrap;font-size:12px;color:#475569">' + String(msg).replace(/[<>&]/g, '') + '</pre><button onclick="location.reload()" style="padding:8px 16px;background:#0f766e;color:#fff;border:0;border-radius:6px">Reload</button></div>';
+};
+window.addEventListener('error', function (e) {
+  var msg = (e.message || 'error') + (e.lineno ? ' @' + e.lineno + ':' + e.colno : '');
+  window.__appErr(msg);
+  try {
+    var sc = document.scripts[document.scripts.length - 1], info = [];
+    for (var j = 0; j < document.scripts.length; j++) { var d = document.scripts[j]; var ok = 'src'; if (!d.src) { try { new Function(d.textContent); ok = 'compiles'; } catch (ce) { ok = 'ERR ' + ce.message; } } info.push(j + ' ' + (d.src || 'inline') + ' len=' + d.textContent.length + ' ' + ok); }
+    msg += '\n' + info.join('\n') + '\nfile=' + e.filename;
+    var H = [5381, 2211711862, 246000584, 165497871, 242033853, 1210542847, 1693626947, 415035829, 2675288540, 363824515, 3659481405, 480571283, 2481269796, 3322509504, 3803197621, 1605003660, 2991303479, 3840742512, 1460358289, 3775074829, 1633033110, 44311703, 2339713567, 445220543, 1406083054, 981401871, 1073449552, 2751131754, 1637823812, 881725578, 2361941024, 482476343, 3387715064, 3387382444, 1862707550, 3515353602, 74283767, 3023989155, 2397976575, 2516502782, 2571638843, 1163800307, 2812496362, 1107692843, 1416706268, 2103696744, 2652309359, 3185099407, 740127504, 1717644516, 3961389448, 3752151407, 765974341, 3331170028, 1205211160, 1813148733, 3723402850, 780046680, 304593580, 747913642, 1828884005, 1056357522, 2527252941, 843695379, 4256576731, 1968405277, 3889560854, 946266748, 1665455185, 3366346935, 3249440744, 3317834388, 2295028808, 1049751497, 140440766, 2848091748, 1392066346, 2074885326, 3485997047, 2289601010, 4264302214, 529822621, 2085290484, 3181969183, 2855534203, 2812437593, 3485911073, 1969831817, 1029040031, 2794940159, 4172268661, 2136740402, 112964658, 5861620, 183483779, 876657092, 1614198406, 1772842063, 3008151369, 6224925, 2233672080, 2197443198, 2333992614, 2178650047, 1701575650, 1226798390, 457676303, 483709788, 1272384729, 2952238491, 489798528, 3441605104, 3852437751, 3663441932, 77622226, 2873673715, 821948525, 1821229630, 101410587, 2727638759, 2088672932, 1121863199, 3410386008, 1596665500, 3911409689, 2079129892, 3398521430, 2196741370, 3993411849, 675570856, 2069052987, 2193088843, 164540228, 2324514665, 2462333703, 203209797, 2182123087, 517051077, 1519498011, 629746345, 1578398637, 4000233328, 816037476, 3602740190, 1797730977, 3862927389, 1460501990, 3427160770, 2050450953, 2710845616, 3378058935, 1684344405, 82020584, 574002812, 1560251669, 997235531, 3910404399, 1838075492, 2379642053, 2422812984, 3366346935, 1964107916, 319545420, 3088253501, 3663276259, 465425009, 2330831375, 3575359874, 1589888070, 1192837461, 1040738422, 4033504911, 1517473446, 2085290484, 1691758750, 1071896400, 3199215178, 2739244599, 574067900, 1989157510, 2419843567, 2765839674, 2405656549, 4285582935, 5861620, 5861603, 5381, 2585132374, 5381, 1575114908, 3009105646, 1198337963, 5381, 4058332110, 277966813, 703939624, 4264202405, 363098855, 177624, 2757897242, 4166762410, 3601764834, 798202177, 2986373888, 2286417849, 1392271751, 4062245741, 521505828, 3739206881, 4089522654, 875594259, 1370919311, 177624, 92439852, 2395303330, 3025845846, 1662285706, 3246628523, 1834107446, 1354754454, 2845245284, 2287812038, 3110980325, 1563982330, 2084539270, 177624, 1550026894, 2743999177, 631715570, 3877801345, 177624, 1696766913, 1236578244, 1413218575, 2832105321, 177624, 5381, 4171894802, 3939920812, 1453793618, 2470972087, 177624, 5381, 3887470083, 2995599818, 235945897, 537036319, 3705074279, 2738053239, 1648883609, 3104833411, 701507485, 1579163261, 2583176066, 95109162, 177624, 5381, 3704942271, 3095701453, 4289955086, 4069694867, 1660704588, 614661592, 3935458294, 3459685864, 2084764677, 3769641882, 95109162, 3433227260, 276630010, 177624, 5381, 3226086776, 673779583, 1309216125, 437527265, 3977321493, 1735055253, 177624, 5381, 2299376350, 4183699924, 204079673, 2869910728, 936169793, 3852518260, 4195775919, 1033296340, 5861603, 4033172670, 5381, 2897310306, 401322519, 880924763, 2561014422, 58953251, 322662227, 2609729035, 326924338, 1877547403, 2288989535, 3470201699, 4047879299, 3190314065, 4276937556, 546339359, 4268749706, 800324887, 1932038557, 2499894551, 2449115292, 177624, 5381, 4256918921, 1324460516, 1807612687, 2339159836, 2116956887, 4100972058, 3626504702, 2610631792, 2607602770, 398413010, 5861603, 3888579448, 3547640393, 4182346999, 3016038124, 177624, 3065112740, 4155235240, 2266648008, 2478149673, 3863274797, 3440792596, 1187121299, 177624, 1254614026, 1783632889, 3500680855, 1785527697, 177624, 4130558404, 696684294, 2220851815, 2232877632, 177624, 615922649, 3235436856, 1396593286, 711154023, 2037557827, 3486805498, 3442907586, 558451622, 787904542, 1842978902, 1707516152, 3263554822, 2003744081, 934377619, 471497887, 359036165, 4043105975, 1906115230, 934377619, 1716892219, 1915590238, 177624, 5381, 1983880259, 5381, 4103940748, 3904965182, 1242507846, 3298282393, 857625193, 177624, 5381, 2843630860, 2032528338, 167117157, 1765745413, 5862595, 5381, 903324965, 3205188303, 177624, 5381, 562789611, 368474262, 2324884408, 2283520316, 4263974243, 3145795779, 4102977825, 2466113188, 3947083992, 1682415946, 161453563, 918138840, 234351054, 3912271259, 3294512891, 1658407476, 925616763, 3302070648, 1207272801, 2085290467, 481403713, 1796554039, 3441526603, 1461121034, 1735055253, 177624, 5381, 3922182231, 1868537092, 1472259173, 2324884408, 1200626526, 1961180278, 2965224032, 4041884777, 746174353, 177624, 5381, 313342453, 3155019002, 1697216711, 1767488741, 1716181877, 294256521, 481403713, 3378837177, 642624602, 1621019858, 3119045021, 2115737061, 679403121, 857625193, 177624, 5381, 1113154368, 1697216711, 1480930153, 481403713, 3132133718, 1820432974, 2521962691, 3255548314, 857625193, 177624, 5381, 905568254, 2232128979, 5381, 3197807597, 481403713, 1263708063, 1283092020, 770502693, 735082204, 3671524407, 2432449689, 2338891959, 177624, 5381, 4263855206, 405244691, 185754376, 3541871039, 2042164812, 1336751179, 755611228, 178911257, 4001463908, 3885998195, 177624, 5381, 1096647454, 5381, 1424671984, 3674275470, 1449950308, 941260996, 3488543143, 3151181264, 3136424377, 1486653162, 2106722011, 3449607137, 4077078622, 4286246685, 3237566817, 3449607137, 2050832701, 1135436551, 2413232550, 3290955520, 2577674614, 114059405, 824474312, 5861603, 5381, 4151638695, 1425420244, 918634516, 868621835, 3002332006, 1092422082, 1982801648, 605141412, 177624, 5381, 414876308, 2736517510, 2756435192, 607268645, 1078931125, 5381, 3263039776, 1538219707, 98245484, 691115368, 2046748852, 1822207185, 3966459411, 222920167, 4055349973, 3649398298, 1989264567, 1265797554, 2709884421, 532030560, 688498771, 506009204, 506817825, 3553188008, 2174912862, 5861603, 5381, 786186927, 5381, 2328268292, 2460088620, 652509549, 2569792749, 2708064708, 867395496, 2804841331, 177624, 5381, 2977547567, 1369884498, 4075857551, 2120654375, 1076526959, 29093003, 917893329, 2508414284, 50789826, 1819802358, 2143958083, 3503301115, 4045524658, 2389434953, 2770081229, 4276563067, 3207977678, 1574052186, 81610739, 2121432846, 3808570162, 212817553, 322743122, 1405542234, 4122040576, 1717144850, 1775716140, 3041888606, 177624, 5381, 1872723642, 858337682, 5381, 797773692, 629557532, 3784795181, 4093164996, 3519525353, 2941053893, 4051303227, 1612912959, 3224385033, 1587006315, 177624, 5381, 3884692829, 3190787690, 4097195032, 2276667731, 1221492514, 177624, 2117382883, 27469364, 5381, 338006969, 1697216711, 219053586, 1781302381, 2091240813, 1626576402, 193341144, 481403713, 3113218456, 3478119058, 3100937476, 2388292925, 2158199786, 959204480, 1289614528, 877365159, 857625193, 177624, 5381, 3435403294, 1698234775, 74439544, 1758521697, 3568000945, 1377412129, 2208544888, 441209390, 3854455920, 1050482087, 642483571, 80442398, 3403289853, 3611086782, 177624, 1789463805, 1586532953, 2679046680, 177624, 5381, 3507438976, 1698234775, 2807812874, 3895166405, 2157589435, 143802101, 2017524006, 177624, 5381, 26295486, 1397553171, 488514515, 3022491895, 1271604090, 950171275, 3877527883, 177624, 3202060125, 3736115982, 3313942530, 177624, 5381, 1641695603, 2981328868, 2988284350, 3750655417, 177624, 3427105032, 481403713, 3994312965, 3913581336, 1253592514, 4168904717, 1054974454, 668487254, 3255548314, 177624, 2256475126, 3546532091, 3335551531, 122571999, 481403713, 1609083628, 1060760520, 2365383432, 1957960085, 1271859540, 3255548314, 177624, 854119959, 4218319606, 3592303663, 481403713, 110651671, 4020004519, 2361775345, 3038091033, 1222325055, 3856752170, 960069263, 2440386650, 4094712330, 2309008446, 3249548332, 1935118747, 1889621666, 2199628597, 652653562, 2273833733, 642624602, 1841175327, 177624, 5381, 2597925277, 2857924856, 2831625006, 339838468, 3865881307, 790296488, 2289854589, 321468503, 177624, 2288044021, 539614424, 2026558029, 3070391629, 3204695964, 60030583, 95109162, 3199243738, 177624, 1812389169, 3001180191, 594199304, 1421512517, 177624, 5381, 3229304092, 893300956, 180214652, 20849673, 3302243142, 2617520287, 3366930794, 3657043899, 4179432200, 2414344099, 177624, 5381, 1274483607, 893300956, 2235678169, 2248670904, 3765548347, 3456656255, 3184387331, 1831866388, 3613851535, 1935123807, 2965134193, 177624, 5381, 310695432, 1299848307, 2920229693, 2882406135, 177624, 5381, 3532481715, 1313341047, 885105562, 1817915051, 2105488275, 193341150, 3399994488, 41089143, 3016462592, 1270795065, 3602668428, 2176061163, 95016920, 3967746421, 3030450797, 1953052370, 3277688482, 1955924186, 2950088043, 356574891, 1149971695, 718522759, 3700879952, 395012340, 3102210766, 193341144, 2642339374, 728097423, 1435361065, 9057773, 1099663514, 3564183562, 621285898, 1429106155, 5381, 4204363608, 4002032686, 1318958289, 4262698885, 2912081595, 1492293217, 276280436, 552815451, 2587540449, 901729396, 1585224717, 636411551, 3449607137, 1428667082, 616467216, 899978899, 3024040071, 3534639355, 3410479227, 3792695182, 3420466303, 2574821295, 2947574868, 1197268536, 3044995610, 5861603, 5381, 2295686785, 1228029044, 3662628894, 3697968389, 2387322052, 193809157, 2701580158, 1014996107, 1614458034, 2267522296, 2424217723, 5861603, 5381, 2702767481, 1592520882, 192092800, 2510552409, 1930867428, 177624, 2183115802, 4035626515, 2416008890, 303562882, 177624, 5381, 1188112059, 1014769065, 1166062608, 1226720770, 501146522, 1314573146, 1509696336, 546717946, 3743026781, 2627747106, 2097761645, 512043008, 1758994421, 3988177742, 1815299088, 2312212448, 1887662315, 1054922040, 177624, 5381, 593818710, 2448734271, 1665554010, 4146368874, 250820292, 3043843188, 673671247, 177624, 5381, 3691909728, 4049478378, 2441782020, 2277760331, 3542507881, 3061952212, 2405175673, 3917965802, 3698683137, 2795246638, 1164979236, 2389836031, 2988419566, 2611665931, 3965311790, 1753806966, 2890072912, 2730360011, 1483279120, 4211605128, 2314895943, 2367874444, 1995334929, 4147831853, 842370811, 1520137834, 2611250861, 1415903307, 2222452921, 1039168897, 672531934, 2255099729, 4245123412, 974841655, 193341144, 2823309053, 3711909327, 193341144, 19912074, 3549944251, 1992842405, 1770861047, 2350026928, 826310907, 3302556240, 1459206746, 1318958289, 307124340, 2225585134, 3184540533, 1437965387, 2670904441, 1838781633, 2258986765, 800842225, 2297093759, 3501006929, 2752460851, 3449607137, 2909951107, 899978899, 3952855808, 4021606511, 1500258085, 2954655298, 3190678530, 5861603, 5381, 1539533984, 3826854197, 3827962748, 2273172269, 370087614, 2643289921, 2772720740, 1831422467, 5861603, 5381, 3740555315, 3673958154, 2105488275, 1081429043, 1033240053, 1892013737, 673020672, 193341144, 787778150, 3385056519, 150871965, 20678340, 1930750792, 193341144, 4177389623, 3487059601, 4053452503, 3151181264, 2385098138, 3661274854, 3210660677, 387010245, 3572539343, 3449305426, 1939798788, 1853336981, 4241872707, 957836586, 858562521, 136672887, 2499631262, 5861603, 5381, 80862147, 2334427094, 1964047423, 2701166497, 2291009217, 3536683834, 1191120932, 1776076825, 2877531076, 1032804673, 246636743, 279841891, 165630520, 2185004259, 5861603, 5381, 3113901811, 548972983, 3151181264, 3303039815, 2445439636, 4055368406, 5381, 2715462191, 2206919540, 177624, 5381, 894147476, 884161675, 1865465633, 1540914750, 1678983833, 1377657912, 398697069, 1172142614, 743650614, 2000141918, 2552803462, 177624, 2881743095, 48411938, 177624, 590994095, 448931098, 1040393381, 682559044, 3079794680, 2250016691, 714359201, 2827221134, 3403235358, 3936894140, 433866930, 1888048136, 1313664999, 1181701326, 394211626, 95109162, 2760512188, 3195045655, 1706508831, 3478056732, 177624, 2281485557, 1697216711, 1092108483, 1822923276, 3210663948, 857625193, 177624, 3397248460, 1535095328, 160707835, 3151503175, 177624, 5381, 1110412243, 790072597, 3741846822, 1353581646, 3114876608, 3014456575, 3434421103, 3499578681, 3988925732, 3895489860, 2525200615, 1169387818, 1154353166, 723866537, 1895224293, 2334478932, 1753189349, 1958816654, 438954473, 3993839575, 2136223253, 5861603, 5381, 2404743594, 1197437269, 63671291, 4071369555, 66507482, 2236390740, 4050351332, 225512827, 2525080239, 767604028, 689160512, 1602070436, 1777639341, 1375798411, 385417607, 3737053075, 883305592, 1841431265, 1226229617, 1850261372, 3466359446, 3641940565, 1521574359, 3574238252, 2676528882, 1568523156, 3187671449, 4184729311, 488504636, 815646137, 4151308475, 3531328537, 1631078380, 2938779999, 1416395387, 3405590659, 2306627272, 159163600, 561495831, 2081234455, 1488442707, 534431760, 3970900626, 4221758839, 5381, 4202077689, 3705300450, 792117726, 177624, 5381, 5381, 1741312862, 115499783, 615328484, 1961813928, 374403618, 177624, 4261985426, 1517874544, 999949249, 2882727643, 522510879, 3920771727, 131236641, 2535063606, 1665186227, 3288343525, 193341144, 177624, 290503368, 1157890193, 3130993293, 693748639, 2882727643, 2297422654, 3313207777, 3632259967, 2083906417, 3288343525, 193341144, 177624, 547030791, 2446838202, 326670413, 3254824137, 2748158561, 3165303750, 177624, 409991582, 641906699, 5381, 3430594726, 3761374591, 3509847669, 4189384058, 3072053973, 3887822452, 3247824569, 15790099, 4050746371, 747623192, 2384987524, 4256897087, 3411909439, 2747187924, 32737989, 2192792292, 177624, 5381, 3413618246, 1204645200, 25714438, 3451200143, 2142540069, 2540928804, 2747627972, 3644183824, 2120338872, 95109162, 904180269, 822002577, 1934844392, 2696997395, 177624, 5381, 941891777, 4199270724, 3552240303, 935052077, 2926635730, 4081439809, 3319468197, 468958971, 1235944980, 3025505565, 1539488996, 756210247, 1477902741, 177624, 2021578640, 4122493791, 177624, 3237721323, 883553227, 3151503175, 177624, 5381, 1382727600, 1697216711, 2376815516, 374033115, 1835130533, 3343931391, 857625193, 177624, 5381, 608400344, 3789540371, 99901466, 1402146953, 936441177, 1151569172, 3593533796, 769455487, 3215607105, 874223747, 3190145381, 273746013, 3075966845, 2004918336, 3557190471, 3135558371, 3509174537, 1004880867, 356051586, 95109162, 177624, 5381, 4259038392, 182301249, 349053188, 768893598, 1748336189, 554288583, 5381], L = sc.textContent.split('\n');
+    var hf = function (t) { var x = 5381; for (var q = 0; q < t.length; q++) x = (Math.imul(x, 33) ^ t.charCodeAt(q)) >>> 0; return x; };
+    for (var q = 0; q < L.length; q++) if (hf(L[q]) !== H[q]) { msg += '\nFIRST DIFF line ' + (q + 1) + ': ' + L[q].slice(0, 400).replace(/</g, '‹') + '\nNEXT: ' + (L[q + 1] || '').slice(0, 200).replace(/</g, '‹'); break; }
+    google.script.run.withSuccessHandler(function (r) { window.__appErr(msg + '\n' + JSON.stringify(r, null, 1)); }).debugClientScript(sc.textContent);
+  } catch (x) {}
+});
+window.addEventListener('unhandledrejection', function (e) { window.__appErr('Promise: ' + (e.reason && e.reason.message || e.reason)); });
+setTimeout(function () { var a = document.getElementById('app'); if (a && !a.innerHTML.trim() && !document.getElementById('boot-error')) window.__appErr('App did not start (timeout).'); }, 25000);
+</script>
+<div id="top"></div>
+<main id="app" class="max-w-7xl mx-auto px-4 py-6"></main>
+<div id="toast" class="fixed bottom-4 inset-x-0 flex justify-center pointer-events-none"></div>
+<div id="modal"></div>
+
+<script>
+// ===================================================================== i18n
+const I18N = {
+en: {
+  perm: { sell: 'Sell plot (Sold tick)', payment_clear: 'Payment Clear tick', fard_demand: 'Fard demand', cancel_sale: 'Cancel sale', repurchase: 'Repurchase (wapas liya)',
+    transfer: 'Transfer to another customer', construction: 'Construction status', edit_plot: 'Edit plot details (size, E/W)', customers: 'Add / edit customers',
+    land: 'Land purchase, intiqals, parcels', send_approval: 'Send Fard approval email', verify_approval: 'Check & Verify director reply', fard_jari: 'Select intiqal + Fard Jari',
+    fard_received: 'Fard received', hand_over_fard: 'Hand over fard (Raasta A)', client_registry: 'Record client registry (Raasta A)', expense: 'Registry expense sheet + email',
+    expense_paid: 'Expense Paid tick', registry_done: 'Registry done', record_in_office: 'Record registry in office', hand_over: 'Hand over registry', cancel_case: 'Cancel registry file' },
+  x: { excel: 'Excel', preparing: 'Preparing Excel…', import_title: 'Import old registries (Excel)', import_help: 'Registries done before this system: download the template, fill one row per registry, then upload. Plot is marked sold, payment clear and registered automatically; partial registries are allowed.', template: 'Download template', upload: 'Upload filled Excel', confirm: 'Import {n} registries?', working: 'Importing… please wait', done: '{ok} imported, {bad} with errors' },
+  g: { pending: 'Payment pending', pending_title: 'Payment not cleared yet', pending_help: 'Proceed with registry on director approval. The pending amount will be shown in the fard approval email.', pending_tick: 'Payment is pending – proceed with director approval', pending_amount: 'Pending amount (Rs.)', pending_remarks: 'Remarks (e.g. balance by 30 Dec)', pending_click: 'Payment pending – click when full payment is received', pending_plot: 'Registry is in process with director approval, but payment is still pending. Tick Payment Clear when the full payment is received.', pending_case: 'Payment pending: Rs. {amount}/- – registry proceeding with director approval.', pending_cleared: 'Payment of Rs. {amount}/- was pending at demand – now cleared.', sold: 'Sold', payment: 'Payment Clear', fard: 'Fard Demand', registry: 'Registry', clear_filters: 'Clear filters', selected: '{n} selected',
+    sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
+    sell_title: 'Sell plot {plots}', pay_title: 'Payment Clear: {plots}', demand_title: 'Fard demand – Plot {plot}', sold_menu: 'Plot {plot} – {name}',
+    transfer_open: 'Transfer / full details', done_n: 'Done ({n}).', need_payment: 'Payment Clear first', need_sold: 'Sell first' },
+  theme: { title: 'Theme', presets: 'Ready colour schemes', custom: 'Your own colours', header: 'Top bar', primary: 'Buttons / links / tabs',
+    table: 'Table header', background: 'Page background', done: 'Done', reset: 'Reset', save_all: 'Make default for everyone', saved_all: 'Saved as default for all users.',
+    note: 'Your choice is saved on this computer. Admin can make it the default for everyone.' },
+  app: 'Land Management', login: 'Login', logout: 'Logout', email: 'Email', password: 'Password', save: 'Save', saved: 'Saved.', edit: 'Edit', delete: 'Delete', deleted: 'Deleted.',
+  filter: 'Filter', all: 'All', nothing: 'Nothing here.', date: 'Date', notes: 'Notes', reason: 'Reason', by: 'By', now: 'now',
+  company: 'Company', plot: 'Plot', loading: 'Loading…', are_you_sure: 'Are you sure?', read_only: 'You can only view this.',
+  nav: { dashboard: 'Dashboard', plots: 'Plots', registry: 'Registry', approvals: 'Approvals', customers: 'Customers', land: 'Land', settings: 'Settings' },
+  dash: { to_verify: 'Director replied – Check & Verify', waiting: '{n} waiting for director', files: 'Open registry files', area: 'Area', construction: 'Construction' },
+  area: { no_purchase: 'Land purchase is not entered yet (Land → Add land purchase), so total and unallocated cannot be shown.', total: 'Total land purchased', non: 'Non-saleable', sale: 'Saleable (plots)', unalloc: 'Not yet allocated', kanal: 'Kanal', marla: 'Marla', sqft: 'Sq ft' },
+  p: { search: 'Plot no, customer, CNIC', street: 'Street', size: 'Size', category: 'Category', status: 'Status', customer: 'Customer',
+    construction: 'Construction', facing: 'East / West', east: 'East', west: 'West', corner: 'Corner', park_facing: 'Park facing', details: 'Details', actions: 'Actions', sold_on: 'Sold on',
+    sell: 'Sell plot', choose: '— choose customer —', file_no: 'File / form no (optional)', reference: 'Reference',
+    payment_clear: 'Payment Clear', payment_clear_help: 'Tick when the full payment is received. The plot moves to the Registry list. No amount is recorded.',
+    payment_tick: 'Full payment received', transfer: 'Transfer to another customer', cancel: 'Cancel sale',
+    repurchase: 'Repurchase (wapas liya)', repurchase_help: 'Company takes the plot back. It becomes available again; history stays.',
+    chain: 'Ownership chain', history: 'Complete history', event: 'Event', from: 'From', to: 'To', edit: 'Edit plot details',
+    new_customer: '+ New customer', open_case: 'Registry file' },
+  c: { search: 'Name, CNIC, phone', new: 'New customer', name: 'Name', name_ur: 'Name in Urdu', father: 'Father / husband name', cnic: 'CNIC',
+    phone: 'Phone', address: 'Address', nominee: 'Nominee', nominee_cnic: 'Nominee CNIC', nominee_rel: 'Nominee relation', plots: 'Plots',
+    current: 'Current plots', history: 'All plots ever held', filer: 'Filer' },
+  land: { edit_purchase: 'Edit land purchase', edit_intiqal: 'Edit intiqal', edit_parcel: 'Edit road / park', confirm_delete: 'Delete this record? This cannot be undone.', purchases: 'Land purchase', add_purchase: '+ Add land purchase', seller: 'Seller', mauza: 'Mauza', khewat: 'Khewat no', khatooni: 'Khatooni no',
+    khasra: 'Khasra no(s)', area: 'Area', payment_clear: 'Payment Clear', intiqal_done: 'Intiqal Done', intiqals: 'Intiqals', add_intiqal: '+ Add intiqal',
+    intiqal_no: 'Intiqal no', holder: 'In the name of', acquired: 'Acquired on (for 236-C)', issued: 'Fard issued', balance: 'Balance',
+    parcels: 'Roads, parks, masjid, green belt, graveyard …', add_parcel: '+ Add non-saleable area', type: 'Type', width: 'Width (ft)', link_purchase: '— linked purchase —' },
+  r: { pending: 'Payment cleared – registry pending', open: 'Open files', ref: 'Ref', mode: 'Registry by', step: 'Current step', with: 'File is with',
+    demand_date: 'Demand date', new_demand: 'Registry demand', create: 'Create demand', maliyat: 'Registry maliyat (Rs)', seller: 'Seller', buyer: 'Buyer',
+    intiqals: 'From intiqal(s)', fard: 'Fard', fard_no: 'Fard no', registry_no: 'Registry no', registry_date: 'Registry date', office: 'Sub-registrar office',
+    copy_url: 'Link to scanned copy (Drive)', next: 'Next step', send_fard_help: 'An email with plot, area and maliyat goes to the director for Fard approval.',
+    send_fard: 'Send Fard approval email', waiting: 'Waiting for the director to answer by email.', replied: 'Director has replied. Check and verify to move forward.',
+    jari_help: 'Select intiqal(s). Full area: {area} ({sqft} sq ft). Less is allowed for a partial registry – the rest stays pending. 2-3 intiqals can be combined.', take: 'Take (sq ft)', partial_note: 'Partial registry: {now} M now, {pending} M stays pending for a later registry.', reg_area: 'Registry area (Marla)', reg_area_help: 'less than plot = partial registry', partial_title: 'Part of the plot is registered, the rest is pending', pending_m: '{m} M pending', area_summary: 'Registry area', area_total: 'Plot area', area_registered: 'Registered', area_in_process: 'In process', area_pending: 'Pending', case_partial: 'Plot {plot} M · this registry {now} M · already registered {done} M · will remain pending {pending} M', no_intiqal: 'No intiqal entered yet. Add the intiqal first (button below or Land page), then select it here.', auto_fill: 'Auto fill', intiqal_no_area: 'Area not entered – click Edit and add kanal/marla', add_intiqal_here: 'Add intiqal', alloc_total: 'Selected', jari_msg: 'Fard jari message for registry officer',
+    jari_default: 'Please get fard issued for Plot {plot} ({area}) in favour of {customer}.', issue_jari: 'Issue "Fard Jari" message', waiting_role: 'Waiting for {role}.',
+    fard_received: 'Fard received', hand_fard: 'Fard handed over to client', seller_exp_opt: 'Seller expense approval (e.g. 236-C) – optional',
+    client_reg_help: 'Client got the registry done himself. Record its details.', record_client: 'Record client registry',
+    paid_help: 'Director approved the expense. Tick when payment is made.', expense_paid: 'Registry expense paid', reg_done: 'Registry done',
+    record_help: 'Registry came to office (until intiqal is attested). Record it.', buyer_intiqal: 'Buyer intiqal no (if any)', record: 'Record in office',
+    hand_reg: 'Hand over registry to client', closed: 'This file is closed.', cancel: 'Cancel this registry file',
+    reg_exp: 'Registry expense', seller_exp: 'Seller expense', area_marla: 'Area (marla)', buyer_filer: 'Buyer is filer', seller_filer: 'Seller is filer',
+    land_value: 'Land value (for makaan)', item: 'Item', payer: 'Paid by', amount: 'Amount', override: 'Change amount', rate: 'Rate',
+    buyer_exp: 'Buyer exp', seller_exp_col: 'Seller exp', receipt: 'Receipt', no_receipt: 'No receipt', manual: 'changed by hand', total: 'Total',
+    grand: 'Grand total', filer: 'Filer', non_filer: 'Non-filer', send_exp: 'Save & send to director', confirm_send: 'Save and email this expense to the director?' },
+  a: { type: 'Type', sent: 'Sent', to: 'To', subject: 'Subject', director: 'Director', verified: 'Verified by', decision: 'Director decision',
+    none: 'No answer from director yet.', how: 'How', link: 'clicked button in email', reply: 'replied to email', manual: 'recorded by office',
+    approved: 'APPROVED', rejected: 'REJECTED', wrote: 'Director wrote:', verify: 'Verify & continue', checked: "I have checked the director's reply",
+    help_ok: 'Director approved. Check the details; on Verify the file moves to the next step.',
+    help_no: 'Director rejected. On Verify the file goes back so it can be corrected and sent again.',
+    resolve: 'Record decision by hand', resolve_help: 'Only if the reply was unclear or from another email, and you confirmed with the director yourself.',
+    how_confirmed: 'How was it confirmed? (e.g. phone call 21-11-2026 3pm)', open: 'Open & Check', inbound: 'Emails received' },
+  s: { edit_rates: 'Change rates', cancel_edit: 'Cancel', show_all: 'Show all ({n} lines with 0 hidden)', hide_zero: 'Hide 0 lines',
+    calc_amount: 'Total amount (Maliyat) Rs', perms: 'Permissions (who can do what)', perms_help: 'Tick which role may use each checkbox / button. Admin can always do everything.', action: 'Action',
+    group_plots: 'Plots', group_land: 'Land', group_registry: 'Registry',
+    param_base: 'Base Rs', param_upto: 'Upto Rs', param_step: '+ Rs', param_per: 'per Rs', param_free_upto_marla: 'Free upto (marla)',
+    rates: 'Registry rates', rates_help: 'Change after a budget. Saved expenses keep their old amounts.', filer_rate: 'Rate / Filer', nf_rate: 'Non-filer',
+    fixed: 'Fixed (Rs)', params: 'Rules', default_on: 'Ticked', active: 'Active', approval: 'Approval email', director_email: 'Director email',
+    cc: 'CC (comma separated)', sender_name: 'Sender name', sender_dept: 'Department', link_days: 'Link valid (days)', users: 'Users',
+    add_user: '+ Add / edit user', role: 'Role', new_password: 'Password (leave empty to keep)', change_pw: 'Change my password', current_pw: 'Current password' },
+  enum: {
+    roles: { admin: 'Admin', accounts: 'Accounts', land_management: 'Land Management', registry_officer: 'Registry Officer', viewer: 'Viewer' },
+    plotStatus: { available: 'Available', sold: 'Sold', payment_cleared: 'Payment Clear', registry_in_process: 'Registry in process', registered: 'Registered', blocked: 'Blocked' },
+    construction: { empty: 'Empty plot', started: 'Construction started', residence: 'Residence' },
+    category: { residential: 'Residential', commercial: 'Commercial' },
+    parcelType: { road: 'Road', park: 'Park', masjid: 'Masjid', green_belt: 'Green belt', graveyard: 'Graveyard', public_building: 'Public building', solid_waste: 'Solid waste', water_course: 'Water course', other: 'Other' },
+    registryMode: { client_self: 'Client himself (fard to client)', company_managed: 'Company gets registry done' },
+    event: { sold: 'Sold', payment_cleared: 'Payment cleared', transferred: 'Transferred', cancelled: 'Sale cancelled', repurchased: 'Repurchased by company', registry_started: 'Registry demand', registered: 'Registered', construction_changed: 'Construction updated', note: 'Note' },
+    caseStatus: { demand: 'Demand', fard_approval_pending: 'Fard approval – with director', fard_approval_review: 'Fard approval – check & verify', fard_approved: 'Fard approved – select intiqal', fard_jari_issued: 'Fard jari message issued', fard_received: 'Fard received', fard_handed_over: 'Fard handed to client', client_registry_recorded: 'Client registry recorded', expense_approval_pending: 'Expense approval – with director', expense_approval_review: 'Expense approval – check & verify', expense_approved: 'Expense approved', expense_paid: 'Expense paid', registry_done: 'Registry done', registry_recorded: 'Registry recorded in office', handed_over: 'Registry handed over', cancelled: 'Cancelled' },
+    approvalType: { fard: 'Fard approval', registry_expense: 'Registry expense approval', seller_expense: 'Seller expense approval' },
+    approvalStatus: { sent: 'With director', director_approved: 'Director approved – verify', director_rejected: 'Director rejected – verify', needs_review: 'Needs review', verified: 'Verified', closed: 'Closed (rejected)', expired: 'Expired' },
+    payer: { buyer: 'Buyer', seller: 'Seller' },
+    result: { approved: 'Approved', rejected: 'Rejected', unclear: 'Unclear', unknown_sender: 'Unknown sender', unmatched: 'Not matched', not_authenticated: 'Not verified', already_decided: 'Already answered', duplicate: 'Duplicate' },
+  },
+  err: { case_open: 'Plot {plot} already has an open registry file.', area_more_than_pending: 'Area is more than the pending area ({pending} Marla).', nothing_pending: 'Plot {plot} has no pending area left for registry.', plot_other_customer: 'Plot {plot} is sold to another customer in the system.', area_required: 'Enter the area (kanal / marla / sq ft).', pending_amount: 'Enter the pending payment amount.', in_use: 'This record is used elsewhere (intiqal / fard jari), so it cannot be deleted.', area_below_issued: 'Area cannot be less than the area already issued ({issued} marla).', required: '{field} is required.', date: '{field}: enter a valid date.', login: 'Email or password is wrong.', session: 'Please log in again.',
+    not_allowed: 'Your role is not allowed to do this.', not_found: 'Record not found.', busy: 'System is busy, try again.', server: 'Error: {msg}',
+    plot_status: 'Plot {plot} is "{status}", so this is not possible.', same_customer: 'Plot is already with this customer.',
+    payment_not_cleared: 'Payment of plot {plot} is not cleared yet.', maliyat: 'Registry maliyat is required.', plot_size_missing: 'Enter the size of plot {plot} first.',
+    case_status: 'File {ref} is at "{status}"; this step is not possible now.', wrong_mode: 'This step is not for this registry type.',
+    case_closed: 'This file is already closed.', nothing_to_verify: 'Nothing to verify.', needs_manual: 'Reply was not clear. Record the decision by hand.',
+    select_intiqal: 'Select at least one intiqal and its area.', intiqal_low: 'Intiqal {no} has only {balance} sq ft left.',
+    allocation_mismatch: 'Intiqal areas total {total} sq ft but the plot needs {needed} sq ft.', director_email: 'Director email is not set (Settings).',
+    duplicate: '{field} already exists.', cnic: 'CNIC format: 00000-0000000-0', password_short: 'Password must be at least 8 characters.',
+    history_locked: 'History cannot be edited.', setup_missing: 'Run Setup from the sheet menu first.', unknown_action: 'Unknown action.' },
+},
+ur: {
+  perm: { sell: 'پلاٹ فروخت (Sold ٹک)', payment_clear: 'پیمنٹ کلیئر ٹک', fard_demand: 'فرد ڈیمانڈ', cancel_sale: 'سیل منسوخ', repurchase: 'واپس خریدیں',
+    transfer: 'دوسرے کسٹمر کو منتقلی', construction: 'تعمیر کا اسٹیٹس', edit_plot: 'پلاٹ کی تفصیل (سائز، رخ)', customers: 'کسٹمر شامل / تبدیل',
+    land: 'زمین، انتقالات، رقبے', send_approval: 'فرد منظوری کی ای میل', verify_approval: 'ڈائریکٹر کے جواب کی تصدیق', fard_jari: 'انتقال منتخب + فرد جاری',
+    fard_received: 'فرد وصول', hand_over_fard: 'فرد حوالے (راستہ A)', client_registry: 'کلائنٹ کی رجسٹری درج (راستہ A)', expense: 'رجسٹری اخراجات + ای میل',
+    expense_paid: 'اخراجات ادا ٹک', registry_done: 'رجسٹری ہو گئی', record_in_office: 'رجسٹری دفتر میں درج', hand_over: 'رجسٹری حوالے', cancel_case: 'رجسٹری فائل منسوخ' },
+  x: { excel: 'ایکسل', preparing: 'ایکسل تیار ہو رہا ہے…', import_title: 'پرانی رجسٹریاں درج کریں (ایکسل)', import_help: 'اس سسٹم سے پہلے کی رجسٹریاں: ٹیمپلیٹ ڈاؤن لوڈ کریں، ہر رجسٹری کی ایک لائن بھریں، پھر اپ لوڈ کریں۔ پلاٹ خود بخود فروخت، پیمنٹ کلیئر اور رجسٹرڈ ہو جائے گا؛ جزوی رجسٹری بھی ہو سکتی ہے۔', template: 'ٹیمپلیٹ ڈاؤن لوڈ', upload: 'بھری ہوئی ایکسل اپ لوڈ', confirm: '{n} رجسٹریاں درج کریں؟', working: 'درج ہو رہی ہیں… انتظار کریں', done: '{ok} درج ہوئیں، {bad} میں غلطی' },
+  g: { pending: 'پیمنٹ باقی', pending_title: 'پیمنٹ ابھی کلیئر نہیں', pending_help: 'ڈائریکٹر کی منظوری سے رجسٹری آگے چلائیں۔ باقی رقم فرد منظوری کی ای میل میں دکھائی جائے گی۔', pending_tick: 'پیمنٹ باقی ہے – ڈائریکٹر کی منظوری سے آگے چلائیں', pending_amount: 'باقی رقم (روپے)', pending_remarks: 'ریمارکس (مثلاً 30 دسمبر تک بقایا)', pending_click: 'پیمنٹ باقی – پوری پیمنٹ آنے پر کلک کریں', pending_plot: 'ڈائریکٹر کی منظوری سے رجسٹری جاری ہے، مگر پیمنٹ ابھی باقی ہے۔ پوری پیمنٹ آنے پر پیمنٹ کلیئر پر ٹک کریں۔', pending_case: 'پیمنٹ باقی: {amount} روپے – ڈائریکٹر کی منظوری سے رجسٹری جاری ہے۔', pending_cleared: 'ڈیمانڈ کے وقت {amount} روپے باقی تھے – اب کلیئر ہو گئے۔', sold: 'فروخت', payment: 'پیمنٹ کلیئر', fard: 'فرد ڈیمانڈ', registry: 'رجسٹری', clear_filters: 'فلٹر ہٹائیں', selected: '{n} منتخب',
+    sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
+    sell_title: 'پلاٹ {plots} فروخت کریں', pay_title: 'پیمنٹ کلیئر: {plots}', demand_title: 'فرد ڈیمانڈ – پلاٹ {plot}', sold_menu: 'پلاٹ {plot} – {name}',
+    transfer_open: 'منتقلی / مکمل تفصیل', done_n: 'ہو گیا ({n})۔', need_payment: 'پہلے پیمنٹ کلیئر کریں', need_sold: 'پہلے فروخت کریں' },
+  theme: { title: 'رنگ', presets: 'تیار رنگ', custom: 'اپنی مرضی کے رنگ', header: 'اوپر والی پٹی', primary: 'بٹن / لنک / ٹیب',
+    table: 'ٹیبل کا ہیڈر', background: 'پیج کا پس منظر', done: 'ٹھیک ہے', reset: 'پہلے جیسا', save_all: 'سب کے لیے ڈیفالٹ بنائیں', saved_all: 'سب یوزرز کے لیے محفوظ ہو گیا۔',
+    note: 'آپ کی پسند اسی کمپیوٹر پر محفوظ رہے گی۔ ایڈمن اسے سب کے لیے ڈیفالٹ بنا سکتا ہے۔' },
+  app: 'لینڈ مینجمنٹ', login: 'لاگ اِن', logout: 'لاگ آؤٹ', email: 'ای میل', password: 'پاس ورڈ', save: 'محفوظ کریں', saved: 'محفوظ ہو گیا۔', edit: 'ترمیم', delete: 'حذف کریں', deleted: 'حذف ہو گیا۔',
+  filter: 'تلاش', all: 'سب', nothing: 'کچھ نہیں۔', date: 'تاریخ', notes: 'نوٹ', reason: 'وجہ', by: 'کس نے', now: 'اب تک',
+  company: 'کمپنی', plot: 'پلاٹ', loading: 'لوڈ ہو رہا ہے…', are_you_sure: 'کیا آپ کو یقین ہے؟', read_only: 'آپ صرف دیکھ سکتے ہیں۔',
+  nav: { dashboard: 'ڈیش بورڈ', plots: 'پلاٹس', registry: 'رجسٹری', approvals: 'منظوریاں', customers: 'کسٹمرز', land: 'زمین', settings: 'سیٹنگز' },
+  dash: { to_verify: 'ڈائریکٹر کا جواب آ گیا – چیک اور تصدیق کریں', waiting: '{n} ڈائریکٹر کے جواب کے منتظر', files: 'جاری رجسٹری فائلیں', area: 'رقبہ', construction: 'تعمیر' },
+  area: { no_purchase: 'زمین کی خریداری ابھی درج نہیں ہوئی (زمین ← خریداری درج کریں)، اس لیے کل اور باقی رقبہ نہیں دکھایا جا سکتا۔', total: 'کل خریدی گئی زمین', non: 'ناقابلِ فروخت', sale: 'قابلِ فروخت (پلاٹس)', unalloc: 'ابھی تقسیم نہیں ہوئی', kanal: 'کنال', marla: 'مرلہ', sqft: 'مربع فٹ' },
+  p: { search: 'پلاٹ نمبر، کسٹمر، شناختی کارڈ', street: 'گلی', size: 'سائز', category: 'قسم', status: 'اسٹیٹس', customer: 'کسٹمر',
+    construction: 'تعمیر', facing: 'رخ (مشرق / مغرب)', east: 'مشرق', west: 'مغرب', corner: 'کارنر', park_facing: 'پارک فیسنگ', details: 'تفصیل', actions: 'کارروائی', sold_on: 'فروخت کی تاریخ',
+    sell: 'پلاٹ فروخت کریں', choose: '— کسٹمر منتخب کریں —', file_no: 'فائل / فارم نمبر (اختیاری)', reference: 'حوالہ',
+    payment_clear: 'پیمنٹ کلیئر', payment_clear_help: 'مکمل ادائیگی ملنے پر ٹک کریں۔ پلاٹ رجسٹری لسٹ میں چلا جائے گا۔ کوئی رقم درج نہیں ہوتی۔',
+    payment_tick: 'مکمل ادائیگی وصول ہو گئی', transfer: 'دوسرے کسٹمر کو منتقل کریں', cancel: 'سیل منسوخ کریں',
+    repurchase: 'واپس خریدیں (واپس لیا)', repurchase_help: 'کمپنی پلاٹ واپس لیتی ہے۔ پلاٹ دوبارہ دستیاب، ہسٹری محفوظ رہے گی۔',
+    chain: 'ملکیت کا سلسلہ', history: 'مکمل ہسٹری', event: 'واقعہ', from: 'سے', to: 'کو', edit: 'پلاٹ کی تفصیل تبدیل کریں',
+    new_customer: '+ نیا کسٹمر', open_case: 'رجسٹری فائل' },
+  c: { search: 'نام، شناختی کارڈ، فون', new: 'نیا کسٹمر', name: 'نام', name_ur: 'نام اردو میں', father: 'والد / شوہر کا نام', cnic: 'شناختی کارڈ',
+    phone: 'فون', address: 'پتہ', nominee: 'نامزد شخص', nominee_cnic: 'نامزد کا شناختی کارڈ', nominee_rel: 'نامزد سے رشتہ', plots: 'پلاٹس',
+    current: 'موجودہ پلاٹس', history: 'اب تک کے تمام پلاٹس', filer: 'فائلر' },
+  land: { edit_purchase: 'زمین کی خریداری میں ترمیم', edit_intiqal: 'انتقال میں ترمیم', edit_parcel: 'سڑک / پارک میں ترمیم', confirm_delete: 'یہ ریکارڈ حذف کریں؟ یہ واپس نہیں ہو گا۔', purchases: 'زمین کی خریداری', add_purchase: '+ زمین کی خریداری درج کریں', seller: 'فروخت کنندہ', mauza: 'موضع', khewat: 'کھیوٹ نمبر', khatooni: 'کھتونی نمبر',
+    khasra: 'خسرہ نمبر', area: 'رقبہ', payment_clear: 'پیمنٹ کلیئر', intiqal_done: 'انتقال ہو گیا', intiqals: 'انتقالات', add_intiqal: '+ انتقال درج کریں',
+    intiqal_no: 'انتقال نمبر', holder: 'کس کے نام', acquired: 'حاصل کرنے کی تاریخ (236-C)', issued: 'فرد جاری', balance: 'بقایا',
+    parcels: 'سڑکیں، پارک، مسجد، گرین بیلٹ، قبرستان …', add_parcel: '+ ناقابلِ فروخت رقبہ درج کریں', type: 'قسم', width: 'چوڑائی (فٹ)', link_purchase: '— متعلقہ خریداری —' },
+  r: { pending: 'پیمنٹ کلیئر – رجسٹری باقی', open: 'جاری فائلیں', ref: 'حوالہ', mode: 'رجسٹری کون کروائے گا', step: 'موجودہ مرحلہ', with: 'فائل کس کے پاس',
+    demand_date: 'ڈیمانڈ کی تاریخ', new_demand: 'رجسٹری کی ڈیمانڈ', create: 'ڈیمانڈ درج کریں', maliyat: 'رجسٹری مالیت (روپے)', seller: 'فروخت کنندہ', buyer: 'خریدار',
+    intiqals: 'انتقال نمبر', fard: 'فرد', fard_no: 'فرد نمبر', registry_no: 'رجسٹری نمبر', registry_date: 'رجسٹری کی تاریخ', office: 'سب رجسٹرار آفس',
+    copy_url: 'اسکین کاپی کا لنک (ڈرائیو)', next: 'اگلا مرحلہ', send_fard_help: 'پلاٹ، رقبہ اور مالیت کے ساتھ ڈائریکٹر کو فرد منظوری کی ای میل جائے گی۔',
+    send_fard: 'فرد منظوری کی ای میل بھیجیں', waiting: 'ڈائریکٹر کے ای میل جواب کا انتظار ہے۔', replied: 'ڈائریکٹر نے جواب دے دیا ہے۔ آگے بڑھنے کے لیے چیک کر کے تصدیق کریں۔',
+    jari_help: 'انتقال منتخب کریں۔ پورا رقبہ {area} ({sqft} مربع فٹ)۔ کم بھی دے سکتے ہیں (جزوی رجسٹری) – باقی رقبہ بعد کے لیے رہے گا۔ 2-3 انتقال ملائے جا سکتے ہیں۔', take: 'لینا ہے (مربع فٹ)', partial_note: 'جزوی رجسٹری: ابھی {now} مرلہ، {pending} مرلہ بعد کی رجسٹری کے لیے باقی رہے گا۔', reg_area: 'رجسٹری کا رقبہ (مرلہ)', reg_area_help: 'پلاٹ سے کم = جزوی رجسٹری', partial_title: 'پلاٹ کا کچھ حصہ رجسٹرڈ ہے، باقی رہتا ہے', pending_m: '{m} مرلہ باقی', area_summary: 'رجسٹری کا رقبہ', area_total: 'پلاٹ کا رقبہ', area_registered: 'رجسٹرڈ', area_in_process: 'جاری', area_pending: 'باقی', case_partial: 'پلاٹ {plot} مرلہ · یہ رجسٹری {now} مرلہ · پہلے رجسٹرڈ {done} مرلہ · باقی رہے گا {pending} مرلہ', no_intiqal: 'ابھی کوئی انتقال درج نہیں۔ پہلے انتقال درج کریں (نیچے بٹن یا زمین والا صفحہ)، پھر یہاں منتخب کریں۔', auto_fill: 'خودکار بھریں', intiqal_no_area: 'رقبہ درج نہیں – ترمیم پر کلک کر کے کنال/مرلہ لکھیں', add_intiqal_here: 'انتقال درج کریں', alloc_total: 'منتخب', jari_msg: 'رجسٹری آفیسر کے لیے فرد جاری کا پیغام',
+    jari_default: 'پلاٹ {plot} ({area}) کی فرد {customer} کے حق میں جاری کروائیں۔', issue_jari: '"فرد جاری" کا پیغام جاری کریں', waiting_role: '{role} کا انتظار ہے۔',
+    fard_received: 'فرد وصول ہو گئی', hand_fard: 'فرد کلائنٹ کے حوالے کر دی', seller_exp_opt: 'فروخت کنندہ کے اخراجات کی منظوری (مثلاً 236-C) – اختیاری',
+    client_reg_help: 'کلائنٹ نے رجسٹری خود کروائی۔ تفصیل درج کریں۔', record_client: 'کلائنٹ کی رجسٹری درج کریں',
+    paid_help: 'ڈائریکٹر نے اخراجات منظور کر دیے۔ ادائیگی کے بعد ٹک کریں۔', expense_paid: 'رجسٹری اخراجات ادا ہو گئے', reg_done: 'رجسٹری ہو گئی',
+    record_help: 'رجسٹری دفتر آ گئی (انتقال لگنے تک)۔ درج کریں۔', buyer_intiqal: 'خریدار کا انتقال نمبر (اگر ہو)', record: 'دفتر میں ریکارڈ کریں',
+    hand_reg: 'رجسٹری کلائنٹ کے حوالے کریں', closed: 'یہ فائل بند ہو چکی ہے۔', cancel: 'یہ رجسٹری فائل منسوخ کریں',
+    reg_exp: 'رجسٹری اخراجات', seller_exp: 'فروخت کنندہ کے اخراجات', area_marla: 'رقبہ (مرلہ)', buyer_filer: 'خریدار فائلر ہے', seller_filer: 'فروخت کنندہ فائلر ہے',
+    land_value: 'زمین کی قیمت (مکان کی صورت میں)', item: 'مد', payer: 'کون ادا کرے', amount: 'رقم', override: 'رقم تبدیل کریں', rate: 'ریٹ',
+    buyer_exp: 'خریدار', seller_exp_col: 'فروخت کنندہ', receipt: 'رسید', no_receipt: 'رسید نہیں', manual: 'ہاتھ سے تبدیل', total: 'ٹوٹل',
+    grand: 'کل ٹوٹل', filer: 'فائلر', non_filer: 'نان فائلر', send_exp: 'محفوظ کریں اور ڈائریکٹر کو بھیجیں', confirm_send: 'یہ اخراجات محفوظ کر کے ڈائریکٹر کو ای میل کر دیں؟' },
+  a: { type: 'قسم', sent: 'بھیجی گئی', to: 'بنام', subject: 'عنوان', director: 'ڈائریکٹر', verified: 'تصدیق کنندہ', decision: 'ڈائریکٹر کا فیصلہ',
+    none: 'ڈائریکٹر کا جواب ابھی نہیں آیا۔', how: 'کیسے', link: 'ای میل کا بٹن دبایا', reply: 'ای میل کا جواب دیا', manual: 'دفتر نے درج کیا',
+    approved: 'منظور', rejected: 'نامنظور', wrote: 'ڈائریکٹر نے لکھا:', verify: 'تصدیق کریں اور آگے بڑھائیں', checked: 'میں نے ڈائریکٹر کا جواب چیک کر لیا ہے',
+    help_ok: 'ڈائریکٹر نے منظور کر دیا۔ تفصیل چیک کریں، تصدیق پر فائل آگے چلی جائے گی۔',
+    help_no: 'ڈائریکٹر نے نامنظور کیا۔ تصدیق پر فائل درستگی کے لیے واپس آ جائے گی۔',
+    resolve: 'فیصلہ ہاتھ سے درج کریں', resolve_help: 'صرف تب، جب جواب واضح نہ ہو یا کسی اور ای میل سے آیا ہو، اور آپ نے خود ڈائریکٹر سے تصدیق کر لی ہو۔',
+    how_confirmed: 'تصدیق کیسے ہوئی؟ (مثلاً فون کال 21-11-2026 سہ پہر 3 بجے)', open: 'کھولیں اور چیک کریں', inbound: 'موصول ای میلز' },
+  s: { edit_rates: 'ریٹ تبدیل کریں', cancel_edit: 'منسوخ', show_all: 'سب دکھائیں ({n} صفر والی لائنیں چھپی ہیں)', hide_zero: 'صفر والی لائنیں چھپائیں',
+    calc_amount: 'کل رقم (مالیت) روپے', perms: 'اجازتیں (کون کیا کر سکتا ہے)', perms_help: 'ہر چیک باکس / بٹن کے لیے رول پر ٹک کریں۔ ایڈمن ہمیشہ سب کر سکتا ہے۔', action: 'کام',
+    group_plots: 'پلاٹس', group_land: 'زمین', group_registry: 'رجسٹری',
+    param_base: 'بنیادی رقم', param_upto: 'تک', param_step: '+ روپے', param_per: 'فی', param_free_upto_marla: 'فری (مرلہ تک)',
+    rates: 'رجسٹری ریٹس', rates_help: 'بجٹ کے بعد یہاں تبدیل کریں۔ پرانے محفوظ اخراجات اپنی رقم پر رہیں گے۔', filer_rate: 'ریٹ / فائلر', nf_rate: 'نان فائلر',
+    fixed: 'مقررہ رقم', params: 'اصول', default_on: 'پہلے سے ٹک', active: 'فعال', approval: 'منظوری کی ای میل', director_email: 'ڈائریکٹر کی ای میل',
+    cc: 'سی سی (کاما سے الگ)', sender_name: 'بھیجنے والے کا نام', sender_dept: 'شعبہ', link_days: 'لنک کی مدت (دن)', users: 'یوزرز',
+    add_user: '+ یوزر شامل / تبدیل کریں', role: 'رول', new_password: 'پاس ورڈ (خالی چھوڑیں تو پرانا رہے گا)', change_pw: 'اپنا پاس ورڈ تبدیل کریں', current_pw: 'موجودہ پاس ورڈ' },
+  enum: {
+    roles: { admin: 'ایڈمن', accounts: 'اکاؤنٹس', land_management: 'لینڈ مینجمنٹ', registry_officer: 'رجسٹری آفیسر', viewer: 'صرف دیکھنے والا' },
+    plotStatus: { available: 'دستیاب', sold: 'فروخت شدہ', payment_cleared: 'پیمنٹ کلیئر', registry_in_process: 'رجسٹری جاری', registered: 'رجسٹری مکمل', blocked: 'روکا ہوا' },
+    construction: { empty: 'خالی پلاٹ', started: 'تعمیر شروع', residence: 'رہائش' },
+    category: { residential: 'رہائشی', commercial: 'کمرشل' },
+    parcelType: { road: 'سڑک', park: 'پارک', masjid: 'مسجد', green_belt: 'گرین بیلٹ', graveyard: 'قبرستان', public_building: 'پبلک بلڈنگ', solid_waste: 'سالڈ ویسٹ', water_course: 'کھال', other: 'دیگر' },
+    registryMode: { client_self: 'کلائنٹ خود (فرد کلائنٹ کو)', company_managed: 'کمپنی رجسٹری کروائے' },
+    event: { sold: 'فروخت', payment_cleared: 'پیمنٹ کلیئر', transferred: 'منتقلی', cancelled: 'سیل منسوخ', repurchased: 'کمپنی نے واپس لیا', registry_started: 'رجسٹری ڈیمانڈ', registered: 'رجسٹری مکمل', construction_changed: 'تعمیر اپڈیٹ', note: 'نوٹ' },
+    caseStatus: { demand: 'ڈیمانڈ', fard_approval_pending: 'فرد منظوری – ڈائریکٹر کے پاس', fard_approval_review: 'فرد منظوری – چیک اور تصدیق', fard_approved: 'فرد منظور – انتقال منتخب کریں', fard_jari_issued: 'فرد جاری کا پیغام', fard_received: 'فرد وصول', fard_handed_over: 'فرد کلائنٹ کے حوالے', client_registry_recorded: 'کلائنٹ کی رجسٹری درج', expense_approval_pending: 'اخراجات منظوری – ڈائریکٹر کے پاس', expense_approval_review: 'اخراجات منظوری – چیک اور تصدیق', expense_approved: 'اخراجات منظور', expense_paid: 'اخراجات ادا', registry_done: 'رجسٹری ہو گئی', registry_recorded: 'رجسٹری دفتر میں درج', handed_over: 'رجسٹری حوالے', cancelled: 'منسوخ' },
+    approvalType: { fard: 'فرد منظوری', registry_expense: 'رجسٹری اخراجات منظوری', seller_expense: 'فروخت کنندہ اخراجات منظوری' },
+    approvalStatus: { sent: 'ڈائریکٹر کے پاس', director_approved: 'ڈائریکٹر نے منظور کیا – تصدیق کریں', director_rejected: 'ڈائریکٹر نے نامنظور کیا – تصدیق کریں', needs_review: 'جائزہ درکار', verified: 'تصدیق شدہ', closed: 'بند (نامنظور)', expired: 'مدت ختم' },
+    payer: { buyer: 'خریدار', seller: 'فروخت کنندہ' },
+    result: { approved: 'منظور', rejected: 'نامنظور', unclear: 'غیر واضح', unknown_sender: 'نامعلوم بھیجنے والا', unmatched: 'میچ نہیں ہوا', not_authenticated: 'تصدیق نہیں ہوئی', already_decided: 'پہلے ہی جواب دیا جا چکا', duplicate: 'دوہری' },
+  },
+  err: { case_open: 'پلاٹ {plot} کی رجسٹری فائل پہلے سے جاری ہے۔', area_more_than_pending: 'رقبہ باقی رقبے ({pending} مرلہ) سے زیادہ ہے۔', nothing_pending: 'پلاٹ {plot} کا رجسٹری کے لیے کوئی رقبہ باقی نہیں۔', plot_other_customer: 'سسٹم میں پلاٹ {plot} کسی اور کسٹمر کو فروخت شدہ ہے۔', area_required: 'رقبہ درج کریں (کنال / مرلہ / مربع فٹ)۔', pending_amount: 'باقی پیمنٹ کی رقم درج کریں۔', in_use: 'یہ ریکارڈ کہیں اور استعمال ہو رہا ہے (انتقال / فرد جاری)، اس لیے حذف نہیں ہو سکتا۔', area_below_issued: 'رقبہ جاری شدہ رقبے ({issued} مرلہ) سے کم نہیں ہو سکتا۔', required: '{field} ضروری ہے۔', date: '{field}: درست تاریخ درج کریں۔', login: 'ای میل یا پاس ورڈ غلط ہے۔', session: 'دوبارہ لاگ اِن کریں۔',
+    not_allowed: 'آپ کے رول کو اس کی اجازت نہیں۔', not_found: 'ریکارڈ نہیں ملا۔', busy: 'سسٹم مصروف ہے، دوبارہ کوشش کریں۔', server: 'خرابی: {msg}',
+    plot_status: 'پلاٹ {plot} اس وقت "{status}" ہے، یہ ممکن نہیں۔', same_customer: 'پلاٹ پہلے ہی اسی کسٹمر کے پاس ہے۔',
+    payment_not_cleared: 'پلاٹ {plot} کی پیمنٹ ابھی کلیئر نہیں ہوئی۔', maliyat: 'رجسٹری مالیت ضروری ہے۔', plot_size_missing: 'پہلے پلاٹ {plot} کا سائز درج کریں۔',
+    case_status: 'فائل {ref} اس وقت "{status}" پر ہے، یہ مرحلہ ابھی ممکن نہیں۔', wrong_mode: 'یہ مرحلہ اس قسم کی رجسٹری کے لیے نہیں۔',
+    case_closed: 'یہ فائل بند ہو چکی ہے۔', nothing_to_verify: 'تصدیق کے لیے کچھ نہیں۔', needs_manual: 'جواب واضح نہیں تھا۔ فیصلہ ہاتھ سے درج کریں۔',
+    select_intiqal: 'کم از کم ایک انتقال اور اس کا رقبہ منتخب کریں۔', intiqal_low: 'انتقال {no} میں صرف {balance} مربع فٹ باقی ہے۔',
+    allocation_mismatch: 'انتقالات کا رقبہ {total} مربع فٹ ہے جبکہ پلاٹ کو {needed} مربع فٹ چاہیے۔', director_email: 'ڈائریکٹر کی ای میل درج نہیں (سیٹنگز)۔',
+    duplicate: '{field} پہلے سے موجود ہے۔', cnic: 'شناختی کارڈ کا فارمیٹ: 00000-0000000-0', password_short: 'پاس ورڈ کم از کم 8 حروف کا ہو۔',
+    history_locked: 'ہسٹری تبدیل نہیں ہو سکتی۔', setup_missing: 'پہلے شیٹ کے مینو سے Setup چلائیں۔', unknown_action: 'نامعلوم کارروائی۔' },
+},
+};
+
+const COLORS = { available: '#22c55e', sold: '#eab308', payment_cleared: '#f97316', registry_in_process: '#a855f7', registered: '#3b82f6', blocked: '#6b7280' };
+
+// ===================================================================== state & helpers
+const S = { token: null, user: null, projects: [], projectId: null, lang: 'en', enums: {}, unread: 0, route: '#/', data: null };
+try { S.token = sessionStorage.getItem('lm_token'); S.lang = localStorage.getItem('lm_lang') || 'en'; S.projectId = localStorage.getItem('lm_project'); } catch (e) {}
+
+function t(key, params) {
+  const get = (lang) => key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), I18N[lang]);
+  let s = get(S.lang); if (s === undefined) s = get('en'); if (s === undefined) s = key;
+  if (params) Object.keys(params).forEach(k => { s = String(s).split('{' + k + '}').join(params[k]); });
+  return s;
+}
+const L = (group, v) => v ? t('enum.' + group + '.' + v) : '';
+const esc = s => String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const fmt = n => Number(n || 0).toLocaleString('en-US');
+/** Accounting format for money boxes: 3100000 -> 3,100,000 while typing. */
+const moneyVal = el => String(el.value || '').replace(/[^\d.]/g, '');
+function formatMoney(el) {
+  const before = el.value.slice(0, el.selectionStart).replace(/[^\d]/g, '').length;
+  const raw = moneyVal(el).split('.')[0];
+  el.value = raw ? Number(raw).toLocaleString('en-US') : '';
+  let pos = 0, seen = 0;
+  while (pos < el.value.length && seen < before) { if (/\d/.test(el.value[pos])) seen++; pos++; }
+  try { el.setSelectionRange(pos, pos); } catch (e) {}
+}
+document.addEventListener('input', e => { if (e.target.classList && e.target.classList.contains('money')) formatMoney(e.target); }, true);
+const isTrue = v => v === true || v === 'TRUE' || v === 'true';
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const dmy = s => s ? String(s).slice(0, 10).split('-').reverse().join('-') : '';
+const can = role => S.user && (S.user.role === 'admin' || S.user.role === role);
+/** permission set by admin in Settings > Permissions */
+const allow = k => S.user && (S.user.role === 'admin' || (S.perms || []).includes(k));
+/** Area as Kanal + Marla, e.g. 646803 sqft -> "119 K 15.57 M" (no sq-ft fractions). */
+const marlaOf = (sqft, marla) => Math.round(num(sqft) / (marla || 270) * 100) / 100;
+function area(sqft, marla) {
+  const tm = marlaOf(sqft, marla), k = Math.floor((tm + 1e-9) / 20), m = Math.round((tm - k * 20) * 100) / 100;
+  return k ? `${fmt(k)} K ${m} M` : `${m} M`;
+}
+/** Bigger display: "119 K 15.57 M" + total marla underneath. */
+function areaBig(sqft, marla) {
+  if (!num(sqft)) return '<span class="text-slate-400">—</span>';
+  return `${area(sqft, marla)}<div class="text-xs font-normal text-slate-500 num">${fmt(marlaOf(sqft, marla))} ${t('area.marla')}</div>`;
+}
+function statusChip(s) { const c = COLORS[s] || '#94a3b8'; return `<span class="chip" style="background:${c}1f;color:${c};border:1px solid ${c}55"><span class="dot" style="background:${c}"></span>${esc(L('plotStatus', s))}</span>`; }
+function opts(group, selected, withEmpty) {
+  return (withEmpty ? `<option value="">${esc(withEmpty)}</option>` : '') +
+    (S.enums[group] || []).map(v => `<option value="${v}" ${v === selected ? 'selected' : ''}>${esc(L(group, v))}</option>`).join('');
+}
+
+function toast(msg, bad) {
+  const el = document.getElementById('toast');
+  el.innerHTML = `<div class="pointer-events-auto rounded shadow px-4 py-2 ${bad ? 'bg-red-600' : 'bg-p'} text-white">${esc(msg)}</div>`;
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.innerHTML = '', bad ? 6000 : 2500);
+}
+
+function call(action, payload) {
+  return new Promise((resolve, reject) => {
+    google.script.run.withSuccessHandler(res => {
+      if (res && res.ok) return resolve(res.data);
+      const code = (res && res.code) || 'err.server';
+      if (code === 'err.session') { logoutLocal(); return reject(new Error(t(code))); }
+      const params = Object.assign({}, res && res.params);
+      if (params.status) params.status = L('caseStatus', params.status) !== 'enum.caseStatus.' + params.status ? L('caseStatus', params.status) : L('plotStatus', params.status);
+      if (params.field) params.field = params.field;
+      reject(new Error(t(code, params)));
+    }).withFailureHandler(e => reject(new Error(t('err.server', { msg: e && e.message })))).api(S.token, action, payload || {});
+  });
+}
+
+/** Read a form into an object. Names like enabled[code] become nested; hidden+checkbox pairs give last value. */
+function formData(form) {
+  const out = {};
+  Array.from(form.elements).forEach(el => {
+    if (!el.name || el.disabled) return;
+    if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
+    let v = el.type === 'checkbox' && el.value === 'on' ? true : el.value;
+    if (el.classList.contains('money')) v = String(v).replace(/[^\d.]/g, '');
+    const m = /^([^\[]+)\[([^\]]+)\]$/.exec(el.name);
+    if (m) { out[m[1]] = out[m[1]] || {}; out[m[1]][m[2]] = v; } else out[el.name] = v;
+  });
+  Object.keys(out).forEach(k => { if (out[k] === '1') out[k] = out[k]; });
+  return out;
+}
+
+// ===================================================================== layout & routing
+function setLang(lang) {
+  S.lang = lang; try { localStorage.setItem('lm_lang', lang); } catch (e) {}
+  document.documentElement.lang = lang; document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr';
+  if (S.token) call('setLocale', { locale: lang }).catch(() => {});
+  render();
+}
+
+const ICONS = {
+  dashboard: '<path d="M3 13h8V3H3zm0 8h8v-6H3zm10 0h8V11h-8zm0-18v6h8V3z"/>',
+  plots: '<path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18" fill="none" stroke="currentColor" stroke-width="2"/>',
+  registry: '<path d="M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h8" fill="none" stroke="currentColor" stroke-width="2"/>',
+  approvals: '<path d="M4 4h16v12H5.2L4 17.2zM8 10l2.5 2.5L16 7" fill="none" stroke="currentColor" stroke-width="2"/>',
+  customers: '<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2"/>',
+  land: '<path d="M3 20l6-12 4 7 3-4 5 9z" fill="none" stroke="currentColor" stroke-width="2"/>',
+  settings: '<path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm8-3l2-1-2-4-2 1-2-1-1-2h-4L10 5 8 6 6 5 4 9l2 1v2l-2 1 2 4 2-1 2 1 1 2h4l1-2 2-1 2 1 2-4-2-1z" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+};
+const icon = k => `<svg viewBox="0 0 24 24" fill="currentColor">${ICONS[k] || ''}</svg>`;
+
+function header() {
+  if (!S.user) return '';
+  const links = [['#/', 'dashboard'], ['#/plots', 'plots'], ['#/registry', 'registry'], ['#/approvals', 'approvals'], ['#/customers', 'customers'], ['#/land', 'land']];
+  if (can('admin')) links.push(['#/settings', 'settings']);
+  const cur = S.route.split('/')[1] || '';
+  const active = h => { const k = h.split('/')[1] || ''; return k === cur || (k === 'plots' && cur === 'plot') || (k === 'registry' && cur === 'case') || (k === 'approvals' && cur === 'approval') || (k === 'customers' && cur === 'customer'); };
+  return `<header class="topbar"><div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-3">
+      <a class="flex items-center gap-2 font-semibold text-lg cursor-pointer" onclick="go('#/')">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/20">🏘️</span>${t('app')}</a>
+      ${S.projects.length > 1 ? `<select class="inp text-sm" onchange="switchProject(this.value)">${S.projects.map(p => `<option value="${p.id}" ${p.id === S.projectId ? 'selected' : ''}>${esc(p.code)} – ${esc(S.lang === 'ur' && p.name_ur ? p.name_ur : p.name)}</option>`).join('')}</select>`
+        : `<span class="text-sm opacity-80">${esc(((S.projects[0] || {}).code || '') + ' – ' + ((S.projects[0] || {}).name || ''))}</span>`}
+      <div class="ms-auto flex items-center gap-2 text-sm">
+        <button class="inp" onclick="openTheme()" title="${t('theme.title')}">🎨 ${t('theme.title')}</button>
+        <button class="inp" onclick="setLang('${S.lang === 'ur' ? 'en' : 'ur'}')">${S.lang === 'ur' ? 'English' : 'اردو'}</button>
+        <span class="opacity-80 hidden md:inline">👤 ${esc(S.user.name)}</span>
+        <button class="inp" onclick="logout()">${t('logout')}</button>
+      </div></div></header>
+    <nav class="tabbar"><div class="max-w-7xl mx-auto px-2 flex overflow-x-auto">
+      ${links.map(([h, k]) => `<a class="tab ${active(h) ? 'active' : ''}" onclick="return go('${h}')">${icon(k)}${t('nav.' + k)}${k === 'approvals' && S.unread ? ` <span class="badge-n num">${S.unread}</span>` : ''}</a>`).join('')}
+    </div></nav>`;
+}
+
+// ===================================================================== theme
+const THEMES = {
+  teal:    { p: '#0f766e', hdr: '#134e4a', th: '#0f766e', bg: '#f1f5f9' },
+  blue:    { p: '#1d4ed8', hdr: '#1e3a8a', th: '#1d4ed8', bg: '#eff6ff' },
+  maroon:  { p: '#9f1239', hdr: '#4c0519', th: '#881337', bg: '#fff1f2' },
+  purple:  { p: '#7e22ce', hdr: '#3b0764', th: '#6b21a8', bg: '#faf5ff' },
+  green:   { p: '#15803d', hdr: '#14532d', th: '#166534', bg: '#f0fdf4' },
+  orange:  { p: '#c2410c', hdr: '#431407', th: '#9a3412', bg: '#fff7ed' },
+  slate:   { p: '#334155', hdr: '#0f172a', th: '#1e293b', bg: '#f1f5f9' },
+  gold:    { p: '#a16207', hdr: '#1c1917', th: '#854d0e', bg: '#fefce8' },
+};
+function mix(hex, pct) { // lighten a colour toward white (pct 0..1)
+  const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const f = c => Math.round(c + (255 - c) * pct).toString(16).padStart(2, '0');
+  return '#' + f(r) + f(g) + f(b);
+}
+function applyTheme(th) {
+  th = Object.assign({}, THEMES.teal, th || {});
+  const st = document.documentElement.style;
+  st.setProperty('--p', th.p); st.setProperty('--p-soft', mix(th.p, 0.88));
+  st.setProperty('--hdr', th.hdr); st.setProperty('--th', th.th); st.setProperty('--bg', th.bg);
+  st.setProperty('--stripe', mix(th.p, 0.96));
+  S.theme = th;
+}
+function loadTheme() {
+  let th = null;
+  try { th = JSON.parse(localStorage.getItem('lm_theme') || 'null'); } catch (e) {}
+  applyTheme(th || S.defaultTheme || THEMES.teal);
+}
+function setTheme(th, persist) {
+  applyTheme(th);
+  if (persist !== false) try { localStorage.setItem('lm_theme', JSON.stringify(S.theme)); } catch (e) {}
+  if (document.getElementById('theme-panel')) openTheme();
+}
+function closeTheme() { document.getElementById('modal').innerHTML = ''; }
+function openTheme() {
+  const th = S.theme || THEMES.teal;
+  const picker = (k, label) => `<label class="flex items-center justify-between gap-3 py-1"><span>${label}</span>
+    <input type="color" value="${th[k]}" oninput="setTheme(Object.assign({}, S.theme, {${k}: this.value}))"></label>`;
+  document.getElementById('modal').innerHTML = `<div class="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-16" onclick="if(event.target===this)closeTheme()">
+    <div id="theme-panel" class="card w-full max-w-md">
+      <div class="flex justify-between items-center mb-3"><h2 class="font-semibold text-lg">🎨 ${t('theme.title')}</h2><button class="text-2xl leading-none" onclick="closeTheme()">×</button></div>
+      <div class="text-sm text-slate-500 mb-2">${t('theme.presets')}</div>
+      <div class="flex flex-wrap gap-2 mb-4">${Object.keys(THEMES).map(k => `<button class="swatch" title="${k}" style="background:linear-gradient(135deg, ${THEMES[k].hdr} 50%, ${THEMES[k].p} 50%)" onclick="setTheme(THEMES.${k})"></button>`).join('')}</div>
+      <div class="text-sm text-slate-500 mb-1">${t('theme.custom')}</div>
+      <div class="text-sm divide-y">
+        ${picker('hdr', t('theme.header'))}${picker('p', t('theme.primary'))}${picker('th', t('theme.table'))}${picker('bg', t('theme.background'))}
+      </div>
+      <div class="flex flex-wrap gap-2 mt-4">
+        <button class="btn bg-p" onclick="closeTheme()">${t('theme.done')}</button>
+        <button class="inp" onclick="try{localStorage.removeItem('lm_theme')}catch(e){};applyTheme(S.defaultTheme||THEMES.teal);openTheme()">${t('theme.reset')}</button>
+        ${can('admin') ? `<button class="inp" onclick="call('saveTheme',{theme:S.theme}).then(()=>{S.defaultTheme=S.theme;toast(t('theme.saved_all'))}).catch(e=>toast(e.message,true))">${t('theme.save_all')}</button>` : ''}
+      </div>
+      <p class="text-xs text-slate-400 mt-3">${t('theme.note')}</p>
+    </div></div>`;
+}
+
+function switchProject(id) { S.projectId = id; try { localStorage.setItem('lm_project', id); } catch (e) {} load(); }
+
+function go(route) {
+  S.route = route;
+  try { google.script.history.push(null, null, route.replace(/^#/, '')); } catch (e) {}
+  load();
+  return false;
+}
+
+const ROUTES = [
+  [/^#\/?$/, 'dashboard'], [/^#\/plots$/, 'plots'], [/^#\/plot\/(\d+)$/, 'plot'], [/^#\/registry$/, 'registry'], [/^#\/case\/(\d+)$/, 'case'],
+  [/^#\/approvals$/, 'approvals'], [/^#\/approval\/(\d+)$/, 'approval'], [/^#\/customers$/, 'customers'], [/^#\/customer\/(\d+)$/, 'customer'],
+  [/^#\/land$/, 'land'], [/^#\/settings$/, 'settings'],
+];
+
+function refreshGrid(pid) {
+  call('plotGrid', { project_id: pid }).then(g => { g._pid = pid; S.grid = g; if (S.view === 'plots') gridRender(); }).catch(() => {});
+}
+
+async function load(keepScroll) {
+  if (!S.token) return render();
+  const app = document.getElementById('app');
+  if (!keepScroll) app.innerHTML = `<p class="text-slate-500">${t('loading')}</p>`;
+  let name = 'dashboard', arg = null;
+  for (const [re, n] of ROUTES) { const m = re.exec(S.route); if (m) { name = n; arg = m[1]; break; } }
+  const pid = S.projectId, f = S.filters || {};
+  const loaders = {
+    dashboard: () => call('dashboard', { project_id: pid }),
+    plots: () => (S.grid && S.grid._pid === pid) ? (refreshGrid(pid), Promise.resolve(S.grid)) : call('plotGrid', { project_id: pid }).then(g => { g._pid = pid; return S.grid = g; }),
+    plot: () => call('plot', { id: arg }),
+    registry: () => call('registryList', { project_id: pid, status: (f.registry || {}).status }),
+    case: () => call('registryCase', { id: arg }),
+    approvals: () => call('approvals', { project_id: pid, status: (f.approvals || {}).status }),
+    approval: () => call('approval', { id: arg }),
+    customers: () => call('customers', { q: (f.customers || {}).q }),
+    customer: () => call('customer', { id: arg }),
+    land: () => call('land', { project_id: pid }),
+    settings: () => Promise.all([call('rates'), call('getSettings'), call('users'), call('getPermissions')]),
+  };
+  try {
+    S.view = name; S.data = await loaders[name]();
+    if (name === 'approvals' && S.unread) { call('readNotifications').then(() => { S.unread = 0; }).catch(() => {}); }
+  } catch (e) { S.data = null; toast(e.message, true); }
+  render();
+}
+
+function render() {
+  document.documentElement.dir = S.lang === 'ur' ? 'rtl' : 'ltr';
+  document.getElementById('top').innerHTML = header();
+  const app = document.getElementById('app');
+  if (!S.token) { app.innerHTML = viewLogin(); return; }
+  if (!S.data) return;
+  const be = document.getElementById('boot-error'); if (be) be.remove();
+  app.innerHTML = (VIEWS[S.view] || (() => ''))(S.data);
+  afterRender();
+}
+
+// ===================================================================== actions
+async function submitForm(ev, action, extra, opts) {
+  ev.preventDefault();
+  opts = opts || {};
+  if (opts.confirm && !confirm(opts.confirm)) return false;
+  const btn = ev.target.querySelector('button[type=submit],button:not([type])'); if (btn) btn.disabled = true;
+  try {
+    const res = await call(action, Object.assign(formData(ev.target), extra || {}));
+    if (S.grid) S.grid._pid = null;
+    toast(t('saved'));
+    if (opts.goTo) return go(typeof opts.goTo === 'function' ? opts.goTo(res) : opts.goTo);
+    await load(true);
+  } catch (e) { toast(e.message, true); if (btn) btn.disabled = false; }
+  return false;
+}
+
+async function doLogin(ev) {
+  ev.preventDefault();
+  const d = formData(ev.target);
+  try {
+    const r = await call('login', d);
+    S.token = r.token; try { sessionStorage.setItem('lm_token', r.token); } catch (e) {}
+    await boot();
+  } catch (e) { toast(e.message, true); }
+  return false;
+}
+
+function logoutLocal() { S.token = null; S.user = null; try { sessionStorage.removeItem('lm_token'); } catch (e) {} render(); }
+function logout() { call('logout').catch(() => {}); logoutLocal(); }
+
+async function boot() {
+  try {
+    const b = await call('bootstrap');
+    S.user = b.user; S.projects = b.projects; S.enums = b.enums; S.unread = b.unread; S.perms = b.perms || [];
+    if (b.theme) { try { S.defaultTheme = JSON.parse(b.theme); } catch (e) {} } loadTheme();
+    if (!S.projectId || !S.projects.some(p => p.id === S.projectId)) S.projectId = (S.projects[0] || {}).id;
+    if (b.user.locale && !localStorage.getItem('lm_lang')) S.lang = b.user.locale;
+    load();
+  } catch (e) { render(); }
+}
+
+// ===================================================================== views
+function viewLogin() {
+  return `<div class="max-w-sm mx-auto mt-16 card">
+    <div class="flex justify-between items-center mb-4"><h1 class="text-lg font-semibold">${t('app')}</h1>
+      <button class="inp text-sm" onclick="setLang('${S.lang === 'ur' ? 'en' : 'ur'}')">${S.lang === 'ur' ? 'English' : 'اردو'}</button></div>
+    <form onsubmit="return doLogin(event)" class="space-y-3">
+      <label class="block text-sm">${t('email')}<input name="email" type="email" required class="inp w-full num"></label>
+      <label class="block text-sm">${t('password')}<input name="password" type="password" required class="inp w-full"></label>
+      <button class="btn bg-p w-full">${t('login')}</button>
+    </form></div>`;
+}
+
+const VIEWS = {};
+
+VIEWS.dashboard = d => {
+  const ms = d.marla_sqft;
+  return `<div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">${(S.enums.plotStatus || []).map(s => `
+      <a class="card border-t-4 cursor-pointer" style="border-color:${COLORS[s]}" onclick="S.gf={status:'${s}'};go('#/plots')">
+        <div class="text-sm text-slate-500">${L('plotStatus', s)}</div><div class="text-2xl font-semibold num">${d.byStatus[s] || 0}</div></a>`).join('')}</div>
+  <div class="grid md:grid-cols-2 gap-6">
+    <section class="card"><h2 class="font-semibold mb-2">${t('dash.to_verify')} <span class="text-sm text-slate-500">· ${t('dash.waiting', { n: d.waitingDirector })}</span></h2>
+      ${d.toVerify.length ? d.toVerify.map(a => `<a class="flex justify-between border-b py-2 text-sm cursor-pointer hover:bg-slate-50" onclick="go('#/approval/${a.id}')">
+        <span>${t('plot')} <b class="num">${esc(a.plot_no)}</b> · ${L('approvalType', a.type)}</span><span class="font-medium text-amber-700">${L('approvalStatus', a.status)}</span></a>`).join('') : `<p class="text-sm text-slate-500">${t('nothing')}</p>`}
+    </section>
+    <section class="card"><h2 class="font-semibold mb-2">${t('dash.files')}</h2>
+      ${Object.keys(d.caseCounts).length ? Object.keys(d.caseCounts).map(s => `<a class="flex justify-between border-b py-2 text-sm cursor-pointer hover:bg-slate-50" onclick="S.filters={registry:{status:'${s}'}};go('#/registry')">
+        <span>${L('caseStatus', s)} <span class="text-slate-400">(${L('roles', d.actors[s])})</span></span><span class="num">${d.caseCounts[s]}</span></a>`).join('') : `<p class="text-sm text-slate-500">${t('nothing')}</p>`}
+    </section>
+    <section class="card"><h2 class="font-semibold mb-2">${t('dash.area')}</h2>${areaTable(d.area, ms)}</section>
+    <section class="card"><h2 class="font-semibold mb-2">${t('land.intiqals')}</h2>
+      <table class="t"><tr><th>${t('land.intiqal_no')}</th><th>${t('land.holder')}</th><th>${t('land.balance')}</th></tr>
+      ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td>${esc(i.holder_name)}</td><td class="num ${i.balance <= 0 ? 'text-red-600' : ''}">${area(Math.max(0, i.balance), ms)}</td></tr>`).join('') || `<tr><td colspan="3" class="text-slate-500">${t('nothing')}</td></tr>`}</table></section>
+    <section class="card"><h2 class="font-semibold mb-2">${t('dash.construction')}</h2>
+      ${(S.enums.construction || []).map(c => `<div class="flex justify-between border-b py-1 text-sm"><span>${L('construction', c)}</span><span class="num">${d.byConstruction[c] || 0}</span></div>`).join('')}</section>
+  </div>`;
+};
+
+function areaTable(a, ms) {
+  return `<table class="t">
+    <tr><td>${t('area.total')}</td><td class="num">${a.total ? area(a.total, ms) : '—'}</td></tr>
+    ${Object.keys(a.by_type).map(k => `<tr class="text-slate-600"><td class="ps-6">${L('parcelType', k)}</td><td class="num">${area(a.by_type[k], ms)}</td></tr>`).join('')}
+    <tr><td>${t('area.non')}</td><td class="num">${area(a.non_saleable, ms)}</td></tr>
+    <tr class="font-medium"><td>${t('area.sale')}</td><td class="num">${area(a.saleable, ms)} <span class="text-slate-400 font-normal">(${fmt(marlaOf(a.saleable, ms))} M)</span></td></tr>
+    <tr class="text-slate-500"><td>${t('area.unalloc')}</td><td class="num">${a.total ? area(Math.max(0, a.unallocated), ms) : '—'}</td></tr></table>
+    ${a.total ? '' : `<p class="text-xs text-amber-700 mt-2">ℹ ${t('area.no_purchase')}</p>`}`;
+}
+
+// ===================================================================== plots grid
+// All plots are loaded once and filtered in the browser (instant). Status columns are checkboxes.
+const G = { sel: new Set() };
+const HAS_SOLD = ['sold', 'payment_cleared', 'registry_in_process', 'registered'];
+const HAS_PAID = ['payment_cleared', 'registry_in_process', 'registered'];
+
+VIEWS.plots = d => {
+  const f = S.gf = S.gf || {};
+  const sel = (name, inner) => `<select class="inp" onchange="gf('${name}', this.value)">${inner}</select>`;
+  return `<div class="flex flex-wrap items-end justify-between gap-3 mb-3">
+      <h1 class="text-xl font-semibold">${t('nav.plots')} <span id="g-count" class="text-slate-400 num text-base"></span> <button class="inp text-sm font-normal ms-2" onclick="exportXlsx('plots')">⬇ ${t('x.excel')}</button></h1>
+      <div class="flex flex-wrap gap-2 text-sm">
+        <input type="search" value="${esc(f.q || '')}" placeholder="${t('p.search')}" class="inp w-56" oninput="gf('q', this.value)">
+        ${sel('status', `<option value="">${t('p.status')}: ${t('all')}</option>${(S.enums.plotStatus || []).map(v => `<option value="${v}" ${v === f.status ? 'selected' : ''}>${L('plotStatus', v)}</option>`).join('')}<option value="pay_pending" ${f.status === 'pay_pending' ? 'selected' : ''}>⚠ ${t('g.pending')}</option>`)}
+        ${sel('street', `<option value="">${t('p.street')}: ${t('all')}</option>${d.streets.map(x => `<option value="${x.id}" ${x.id === f.street ? 'selected' : ''}>${t('p.street')} ${esc(x.number)}</option>`).join('')}<option value="-" ${f.street === '-' ? 'selected' : ''}>${L('category', 'commercial')}</option>`)}
+        ${sel('facing', `<option value="">${t('p.facing')}: ${t('all')}</option><option value="East" ${f.facing === 'East' ? 'selected' : ''}>${t('p.east')}</option><option value="West" ${f.facing === 'West' ? 'selected' : ''}>${t('p.west')}</option>`)}
+        ${sel('size', `<option value="">${t('p.size')}: ${t('all')}</option>${[...new Set(d.rows.map(r => r.size_marla).filter(Boolean))].sort((a, b) => num(a) - num(b)).map(v => `<option value="${esc(v)}" ${v === f.size ? 'selected' : ''}>${esc(v)} M</option>`).join('')}`)}
+        ${Object.keys(f).some(k => f[k]) ? `<button class="inp" onclick="S.gf={};render()">✕ ${t('g.clear_filters')}</button>` : ''}
+      </div></div>
+    <div id="g-bulk"></div>
+    <div class="card p-0 scroll-table"><table class="t">
+      <thead><tr><th class="w-8"><input type="checkbox" id="g-all" onclick="gSelectAll(this.checked)"></th><th>${t('plot')}</th><th>${t('p.size')}</th><th>${t('p.facing')}</th>
+        <th>${t('p.customer')}</th><th class="text-center">${t('g.sold')}</th><th class="text-center">${t('g.payment')}</th><th class="text-center">${t('g.fard')}</th>
+        <th class="text-center">${t('g.registry')}</th><th>${t('p.construction')}</th></tr></thead>
+      <tbody id="g-body"></tbody></table></div>`;
+};
+
+function gf(k, v) { S.gf[k] = v; clearTimeout(gf._t); gf._t = setTimeout(gridRender, k === 'q' ? 150 : 0); }
+
+function gridFiltered() {
+  const f = S.gf || {}, q = (f.q || '').toLowerCase().trim();
+  return (S.grid ? S.grid.rows : []).filter(r =>
+    (!f.status || (f.status === 'pay_pending' ? r.pay_pending : r.sale_status === f.status)) &&
+    (!f.street || (f.street === '-' ? !r.street_id : r.street_id === f.street)) &&
+    (!f.facing || r.facing === f.facing) && (!f.size || r.size_marla === f.size) &&
+    (!q || (r.plot_no + ' ' + r.customer + ' ' + r.cnic + ' ' + r.phone).toLowerCase().includes(q)));
+}
+
+function gridRender() {
+  const body = document.getElementById('g-body');
+  if (!body || !S.grid) return;
+  const rows = gridFiltered();
+  document.getElementById('g-count').textContent = `(${rows.length}${rows.length !== S.grid.rows.length ? ' / ' + S.grid.rows.length : ''})`;
+  const box = (checked, enabled, onclick, title) =>
+    `<input type="checkbox" class="w-5 h-5 cursor-pointer accent-[var(--p)]" ${checked ? 'checked' : ''} ${enabled ? '' : 'disabled'} title="${esc(title || '')}" onclick="event.preventDefault();${enabled ? onclick : ''}">`;
+  body.innerHTML = rows.map(r => {
+    const sold = HAS_SOLD.includes(r.sale_status), paid = HAS_PAID.includes(r.sale_status) && !r.pay_pending;
+    const fard = r.case_id
+      ? `<a class="chip cursor-pointer" style="background:#a855f71f;color:#7e22ce;border:1px solid #a855f755" onclick="go('#/case/${r.case_id}')">${esc(L('caseStatus', r.case_status))}</a>`
+      : r.sale_status === 'registered' ? (r.pend_m > 0 ? box(false, allow('fard_demand'), `demandModal('${r.id}')`, t('g.fard')) : '') : box(false, allow('fard_demand') && ['payment_cleared', 'sold'].includes(r.sale_status), `demandModal('${r.id}')`, ['payment_cleared', 'sold'].includes(r.sale_status) ? t('g.fard') : t('g.need_sold'));
+    return `<tr class="${G.sel.has(r.id) ? 'sel' : ''}">
+      <td><input type="checkbox" ${G.sel.has(r.id) ? 'checked' : ''} onclick="gToggle('${r.id}', this.checked)"></td>
+      <td><a class="link num font-medium" onclick="go('#/plot/${r.id}')">${esc(r.plot_no)}</a>${r.has_notes ? ' <span title="notes">📝</span>' : ''}
+        ${r.sale_status === 'blocked' ? `<span class="chip ms-1" style="background:#6b72801f;color:#374151">${L('plotStatus', 'blocked')}</span>` : ''}</td>
+      <td class="num">${r.size_marla ? esc(r.size_marla) + ' M' : '—'}</td>
+      <td>${r.facing ? t('p.' + r.facing.toLowerCase()) : '—'}</td>
+      <td>${r.customer ? `${esc(r.customer)}<div class="text-xs text-slate-400 num">${esc(r.phone)}</div>` : '<span class="text-slate-300">—</span>'}</td>
+      <td class="text-center">${box(sold, r.sale_status !== 'blocked' && r.sale_status !== 'registry_in_process' && (sold ? (allow('cancel_sale') || allow('repurchase') || allow('transfer')) : allow('sell')), sold ? `soldMenu('${r.id}')` : `sellModal(['${r.id}'])`)}</td>
+      <td class="text-center">${r.pay_pending ? pendChip(r.id) : box(paid, allow('payment_clear') && r.sale_status === 'sold', `payModal(['${r.id}'])`, sold ? '' : t('g.need_sold'))}</td>
+      <td class="text-center">${fard}</td>
+      <td class="text-center">${r.sale_status === 'registered' ? (r.pend_m > 0 ? `<span class="chip" style="background:#f59e0b22;color:#b45309;border:1px solid #f59e0b88" title="${t('r.partial_title')}">✔ ${r.reg_m} M · ${t('r.pending_m', { m: r.pend_m })}</span>` : '<span class="text-lg" style="color:#2563eb">✔</span>') : r.reg_m > 0 ? `<span class="text-xs text-slate-500">✔ ${r.reg_m} M</span>` : ''}</td>
+      <td class="text-slate-500">${L('construction', r.construction_status)}</td></tr>`;
+  }).join('') || `<tr><td colspan="10" class="text-slate-500 text-center py-6">${t('nothing')}</td></tr>`;
+  const all = document.getElementById('g-all');
+  if (all) all.checked = rows.length > 0 && rows.every(r => G.sel.has(r.id));
+  bulkBar();
+}
+
+function gToggle(id, on) { on ? G.sel.add(id) : G.sel.delete(id); gridRender(); }
+function gSelectAll(on) { gridFiltered().forEach(r => on ? G.sel.add(r.id) : G.sel.delete(r.id)); gridRender(); }
+
+function bulkBar() {
+  const el = document.getElementById('g-bulk'); if (!el) return;
+  if (!G.sel.size || !(allow('sell') || allow('payment_clear'))) { el.innerHTML = ''; return; }
+  const rows = S.grid.rows.filter(r => G.sel.has(r.id));
+  const avail = rows.filter(r => r.sale_status === 'available').map(r => r.id), sold = rows.filter(r => r.sale_status === 'sold' || r.pay_pending).map(r => r.id);
+  el.innerHTML = `<div class="card mb-3 flex flex-wrap items-center gap-3 text-sm" style="background:var(--p-soft)">
+    <b>${t('g.selected', { n: G.sel.size })}</b>
+    ${allow('sell') ? `<button class="btn bg-p" ${avail.length ? '' : 'disabled style="opacity:.4"'} onclick='sellModal(${JSON.stringify(avail)})'>${t('g.sell_selected', { n: avail.length })}</button>` : ''}
+    ${allow('payment_clear') ? `<button class="btn bg-orange-600" ${sold.length ? '' : 'disabled style="opacity:.4"'} onclick='payModal(${JSON.stringify(sold)})'>${t('g.pay_selected', { n: sold.length })}</button>` : ''}
+    <button class="inp" onclick="G.sel.clear();gridRender()">✕ ${t('g.clear_sel')}</button></div>`;
+}
+
+// ---- modals
+function modal(title, body) {
+  document.getElementById('modal').innerHTML = `<div class="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-10 overflow-auto" onclick="if(event.target===this)closeModal()">
+    <div class="card w-full max-w-lg"><div class="flex justify-between items-center mb-3"><h2 class="font-semibold text-lg">${title}</h2>
+      <button class="text-2xl leading-none" onclick="closeModal()">×</button></div>${body}</div></div>`;
+}
+function closeModal() { document.getElementById('modal').innerHTML = ''; }
+const plotNos = ids => ids.map(id => (S.grid.rows.find(r => r.id === id) || {}).plot_no).join(', ');
+
+async function gridAction(ev, op, ids, extra) {
+  ev.preventDefault();
+  const btn = ev.target.querySelector('button[type=submit]'); if (btn) { btn.disabled = true; btn.textContent = t('loading'); }
+  const data = Object.assign(formData(ev.target), extra || {}, { op, plot_ids: ids });
+  if (op === 'sell' && !data.customer_id) {
+    data.new_customer = { name: data.nc_name, father_name: data.nc_father, relation: data.nc_relation, cnic: data.nc_cnic, phone: data.nc_phone };
+  }
+  try {
+    const r = await call('plotAction', data);
+    r.rows.forEach(row => { const i = S.grid.rows.findIndex(x => x.id === row.id); if (i >= 0) S.grid.rows[i] = row; });
+    if (r.customer_id && data.new_customer && !S.grid.customers.some(c => c.id === r.customer_id)) S.grid.customers.push({ id: r.customer_id, label: data.new_customer.name });
+    ids.forEach(id => G.sel.delete(id));
+    closeModal(); gridRender();
+    if (r.errors.length) toast(r.errors.map(e => e.plot_no + ': ' + t(e.code, e.params)).join(' | '), true);
+    else toast(t('g.done_n', { n: r.done.length }));
+  } catch (e) { toast(e.message, true); if (btn) { btn.disabled = false; btn.textContent = t('save'); } }
+  return false;
+}
+
+function sellModal(ids) {
+  if (!ids.length) return;
+  const custs = S.grid.customers;
+  modal(t('g.sell_title', { plots: plotNos(ids) }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "sell", ${JSON.stringify(ids)})'>
+    <div><input type="search" placeholder="${t('g.search_customer')}" class="inp w-full mb-1" oninput="filterCust(this.value)">
+      <select name="customer_id" id="cust-list" size="6" class="inp w-full" onchange="document.getElementById('nc').classList.add('hidden')">
+        ${custs.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select>
+      <a class="link text-xs" onclick="document.getElementById('cust-list').value='';document.getElementById('nc').classList.toggle('hidden')">＋ ${t('c.new')}</a></div>
+    <div id="nc" class="hidden grid grid-cols-2 gap-2 border rounded p-2">
+      <input name="nc_name" placeholder="${t('c.name')}" class="inp col-span-2">
+      <select name="nc_relation" class="inp"><option>s/o</option><option>d/o</option><option>w/o</option></select><input name="nc_father" placeholder="${t('c.father')}" class="inp">
+      <input name="nc_cnic" placeholder="00000-0000000-0" class="inp num"><input name="nc_phone" placeholder="${t('c.phone')}" class="inp num"></div>
+    <div class="flex gap-2"><label class="flex-1">${t('date')}<br>${dateInp()}</label><label class="flex-1">${t('p.file_no')}<br><input name="reference" class="inp w-full"></label></div>
+    <button type="submit" class="btn bg-p w-full">${t('save')}</button></form>`);
+}
+function filterCust(q) {
+  q = q.toLowerCase(); const sel = document.getElementById('cust-list');
+  Array.from(sel.options).forEach(o => { o.hidden = q && !o.text.toLowerCase().includes(q); });
+}
+
+function payModal(ids) {
+  if (!ids.length) return;
+  modal(t('g.pay_title', { plots: plotNos(ids) }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "clearPayment", ${JSON.stringify(ids)})'>
+    <p class="text-slate-500">${t('p.payment_clear_help')}</p>
+    <label>${t('date')}<br>${dateInp()}</label>
+    <label class="flex gap-2 items-center"><input type="checkbox" required> ${t('p.payment_tick')}</label>
+    <button type="submit" class="btn bg-orange-600 w-full">${t('p.payment_clear')}</button></form>`);
+}
+
+// Payment not cleared yet: registry may proceed with director approval (shown in the fard email).
+function pendingFields() {
+  return `<div class="rounded border border-amber-400 bg-amber-50 p-3 space-y-2">
+    <div class="font-medium text-amber-800">⚠ ${t('g.pending_title')}</div><p class="text-amber-800">${t('g.pending_help')}</p>
+    <label class="flex gap-2 items-start"><input type="checkbox" name="payment_pending" value="TRUE" required class="mt-1"> ${t('g.pending_tick')}</label>
+    <label class="block">${t('g.pending_amount')}<br><input name="pending_amount" type="text" inputmode="numeric" required class="inp w-full num money"></label>
+    <input name="pending_remarks" placeholder="${t('g.pending_remarks')}" class="inp w-full"></div>`;
+}
+function pendChip(id) {
+  const can = allow('payment_clear');
+  return `<span class="chip ${can ? 'cursor-pointer' : ''}" style="background:#f59e0b22;color:#b45309;border:1px solid #f59e0b88" title="${t('g.pending_click')}" ${can ? `onclick="payModal(['${id}'])"` : ''}>⚠ ${t('g.pending')}</span>`;
+}
+
+// ---- Excel (SheetJS is loaded only when needed)
+function loadXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  return new Promise((ok, bad) => { const s = document.createElement('script'); s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js'; s.onload = () => ok(window.XLSX); s.onerror = () => bad(new Error('Excel library could not load')); document.head.appendChild(s); });
+}
+async function exportXlsx(kind) {
+  try {
+    toast(t('x.preparing'));
+    const [X, d] = await Promise.all([loadXLSX(), call('exportData', { project_id: S.projectId, kind })]);
+    const ws = X.utils.aoa_to_sheet([d.head, ...d.rows]);
+    ws['!cols'] = d.head.map(h => ({ wch: Math.max(10, h.length + 2) }));
+    const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, d.name);
+    X.writeFile(wb, `${(S.project && S.project.code) || 'RG2'}_${d.name}_${today()}.xlsx`);
+  } catch (e) { toast(e.message, true); }
+}
+const OLD_COLS = [['plot_no', 'Plot No'], ['area_marla', 'Registry Area (Marla)'], ['buyer_name', 'Buyer Name'], ['relation', 'Relation (s/o d/o w/o)'], ['father_name', 'Father / Husband Name'],
+  ['cnic', 'CNIC'], ['phone', 'Phone'], ['registry_no', 'Registry No'], ['registry_date', 'Registry Date (DD-MM-YYYY)'], ['registry_office', 'Registry Office'], ['maliyat', 'Maliyat'],
+  ['mode', 'Registry By (Client / Company)'], ['fard_no', 'Fard No'], ['seller_intiqal_no', 'Seller Intiqal No'], ['buyer_intiqal_no', 'Buyer Intiqal No'], ['notes', 'Notes']];
+async function downloadTemplate() {
+  try {
+    const X = await loadXLSX();
+    const ws = X.utils.aoa_to_sheet([OLD_COLS.map(c => c[1]), ['25.02', '9', 'Sheikh Muhammad Tanveer', 's/o', 'Sadiq', '35202-1234567-1', '0300-1234567', '1234', '15-03-2025', 'Sub Registrar Sharaqpur', '3600000', 'Client', '567', '19692', '', 'example row – delete it']]);
+    Object.keys(ws).forEach(k => { if (k[0] !== '!') ws[k].t = 's', ws[k].z = '@'; });
+    ws['!cols'] = OLD_COLS.map(c => ({ wch: c[1].length + 2 }));
+    const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, 'Old Registries'); X.writeFile(wb, 'Old_Registries_Template.xlsx');
+  } catch (e) { toast(e.message, true); }
+}
+async function importOld(input) {
+  const file = input.files[0]; input.value = ''; if (!file) return;
+  const out = document.getElementById('import-result');
+  try {
+    const X = await loadXLSX(), wb = X.read(await file.arrayBuffer());
+    const raw = X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: '' });
+    const head = (raw[0] || []).map(h => String(h).trim().toLowerCase());
+    const idx = OLD_COLS.map(([k, label]) => head.findIndex(h => h === label.toLowerCase() || h.startsWith(label.toLowerCase().split(' (')[0])));
+    const rows = raw.slice(1).filter(r => r.some(v => String(v).trim())).map(r => Object.fromEntries(OLD_COLS.map(([k], i) => {
+      let v = idx[i] >= 0 ? r[idx[i]] : '';
+      if (k === 'registry_date' && typeof v === 'number') v = X.SSF.format('yyyy-mm-dd', v);   // Excel date serial
+      return [k, String(v).trim()];
+    })));
+    if (!rows.length) return toast(t('nothing'), true);
+    if (!confirm(t('x.confirm', { n: rows.length }))) return;
+    out.innerHTML = `<p class="text-slate-500">${t('x.working')}</p>`;
+    const res = await call('importRegistries', { project_id: S.projectId, rows });
+    const good = res.filter(r => r.ok).length;
+    out.innerHTML = `<p class="font-medium mb-2">${t('x.done', { ok: good, bad: res.length - good })}</p><table class="t"><tr><th>Row</th><th>${t('plot')}</th><th></th></tr>${res.map(r =>
+      `<tr><td class="num">${r.row}</td><td class="num">${esc(r.plot)}</td><td class="${r.ok ? 'text-emerald-700' : 'text-red-700'}">${r.ok ? '✔ ' + esc(r.msg) : '✖ ' + esc(r.code ? t(r.code, r.params) : r.msg)}</td></tr>`).join('')}</table>`;
+    if (S.grid) S.grid._pid = null;
+  } catch (e) { out.innerHTML = ''; toast(e.message, true); }
+}
+
+// ---- fard jari: intiqal allocation helpers
+function allocTotal(need) {
+  const tot = [...document.querySelectorAll('input.alloc')].reduce((s, el) => s + num(el.value), 0);
+  const el = document.getElementById('alloc-total'); if (!el) return;
+  const ok = Math.abs(tot - need) < 0.5, ms = num(S.data.marla_sqft) || 270, mm = v => Math.round(v / ms * 100) / 100;
+  el.innerHTML = `${t('r.alloc_total')}: <b>${fmt(Math.round(tot * 100) / 100)}</b> / ${fmt(need)} sq ft ${ok ? '✅' : tot > need ? '⚠' : ''}`
+    + (tot > 0.5 && tot < need - 0.5 ? `<div class="text-amber-700">ℹ ${t('r.partial_note', { now: mm(tot), pending: mm(need - tot) })}</div>` : '');
+  el.style.color = ok ? '#047857' : tot > need ? '#b91c1c' : '#b45309';
+}
+function allocAuto(need) {
+  let left = num(need);
+  document.querySelectorAll('input.alloc').forEach(el => {
+    if (el.disabled) return;
+    const take = Math.min(left, num(el.dataset.bal));
+    el.value = take > 0 ? Math.round(take * 100) / 100 : ''; left -= take;
+  });
+  allocTotal(need);
+}
+function addIntiqalModal() {
+  modal(t('land.add_intiqal').replace(/^\+\s*/, ''), `<form class="grid grid-cols-2 gap-2 text-sm" onsubmit="closeModalAfter(event,'saveIntiqal',{project_id:'${S.data.project ? S.data.project.id : S.projectId}'})">${landFields('intiqal', S.data)}
+    <div class="col-span-2 flex justify-end mt-2"><button type="submit" class="btn bg-p">${t('save')}</button></div></form>`);
+  const f = document.querySelector('#modal form'); f.kanal.parentElement.classList.add('col-span-2');
+}
+
+function demandModal(id) {
+  const r = S.grid.rows.find(x => x.id === id);
+  modal(t('g.demand_title', { plot: r.plot_no }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "demand", ["${id}"])'>
+    <div class="text-slate-500">${esc(r.customer)} · ${esc(r.size_marla)} M</div>
+    <label>${t('r.mode')}<br><select name="mode" class="inp w-full">${opts('registryMode')}</select></label>
+    <div class="flex gap-2"><label class="flex-1">${t('r.demand_date')}<br>${dateInp('demand_date')}</label>
+      <label class="flex-1">${t('r.maliyat')}<br><input name="maliyat" type="text" inputmode="numeric" required class="inp w-full num money"></label></div>
+    <label class="block">${t('r.reg_area')}<br><input name="area_marla" type="number" step="0.01" min="0.01" value="${r.pend_m || r.size_marla || ''}" class="inp w-40 num"> <span class="text-slate-500 text-xs">${t('r.reg_area_help')}</span></label>
+    ${r.sale_status === 'sold' ? pendingFields() : ''}
+    <button type="submit" class="btn bg-purple-700 w-full">${t('r.create')}</button></form>`);
+}
+
+function soldMenu(id) {
+  const r = S.grid.rows.find(x => x.id === id);
+  const canCancel = ['sold', 'payment_cleared'].includes(r.sale_status) && allow('cancel_sale');
+  modal(t('g.sold_menu', { plot: r.plot_no, name: r.customer }), `<div class="space-y-4 text-sm">
+    ${canCancel ? `<form class="border rounded p-3 space-y-2" onsubmit='return gridAction(event, "cancelSale", ["${id}"])'>
+      <div class="font-medium">${t('p.cancel')}</div>${dateInp()}<input name="notes" placeholder="${t('notes')}" class="inp w-full">
+      <button type="submit" class="btn bg-red-600">${t('p.cancel')}</button></form>` : ''}
+    ${allow('repurchase') ? `<form class="border rounded p-3 space-y-2" onsubmit='return gridAction(event, "repurchase", ["${id}"])'>
+      <div class="font-medium">${t('p.repurchase')}</div><p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}
+      <input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><button type="submit" class="btn bg-slate-800">${t('p.repurchase')}</button></form>` : ''}
+    ${['sold', 'payment_cleared'].includes(r.sale_status) && allow('transfer') ? `<button class="inp w-full" onclick="closeModal();go('#/plot/${id}')">${t('g.transfer_open')}</button>` : ''}</div>`);
+}
+
+function dateInp(name, v) { return `<input type="date" name="${name || 'date'}" value="${v || today()}" required class="inp">`; }
+function customerSelect(list) {
+  return `<select name="customer_id" required class="inp w-full"><option value="">${t('p.choose')}</option>${list.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select>
+    <a class="link text-xs" onclick="go('#/customers')">${t('p.new_customer')}</a>`;
+}
+
+VIEWS.plot = d => {
+  const p = d.plot, s = p.sale_status;
+  const box = (title, body, action, extra, confirmMsg, color) => `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'${action}',${esc(JSON.stringify(Object.assign({ plot_id: p.id }, extra || {})))},${confirmMsg ? `{confirm:'${esc(confirmMsg)}'}` : '{}'})">
+      <div class="font-medium">${title}</div>${body}<button class="btn ${color || 'bg-p'}">${title}</button></form>`;
+  let actions = '';
+  {
+    if (s === 'available' && allow('sell')) actions += box(t('p.sell'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'sell');
+    if (isTrue(p.payment_pending) && allow('payment_clear')) actions += `<div class="rounded border border-amber-400 bg-amber-50 p-2 text-sm text-amber-800">⚠ ${t('g.pending_plot')}</div>` + box(t('p.payment_clear'), `<p class="text-slate-500">${t('p.payment_clear_help')}</p>${dateInp()}<label class="flex gap-2"><input type="checkbox" required> ${t('p.payment_tick')}</label>`, 'clearPayment', null, t('are_you_sure'), 'bg-orange-600');
+    if (s === 'sold' && allow('payment_clear')) actions += box(t('p.payment_clear'), `<p class="text-slate-500">${t('p.payment_clear_help')}</p>${dateInp()}<label class="flex gap-2"><input type="checkbox" required> ${t('p.payment_tick')}</label>`, 'clearPayment', null, t('are_you_sure'), 'bg-orange-600');
+    if (s === 'sold' || s === 'payment_cleared') {
+      if (allow('transfer')) actions += box(t('p.transfer'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'transfer', null, null, 'bg-slate-800');
+      if (allow('cancel_sale')) actions += box(t('p.cancel'), dateInp() + `<textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'cancelSale', null, t('are_you_sure'), 'bg-red-600');
+    }
+    if (['sold', 'payment_cleared', 'registered'].includes(s) && allow('repurchase')) actions += box(t('p.repurchase'), `<p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}<input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'repurchase', null, t('are_you_sure'), 'bg-slate-800');
+    const ar = d.areas || {}, mm = v => Math.round(num(v) / (num(ar.marla_sqft) || 270) * 100) / 100;
+    if (ar.registered > 0) actions += `<div class="border rounded p-3 text-sm space-y-1"><div class="font-medium">${t('r.area_summary')}</div>
+      <div>${t('r.area_total')}: <b class="num">${mm(ar.total)} M</b></div><div class="text-blue-700">${t('r.area_registered')}: <b class="num">${mm(ar.registered)} M</b></div>
+      ${ar.in_process > 0 ? `<div class="text-purple-700">${t('r.area_in_process')}: <b class="num">${mm(ar.in_process)} M</b></div>` : ''}
+      <div class="${ar.pending > 0.5 ? 'text-amber-700' : 'text-emerald-700'}">${t('r.area_pending')}: <b class="num">${mm(ar.pending)} M</b></div></div>`;
+    if ((s === 'payment_cleared' || s === 'sold' || (s === 'registered' && ar.pending > 0.5 && !ar.open_case_id)) && allow('fard_demand')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
+      <div class="font-medium">${t('r.new_demand')}</div><select name="mode" class="inp w-full">${opts('registryMode')}</select>${dateInp('demand_date')}
+      <input name="maliyat" type="text" inputmode="numeric" required placeholder="${t('r.maliyat')}" class="inp w-full num money">
+      <label class="block">${t('r.reg_area')} <input name="area_marla" type="number" step="0.01" min="0.01" value="${mm(ar.pending || ar.total) || p.size_marla || ''}" class="inp w-28 num"></label>${s === 'sold' ? pendingFields() : ''}<button class="btn bg-purple-700">${t('r.create')}</button></form>`;
+    if (allow('construction')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'construction',{plot_id:'${p.id}'})">
+      <div class="font-medium">${t('p.construction')}</div><select name="status" class="inp w-full">${opts('construction', p.construction_status)}</select>${dateInp()}<button class="btn bg-slate-600">${t('save')}</button></form>`;
+  }
+  if (allow('edit_plot')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'savePlot',{id:'${p.id}'})">
+      <div class="font-medium">${t('p.edit')}</div>
+      <div class="flex gap-2"><input name="size_marla" value="${esc(p.size_marla)}" placeholder="${t('area.marla')}" class="inp w-24 num"><input name="width_ft" value="${esc(p.width_ft)}" placeholder="W ft" class="inp w-20 num"><input name="depth_ft" value="${esc(p.depth_ft)}" placeholder="D ft" class="inp w-20 num"></div>
+      <select name="category" class="inp">${opts('category', p.category)}</select>
+      <select name="facing" class="inp"><option value="">${t('p.facing')}: —</option>${['East', 'West'].map(f => `<option value="${f}" ${p.facing === f ? 'selected' : ''}>${t('p.' + f.toLowerCase())}</option>`).join('')}</select>
+      <label class="flex gap-2"><input type="hidden" name="is_corner" value="FALSE"><input type="checkbox" name="is_corner" value="TRUE" ${isTrue(p.is_corner) ? 'checked' : ''}> ${t('p.corner')}</label>
+      <label class="flex gap-2"><input type="hidden" name="is_park_facing" value="FALSE"><input type="checkbox" name="is_park_facing" value="TRUE" ${isTrue(p.is_park_facing) ? 'checked' : ''}> ${t('p.park_facing')}</label>
+      <button class="btn bg-slate-600">${t('save')}</button></form>`;
+
+  return `<div class="flex flex-wrap items-center gap-3 mb-4"><h1 class="text-xl font-semibold">${t('plot')} <span class="num">${esc(p.plot_no)}</span></h1>
+      <span class="chip text-white" style="background:${COLORS[s]}">${L('plotStatus', s)}</span><span class="chip bg-slate-200">${L('construction', p.construction_status)}</span></div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <section class="card text-sm space-y-1"><h2 class="font-semibold mb-2">${t('p.details')}</h2>
+      <div>${t('p.street')}: <span class="num">${esc(d.street) || '—'}</span></div>
+      <div>${t('p.size')}: <span class="num">${esc(p.size_marla) || '—'} M ${p.width_ft ? `(${esc(p.width_ft)} × ${esc(p.depth_ft)})` : ''}</span></div>
+      <div>${t('p.category')}: ${L('category', p.category)}</div>
+      ${p.facing ? `<div>${t('p.facing')}: ${t('p.' + p.facing.toLowerCase())}</div>` : ''}
+      ${p.notes ? `<div class="bg-amber-50 border border-amber-200 rounded p-2 whitespace-pre-line text-xs mt-2">${esc(p.notes)}</div>` : ''}
+      <div>${t('p.customer')}: ${d.customer ? `<a class="link" onclick="go('#/customer/${d.customer.id}')">${esc(d.customer_label)}</a> <span class="num text-slate-500">${esc(d.customer.cnic)}</span>` : t('company')}</div>
+      ${p.sold_on ? `<div>${t('p.sold_on')}: <span class="num">${dmy(p.sold_on)}</span></div>` : ''}
+      ${d.active_case ? `<div class="pt-2"><a class="link" onclick="go('#/case/${d.active_case.id}')">${t('p.open_case')} ${esc(d.active_case.reference)} · ${L('caseStatus', d.active_case.status)}</a></div>` : ''}
+    </section>
+    <section class="card text-sm md:col-span-2"><h2 class="font-semibold mb-3">${t('p.actions')}</h2>
+      ${actions ? `<div class="grid md:grid-cols-2 gap-4">${actions}</div>` : `<p class="text-slate-500">${t('read_only')}</p>`}</section>
+  </div>
+  <section class="card mt-6"><h2 class="font-semibold mb-3">${t('p.chain')}</h2><ol class="flex flex-wrap items-center gap-2 text-sm">
+    ${d.ownerships.length ? d.ownerships.map((o, i) => `<li class="rounded border px-3 py-1 ${o.ended_on ? 'bg-slate-50' : 'bg-emerald-50 border-emerald-300'}">
+      <div class="font-medium">${esc(o.holder) || t('company')}</div><div class="text-xs text-slate-500 num">${dmy(o.started_on)} → ${o.ended_on ? dmy(o.ended_on) : t('now')}</div>
+      ${o.end_event ? `<div class="text-xs">${L('event', o.end_event)}</div>` : ''}</li>${i < d.ownerships.length - 1 ? `<li class="text-slate-400">${S.lang === 'ur' ? '←' : '→'}</li>` : ''}`).join('') : `<li>${t('company')}</li>`}</ol></section>
+  <section class="card mt-6"><h2 class="font-semibold mb-3">${t('p.history')}</h2><table class="t">
+    <tr><th>${t('date')}</th><th>${t('p.event')}</th><th>${t('p.from')}</th><th>${t('p.to')}</th><th>${t('p.reference')}</th><th>${t('by')}</th></tr>
+    ${d.events.map(e => `<tr><td class="num">${dmy(e.event_date)}</td><td>${L('event', e.event)}${e.notes ? `<div class="text-xs text-slate-500">${esc(e.notes)}</div>` : ''}</td>
+      <td>${esc(e.from_name) || (e.event === 'sold' ? t('company') : '')}</td><td>${esc(e.to_name) || (['repurchased', 'cancelled'].includes(e.event) ? t('company') : '')}</td>
+      <td class="num">${esc(e.reference)}</td><td class="text-slate-500">${esc(e.by)}</td></tr>`).join('')}</table></section>`;
+};
+
+VIEWS.registry = d => {
+  const f = (S.filters || {}).registry || {};
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.registry')} <button class="inp text-sm font-normal ms-2" onclick="exportXlsx('registries')">⬇ ${t('x.excel')}</button></h1>
+  <section class="card mb-6"><h2 class="font-semibold mb-2">${t('r.pending')} <span class="num text-slate-500">(${d.pending.length})</span></h2>
+    <div class="flex flex-wrap gap-2 text-sm">${d.pending.map(p => `<a class="border rounded px-2 py-1 cursor-pointer hover:bg-orange-50" onclick="go('#/plot/${p.id}')"><span class="num font-medium">${esc(p.plot_no)}</span> · ${esc(p.customer)}</a>`).join('') || `<span class="text-slate-500">${t('nothing')}</span>`}</div></section>
+  <select class="inp mb-3 text-sm" onchange="S.filters={registry:{status:this.value}};load()"><option value="">${t('r.open')}</option>
+    ${Object.keys(t('enum.caseStatus')).map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${L('caseStatus', s)}</option>`).join('')}</select>
+  <div class="card p-0 scroll-table"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('p.customer')}</th><th>${t('r.mode')}</th><th>${t('r.step')}</th><th>${t('r.with')}</th><th>${t('r.demand_date')}</th></tr>
+    ${d.cases.map(c => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/case/${c.id}')">${esc(c.reference)}</a></td><td class="num">${esc(c.plot_no)}</td><td>${esc(c.customer_name)}</td>
+      <td>${L('registryMode', c.mode)}</td><td>${L('caseStatus', c.status)}</td><td class="text-slate-500">${c.actor ? L('roles', c.actor) : '—'}</td><td class="num">${dmy(c.demand_date)}</td></tr>`).join('') || `<tr><td colspan="7" class="text-slate-500">${t('nothing')}</td></tr>`}
+  </table></div>`;
+};
+
+const STEP_PERM = { send_fard_approval: 'send_approval', fard_jari: 'fard_jari', fard_received: 'fard_received', hand_over_fard: 'hand_over_fard', client_registry: 'client_registry',
+  expense_paid: 'expense_paid', registry_done: 'registry_done', record_in_office: 'record_in_office', hand_over: 'hand_over', cancel: 'cancel_case' };
+function stepForm(caseId, step, body, btn, color, confirmMsg) {
+  if (STEP_PERM[step] && !allow(STEP_PERM[step])) return `<p class="text-slate-500">🔒 ${t('read_only')}</p>`;
+  return `<form class="space-y-2" onsubmit="return submitForm(event,'registryStep',{case_id:'${caseId}',step:'${step}'}${confirmMsg ? `,{confirm:'${esc(confirmMsg)}'}` : ''})">${body}<button class="btn ${color || 'bg-purple-700'}">${btn}</button></form>`;
+}
+function registryFields(c) {
+  return `<div class="flex flex-wrap gap-2"><input name="registry_no" required placeholder="${t('r.registry_no')}" value="${esc(c.registry_no)}" class="inp num">
+    <input type="date" name="registry_date" required value="${c.registry_date || today()}" class="inp"><input name="registry_office" placeholder="${t('r.office')}" value="${esc(c.registry_office)}" class="inp">
+    <input name="registry_copy_url" placeholder="${t('r.copy_url')}" class="inp w-full num"></div>`;
+}
+
+function expenseForm(d, kind) {
+  if (!allow('expense')) return `<p class="text-slate-500">🔒 ${t('read_only')}</p>`;
+  const c = d.case, sellerFiler = d.allocations.length ? d.allocations[0].holder_is_filer : true;
+  const rows = d.rates.filter(r => kind !== 'seller_expense' || r.payer === 'seller');
+  return `<form id="exp-${kind}" class="space-y-3 mt-2" onsubmit="return submitForm(event,'registryStep',{case_id:'${c.id}',step:'expense_save',kind:'${kind}'},{confirm:'${esc(t('r.confirm_send'))}'})">
+    <div class="flex flex-wrap gap-3 items-end">
+      <label>${t('r.maliyat')}<br><input type="text" inputmode="numeric" name="maliyat" value="${fmt(c.maliyat)}" required class="inp w-36 num money"></label>
+      <label>${t('r.area_marla')}<br><input type="number" step="0.01" name="area_marla" value="${esc(c.area_marla)}" required class="inp w-24 num"></label>
+      <label class="flex gap-1 items-center"><input type="hidden" name="buyer_is_filer" value="FALSE"><input type="checkbox" name="buyer_is_filer" value="TRUE" ${d.customer && isTrue(d.customer.is_filer) ? 'checked' : ''}> ${t('r.buyer_filer')}</label>
+      <label class="flex gap-1 items-center"><input type="hidden" name="seller_is_filer" value="FALSE"><input type="checkbox" name="seller_is_filer" value="TRUE" ${sellerFiler ? 'checked' : ''}> ${t('r.seller_filer')}</label>
+      <label>${t('r.land_value')}<br><input type="text" inputmode="numeric" name="land_value" class="inp w-36 num money"></label></div>
+    <table class="t"><tr><th></th><th>${t('r.item')}</th><th>${t('r.payer')}</th><th class="text-end">${t('r.amount')}</th><th>${t('r.override')}</th></tr>
+      ${rows.map(r => `<tr><td><input type="hidden" name="enabled[${r.code}]" value="FALSE"><input type="checkbox" name="enabled[${r.code}]" value="TRUE" ${isTrue(r.default_on) ? 'checked' : ''}></td>
+        <td>${esc(S.lang === 'ur' && r.label_ur ? r.label_ur : r.label)}</td><td>${L('payer', r.payer)}</td><td class="text-end num" data-amount="${r.code}">—</td>
+        <td><input type="text" inputmode="numeric" name="manual[${r.code}]" class="inp w-28 num money"></td></tr>`).join('')}
+      <tr class="font-medium"><td></td><td>${t('r.buyer_exp')} / ${t('r.seller_exp_col')}</td><td></td><td class="text-end num" data-total="bs">—</td><td></td></tr>
+      <tr class="font-semibold"><td></td><td>${t('r.grand')}</td><td></td><td class="text-end num" data-total="grand">—</td><td></td></tr></table>
+    <button class="btn bg-purple-700">${t('r.send_exp')}</button></form>`;
+}
+
+function expenseTable(e) {
+  return `<table class="t"><tr><th>${t('r.item')}</th><th class="text-end">${t('r.rate')}</th><th class="text-end">${t('r.buyer_exp')}</th><th class="text-end">${t('r.seller_exp_col')}</th><th>${t('r.receipt')}</th></tr>
+    ${e.lines.map(l => `<tr><td>${esc(l.label)} ${isTrue(l.is_manual) ? `<span class="text-xs text-amber-700">(${t('r.manual')})</span>` : ''}</td><td class="text-end num">${l.rate !== '' ? esc(l.rate) + '%' : ''}</td>
+      <td class="text-end num">${l.payer === 'buyer' ? fmt(l.amount) : ''}</td><td class="text-end num">${l.payer === 'seller' ? fmt(l.amount) : ''}</td><td>${isTrue(l.receipt) ? t('r.receipt') : t('r.no_receipt')}</td></tr>`).join('')}
+    <tr class="font-medium"><td>${t('r.total')}</td><td></td><td class="text-end num">${fmt(e.buyer_total)}</td><td class="text-end num">${fmt(e.seller_total)}</td><td></td></tr>
+    <tr class="font-semibold"><td>${t('r.grand')}</td><td></td><td colspan="2" class="text-end num">Rs. ${fmt(e.grand_total)}</td><td></td></tr></table>
+    <div class="text-xs text-slate-500 mt-1">${t('r.maliyat')}: <span class="num">${fmt(e.maliyat)}</span> · ${t('r.buyer')}: ${esc(e.buyer_name)} (${isTrue(e.buyer_is_filer) ? t('r.filer') : t('r.non_filer')}) · ${t('r.seller')}: ${esc(e.seller_name)} (${isTrue(e.seller_is_filer) ? t('r.filer') : t('r.non_filer')})</div>`;
+}
+
+VIEWS.case = d => {
+  const c = d.case, st = c.status, isB = c.mode === 'company_managed', ms = d.marla_sqft;
+  const steps = isB
+    ? ['demand', 'fard_approval_pending', 'fard_approval_review', 'fard_approved', 'fard_jari_issued', 'fard_received', 'expense_approval_pending', 'expense_approval_review', 'expense_approved', 'expense_paid', 'registry_done', 'registry_recorded', 'handed_over']
+    : ['demand', 'fard_approval_pending', 'fard_approval_review', 'fard_approved', 'fard_jari_issued', 'fard_received', 'fard_handed_over', 'client_registry_recorded'];
+  const pos = steps.indexOf(st);
+  let next = '';
+  switch (st) {
+    case 'demand': next = `<p class="mb-2">${t('r.send_fard_help')}</p>` + stepForm(c.id, 'send_fard_approval', '', t('r.send_fard')); break;
+    case 'fard_approval_pending': case 'expense_approval_pending': next = `<p>${t('r.waiting')}</p>`; break;
+    case 'fard_approval_review': case 'expense_approval_review':
+      next = `<p class="mb-2">${t('r.replied')}</p>${d.approvals[0] ? `<button class="btn bg-amber-600" onclick="go('#/approval/${d.approvals[0].id}')">${t('a.open')}</button>` : ''}`; break;
+    case 'fard_approved':
+      next = allow('fard_jari') ? stepForm(c.id, 'fard_jari', `<p>${t('r.jari_help', { area: area(c.area_sqft, ms), sqft: c.area_sqft })}</p>
+        <table class="t"><tr><th>${t('land.intiqal_no')}</th><th>${t('land.holder')}</th><th>${t('land.balance')}</th><th>${t('r.take')}</th>${allow('land') ? '<th></th>' : ''}</tr>
+        ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td>${esc(i.holder_name)}</td><td class="num">${area(Math.max(0, i.balance), ms)}</td>
+          <td><input type="number" step="0.01" min="0" max="${i.balance}" name="allocations[${i.id}]" data-bal="${Math.max(0, i.balance)}" class="inp w-32 num alloc" oninput="allocTotal(${c.area_sqft})" ${i.balance <= 0 ? 'disabled' : ''}>${num(i.area_sqft) <= 0 ? `<div class="text-xs text-amber-700">⚠ ${t('r.intiqal_no_area')}</div>` : ''}</td>${allow('land') ? `<td>${landEditBtn('intiqal', i.id)}</td>` : ''}</tr>`).join('')
+          || `<tr><td colspan="5" class="text-amber-700 py-3">⚠ ${t('r.no_intiqal')}</td></tr>`}</table>
+        <div class="flex flex-wrap items-center gap-3 text-sm">
+          ${d.intiqals.some(i => i.balance > 0) ? `<button type="button" class="inp" onclick="allocAuto(${c.area_sqft})">⚡ ${t('r.auto_fill')}</button>` : ''}
+          ${allow('land') ? `<button type="button" class="inp" onclick="addIntiqalModal()">+ ${t('r.add_intiqal_here')}</button>` : ''}
+          <span id="alloc-total" class="num text-slate-500"></span></div>
+        <textarea name="message" required rows="3" class="inp w-full">${esc(t('r.jari_default', { plot: d.plot.plot_no, area: area(c.area_sqft, ms), customer: d.customer_label }))}</textarea>`, t('r.issue_jari'))
+        : `<p>${t('r.waiting_role', { role: L('roles', 'land_management') })}</p>`; break;
+    case 'fard_jari_issued': next = stepForm(c.id, 'fard_received', `<input name="fard_no" placeholder="${t('r.fard_no')}" class="inp num"> ${dateInp()}`, t('r.fard_received')); break;
+    case 'fard_received':
+      next = isB ? expenseForm(d, 'registry_expense')
+        : stepForm(c.id, 'hand_over_fard', dateInp(), t('r.hand_fard')) + `<details class="border rounded p-2 mt-4"><summary class="cursor-pointer">${t('r.seller_exp_opt')}</summary>${expenseForm(d, 'seller_expense')}</details>`; break;
+    case 'fard_handed_over': next = `<p class="mb-2">${t('r.client_reg_help')}</p>` + stepForm(c.id, 'client_registry', registryFields(c), t('r.record_client'), 'bg-blue-700'); break;
+    case 'expense_approved': next = `<p class="mb-2">${t('r.paid_help')}</p>` + stepForm(c.id, 'expense_paid', `<label class="flex gap-2"><input type="checkbox" required> ${t('r.expense_paid')}</label>`, t('save'), null, t('are_you_sure')); break;
+    case 'expense_paid': next = stepForm(c.id, 'registry_done', registryFields(c), t('r.reg_done')); break;
+    case 'registry_done': next = `<p class="mb-2">${t('r.record_help')}</p>` + stepForm(c.id, 'record_in_office', `${dateInp()} <input name="buyer_intiqal_no" placeholder="${t('r.buyer_intiqal')}" class="inp num"> <input name="registry_copy_url" placeholder="${t('r.copy_url')}" class="inp w-full num">`, t('r.record'), 'bg-blue-700'); break;
+    case 'registry_recorded': next = stepForm(c.id, 'hand_over', dateInp(), t('r.hand_reg'), 'bg-blue-700'); break;
+    default: next = `<p class="text-slate-500">${t('r.closed')}</p>`;
+  }
+  if (!['client_registry_recorded', 'handed_over', 'cancelled'].includes(st) && allow('cancel_case')) {
+    next += `<details class="mt-6"><summary class="text-red-600 cursor-pointer">${t('r.cancel')}</summary>${stepForm(c.id, 'cancel', `<textarea name="reason" required class="inp w-full" placeholder="${t('reason')}"></textarea>`, t('r.cancel'), 'bg-red-600', t('are_you_sure'))}</details>`;
+  }
+  const line = (k, v) => v ? `<div>${k}: <span class="num">${v}</span></div>` : '';
+  return `<div class="flex flex-wrap items-center gap-3 mb-4"><h1 class="text-xl font-semibold"><span class="num">${esc(c.reference)}</span> · ${t('plot')} <a class="link num" onclick="go('#/plot/${d.plot.id}')">${esc(d.plot.plot_no)}</a></h1>
+    <span class="chip bg-purple-100 text-purple-800">${L('caseStatus', st)}</span><span class="chip bg-slate-200">${L('registryMode', c.mode)}</span></div>
+  ${isTrue(c.payment_pending) ? `<div class="rounded border ${isTrue(d.plot.payment_pending) ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800'} p-3 mb-4 text-sm">
+    ${isTrue(d.plot.payment_pending) ? '⚠ ' + t('g.pending_case', { amount: fmt(c.pending_amount) }) : '✔ ' + t('g.pending_cleared', { amount: fmt(c.pending_amount) })}${c.pending_remarks ? ` <span class="opacity-75">— ${esc(c.pending_remarks)}</span>` : ''}</div>` : ''}
+  ${(() => { const a = d.plot_areas || {}, mm = v => Math.round(num(v) / (num(a.marla_sqft) || 270) * 100) / 100;
+      return a.total && (a.registered > 0 || Math.abs(num(c.area_sqft) - a.total) > 0.5) ? `<div class="rounded border border-sky-300 bg-sky-50 text-sky-900 p-3 mb-4 text-sm">ℹ ${t('r.case_partial', { plot: mm(a.total), now: c.area_marla, done: mm(a.registered), pending: Math.max(0, Math.round((mm(a.total) - mm(a.registered) - num(c.area_marla) - mm(a.in_process)) * 100) / 100) })}</div>` : ''; })()}
+  <ol class="flex flex-wrap gap-1 mb-6 text-xs">${steps.map((s, i) => `<li class="px-2 py-1 rounded ${pos >= 0 && i < pos ? 'bg-emerald-100 text-emerald-800' : i === pos ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500'}">${L('caseStatus', s)}</li>`).join('')}</ol>
+  <div class="grid md:grid-cols-3 gap-6">
+    <section class="card text-sm space-y-1"><h2 class="font-semibold mb-2">${t('r.ref')}</h2>
+      <div>${t('p.customer')}: ${esc(d.customer_label)} <span class="num text-slate-500">${esc(d.customer && d.customer.cnic)}</span></div>
+      ${line(t('p.size'), esc(c.area_marla) + ' M (' + area(c.area_sqft, ms) + ')')}${line(t('r.maliyat'), 'Rs. ' + fmt(c.maliyat))}${line(t('r.demand_date'), dmy(c.demand_date))}
+      ${c.seller_name ? `<div>${t('r.seller')}: ${esc(c.seller_name)}</div>` : ''}
+      ${d.allocations.length ? `<div>${t('r.intiqals')}: <span class="num">${d.allocations.map(a => esc(a.intiqal_no) + ' (' + area(a.area_sqft, ms) + ')').join(', ')}</span></div>` : ''}
+      ${c.fard_jari_message ? `<div class="bg-slate-50 rounded p-2 whitespace-pre-line">${esc(c.fard_jari_message)}</div>` : ''}
+      ${line(t('r.fard_no'), esc(c.fard_no) + ' ' + dmy(c.fard_received_on))}${line(t('r.hand_fard'), dmy(c.fard_handed_over_on))}
+      ${line(t('r.registry_no'), c.registry_no ? esc(c.registry_no) + ' · ' + dmy(c.registry_date) + ' ' + esc(c.registry_office) : '')}
+      ${isTrue(c.expense_paid) ? `<div>${t('r.expense_paid')} ✔ <span class="num">${dmy(c.expense_paid_at)}</span></div>` : ''}
+      ${line(t('r.record'), dmy(c.registry_recorded_on))}${line(t('r.hand_reg'), dmy(c.handed_over_on))}
+      ${c.registry_copy_url ? `<div><a class="link" href="${esc(c.registry_copy_url)}" target="_blank">📎 ${t('r.copy_url')}</a></div>` : ''}
+    </section>
+    <section class="card text-sm md:col-span-2"><h2 class="font-semibold mb-3">${t('r.next')}</h2>${next}</section>
+  </div>
+  <section class="card mt-6"><h2 class="font-semibold mb-3">${t('nav.approvals')}</h2><table class="t">
+    <tr><th>${t('r.ref')}</th><th>${t('a.type')}</th><th>${t('a.sent')}</th><th>${t('a.director')}</th><th>${t('a.verified')}</th><th>${t('p.status')}</th></tr>
+    ${d.approvals.map(a => `<tr><td><a class="link num" onclick="go('#/approval/${a.id}')">${esc(a.reference)}</a></td><td>${L('approvalType', a.type)}</td><td class="num">${esc(a.sent_at).slice(0, 16)}</td>
+      <td>${a.decision ? t('a.' + a.decision) : '—'} <span class="num text-slate-500">${esc(a.decided_at).slice(0, 16)}</span></td><td>${esc(a.verifier)}</td><td>${L('approvalStatus', a.status)}</td></tr>`).join('') || `<tr><td colspan="6" class="text-slate-500">${t('nothing')}</td></tr>`}</table></section>
+  ${d.expenses.map(e => `<section class="card mt-6"><h2 class="font-semibold mb-2">${e.kind === 'seller_expense' ? t('r.seller_exp') : t('r.reg_exp')} · <span class="num">${esc(e.created_at).slice(0, 16)}</span></h2>${expenseTable(e)}</section>`).join('')}`;
+};
+
+VIEWS.approvals = d => {
+  const f = (S.filters || {}).approvals || {};
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.approvals')}</h1>
+  <select class="inp mb-3 text-sm" onchange="S.filters={approvals:{status:this.value}};load()"><option value="">${t('all')}</option>
+    ${Object.keys(t('enum.approvalStatus')).map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${L('approvalStatus', s)}</option>`).join('')}</select>
+  <div class="card p-0 scroll-table"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('a.type')}</th><th>${t('a.sent')}</th><th>${t('p.status')}</th><th>${t('a.verified')}</th></tr>
+    ${d.map(a => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/approval/${a.id}')">${esc(a.reference)}</a></td><td class="num">${esc(a.plot_no)}</td><td>${L('approvalType', a.type)}</td>
+      <td class="num">${esc(a.sent_at).slice(0, 16)}</td><td>${L('approvalStatus', a.status)}</td><td>${esc(a.verifier)}</td></tr>`).join('') || `<tr><td colspan="6" class="text-slate-500">${t('nothing')}</td></tr>`}</table></div>`;
+};
+
+VIEWS.approval = d => {
+  const a = d.approval;
+  let actions = '';
+  if (['director_approved', 'director_rejected'].includes(a.status) && allow('verify_approval')) {
+    actions += `<form class="border-t pt-3 space-y-2" onsubmit="return submitForm(event,'verifyApproval',{id:'${a.id}'})">
+      <p>${a.status === 'director_approved' ? t('a.help_ok') : t('a.help_no')}</p><textarea name="remarks" class="inp w-full" placeholder="${t('notes')}"></textarea>
+      <label class="flex gap-2"><input type="checkbox" required> ${t('a.checked')}</label><button class="btn bg-p">${t('a.verify')}</button></form>`;
+  }
+  if (['needs_review', 'sent'].includes(a.status) && allow('verify_approval')) {
+    actions += `<details class="border-t pt-3" ${a.status === 'needs_review' ? 'open' : ''}><summary class="cursor-pointer">${t('a.resolve')}</summary>
+      <form class="space-y-2 mt-2" onsubmit="return submitForm(event,'resolveApproval',{id:'${a.id}'})"><p class="text-slate-500">${t('a.resolve_help')}</p>
+      <select name="decision" class="inp"><option value="approved">${t('a.approved')}</option><option value="rejected">${t('a.rejected')}</option></select>
+      <textarea name="remarks" required class="inp w-full" placeholder="${t('a.how_confirmed')}"></textarea><button class="btn bg-amber-600">${t('save')}</button></form></details>`;
+  }
+  return `<div class="flex flex-wrap items-center gap-3 mb-4"><h1 class="text-xl font-semibold"><span class="num">${esc(a.reference)}</span> · ${L('approvalType', a.type)}</h1>
+    <span class="chip bg-amber-100 text-amber-800">${L('approvalStatus', a.status)}</span>
+    <a class="link text-sm" onclick="go('#/case/${d.case.id}')">${esc(d.case.reference)} · ${t('plot')} <span class="num">${esc(d.plot_no)}</span></a></div>
+  <div class="grid md:grid-cols-2 gap-6">
+    <section class="card text-sm space-y-1"><h2 class="font-semibold mb-2">${t('a.sent')}</h2>
+      <div>${t('a.to')}: <span class="num">${esc(a.to_email)}</span></div>${a.cc ? `<div>CC: <span class="num">${esc(a.cc)}</span></div>` : ''}
+      <div>${t('a.subject')}: <span class="num">${esc(a.subject)}</span></div><div><span class="num">${esc(a.sent_at)}</span> · ${esc(d.sender)}</div></section>
+    <section class="card text-sm space-y-2"><h2 class="font-semibold mb-2">${t('a.decision')}</h2>
+      ${a.decision ? `<div class="text-lg font-semibold ${a.decision === 'approved' ? 'text-p' : 'text-red-700'}">${t('a.' + a.decision)}</div>
+        <div>${t('a.how')}: ${t('a.' + a.decision_channel)} · <span class="num">${esc(a.decided_from_email)} · ${esc(a.decided_at)}</span></div>
+        ${a.director_remarks ? `<div class="bg-slate-50 rounded p-2">“${esc(a.director_remarks)}”</div>` : ''}` : `<p class="text-slate-500">${t('a.none')}</p>`}
+      ${d.inbound.length ? `<div class="font-medium pt-2">${t('a.inbound')}</div>` + d.inbound.map(m => `<div class="border rounded p-2 text-xs"><div class="num">${esc(m.from_email)} · ${esc(m.received_at)} · <b>${L('result', m.result)}</b></div>
+        <div class="text-slate-600 whitespace-pre-line mt-1">${esc(String(m.body_text).slice(0, 400))}</div></div>`).join('') : ''}
+      ${actions}
+      ${a.verified_at ? `<div class="border-t pt-2">${t('a.verified')}: ${esc(d.verifier)} · <span class="num">${esc(a.verified_at)}</span>${a.verify_remarks ? `<div class="text-slate-500">${esc(a.verify_remarks)}</div>` : ''}</div>` : ''}
+    </section></div>
+  ${d.expense ? `<section class="card mt-6">${expenseTable(d.expense)}</section>` : ''}`;
+};
+
+VIEWS.customers = d => {
+  const f = (S.filters || {}).customers || {};
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.customers')}</h1>
+  <form class="flex gap-2 mb-3 text-sm" onsubmit="event.preventDefault();S.filters={customers:formData(this)};load()"><input name="q" value="${esc(f.q || '')}" placeholder="${t('c.search')}" class="inp"><button class="btn bg-slate-800">${t('filter')}</button></form>
+  <div class="card p-0 scroll-table mb-6"><table class="t"><tr><th>${t('c.name')}</th><th>${t('c.cnic')}</th><th>${t('c.phone')}</th><th>${t('c.plots')}</th><th>${t('c.filer')}</th></tr>
+    ${d.map(c => `<tr class="hover:bg-slate-50"><td><a class="link" onclick="go('#/customer/${c.id}')">${esc(c.label)}</a></td><td class="num">${esc(c.cnic)}</td><td class="num">${esc(c.phone)}</td><td class="num">${c.plots}</td><td>${isTrue(c.is_filer) ? '✔' : ''}</td></tr>`).join('') || `<tr><td colspan="5" class="text-slate-500">${t('nothing')}</td></tr>`}</table></div>
+  ${allow('customers') ? `<section class="card"><h2 class="font-semibold mb-3">${t('c.new')}</h2>
+    <form class="grid md:grid-cols-3 gap-3 text-sm" onsubmit="return submitForm(event,'saveCustomer',{})">
+      <input name="name" required placeholder="${t('c.name')}" class="inp"><input name="name_ur" dir="rtl" placeholder="${t('c.name_ur')}" class="inp">
+      <div class="flex gap-1"><select name="relation" class="inp"><option>s/o</option><option>d/o</option><option>w/o</option></select><input name="father_name" placeholder="${t('c.father')}" class="inp flex-1"></div>
+      <input name="cnic" placeholder="00000-0000000-0" pattern="\\d{5}-\\d{7}-\\d" class="inp num"><input name="phone" placeholder="${t('c.phone')}" class="inp num"><input name="email" type="email" placeholder="${t('email')}" class="inp num">
+      <input name="address" placeholder="${t('c.address')}" class="inp md:col-span-2"><label class="flex gap-2 items-center"><input type="checkbox" name="is_filer" value="TRUE"> ${t('c.filer')}</label>
+      <input name="nominee_name" placeholder="${t('c.nominee')}" class="inp"><input name="nominee_cnic" placeholder="${t('c.nominee_cnic')}" class="inp num"><input name="nominee_relation" placeholder="${t('c.nominee_rel')}" class="inp">
+      <div><button class="btn bg-p">${t('save')}</button></div></form></section>` : ''}`;
+};
+
+VIEWS.customer = d => `<h1 class="text-xl font-semibold mb-1">${esc(d.label)}</h1>
+  <p class="text-sm text-slate-500 mb-4"><span class="num">${esc(d.customer.cnic)} · ${esc(d.customer.phone)}</span> · ${esc(d.customer.address)}</p>
+  <div class="grid md:grid-cols-2 gap-6">
+    <section class="card text-sm"><h2 class="font-semibold mb-2">${t('c.current')}</h2>${d.current.map(p => `<a class="flex justify-between border-b py-1 cursor-pointer" onclick="go('#/plot/${p.id}')"><span class="num">${esc(p.plot_no)}</span>${statusChip(p.sale_status)}</a>`).join('') || t('nothing')}</section>
+    <section class="card text-sm"><h2 class="font-semibold mb-2">${t('c.history')}</h2>${d.history.map(o => `<div class="flex justify-between border-b py-1"><a class="link num" onclick="go('#/plot/${o.plot_id}')">${esc(o.plot_no)}</a>
+      <span class="num">${dmy(o.started_on)} → ${o.ended_on ? dmy(o.ended_on) : t('now')}</span><span>${L('event', o.end_event)}</span></div>`).join('') || t('nothing')}</section></div>`;
+
+function areaInputs() {
+  return `<div class="flex gap-1"><input type="number" step="0.01" min="0" name="kanal" placeholder="${t('area.kanal')}" class="inp w-20 num"><input type="number" step="0.01" min="0" name="marla" placeholder="${t('area.marla')}" class="inp w-20 num"><input type="number" step="0.01" min="0" name="sqft" placeholder="${t('area.sqft')}" class="inp w-24 num"></div>`;
+}
+
+const LAND_KIND = { purchase: ['purchases', 'savePurchase', 'land.edit_purchase'], intiqal: ['intiqals', 'saveIntiqal', 'land.edit_intiqal'], parcel: ['parcels', 'saveParcel', 'land.edit_parcel'] };
+function landFields(kind, d) {
+  if (kind === 'purchase') return `<input name="seller_name" required placeholder="${t('land.seller')}" class="inp"><input name="seller_father_name" placeholder="${t('c.father')}" class="inp"><input name="seller_cnic" placeholder="00000-0000000-0" class="inp num"><input name="seller_phone" placeholder="${t('c.phone')}" class="inp num">
+      <input name="mauza" placeholder="${t('land.mauza')}" class="inp"><input name="khewat_no" placeholder="${t('land.khewat')}" class="inp num"><input name="khatooni_no" placeholder="${t('land.khatooni')}" class="inp num"><input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">
+      ${areaInputs()}<input type="date" name="agreement_date" class="inp">`;
+  if (kind === 'intiqal') return `<input name="intiqal_no" required placeholder="${t('land.intiqal_no')}" class="inp num"><input type="date" name="intiqal_date" class="inp"><input name="holder_name" required placeholder="${t('land.holder')}" class="inp"><input name="holder_cnic" placeholder="00000-0000000-0" class="inp num">
+      <label class="flex gap-2 items-center"><input type="hidden" name="holder_is_filer" value="FALSE"><input type="checkbox" name="holder_is_filer" value="TRUE" checked> ${t('r.filer')}</label>
+      <label>${t('land.acquired')} <input type="date" name="holder_acquired_on" class="inp"></label>
+      <select name="land_purchase_id" class="inp"><option value="">${t('land.link_purchase')}</option>${d.purchases.map(p => `<option value="${p.id}">${esc(p.seller_name)} – ${esc(p.khasra_nos)}</option>`).join('')}</select>
+      <input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">${areaInputs()}`;
+  return `<select name="type" class="inp">${opts('parcelType')}</select><input name="name" required placeholder="${t('c.name')}" class="inp">${areaInputs()}<input name="width_ft" type="number" step="0.01" placeholder="${t('land.width')}" class="inp num">`;
+}
+function landEditBtn(kind, id) {
+  return allow('land') ? `<button class="link text-sm whitespace-nowrap" onclick="landEdit('${kind}','${id}')">✏ ${t('edit')}</button>` : '';
+}
+function landEdit(kind, id) {
+  const d = S.data, [list, action, title] = LAND_KIND[kind];
+  const rec = (d[list] || []).find(x => String(x.id) === String(id)); if (!rec) return;
+  modal(t(title), `<form id="landEditForm" class="grid grid-cols-2 gap-2 text-sm" onsubmit="closeModalAfter(event,'${action}',{id:'${rec.id}',project_id:'${S.projectId}'})">${landFields(kind, d)}
+    <div class="col-span-2 flex justify-between gap-2 mt-2"><button type="button" class="btn bg-red-600 text-white" onclick="landDelete('${kind}','${rec.id}')">🗑 ${t('delete')}</button><button type="submit" class="btn bg-p">${t('save')}</button></div></form>`);
+  const f = document.getElementById('landEditForm');
+  f.kanal.parentElement.classList.add('col-span-2');
+  Object.keys(rec).forEach(k => {
+    const els = f.querySelectorAll(`[name="${k}"]`);
+    els.forEach(el => {
+      if (el.type === 'hidden') return;
+      if (el.type === 'checkbox') el.checked = isTrue(rec[k]);
+      else if (el.type === 'date') el.value = String(rec[k] || '').slice(0, 10);
+      else el.value = rec[k] == null ? '' : rec[k];
+    });
+  });
+  // area: split sq ft into kanal / marla / sqft
+  const ms = Number(d.marla_sqft) || 270, tot = Number(rec.area_sqft) || 0;
+  const mTot = Math.floor(tot / ms + 1e-9), kanal = Math.floor(mTot / 20), marla = mTot % 20, sq = Math.round((tot - mTot * ms) * 100) / 100;
+  f.kanal.value = kanal || ''; f.marla.value = marla || ''; f.sqft.value = sq || '';
+}
+async function closeModalAfter(ev, action, extra) {
+  ev.preventDefault();
+  const btn = ev.target.querySelector('button[type=submit]'); if (btn) btn.disabled = true;
+  try { await call(action, Object.assign(formData(ev.target), extra || {})); closeModal(); toast(t('saved')); await load(true); }
+  catch (e) { toast(e.message, true); if (btn) btn.disabled = false; }
+  return false;
+}
+async function landDelete(kind, id) {
+  if (!confirm(t('land.confirm_delete'))) return;
+  try { await call('deleteLand', { kind, id }); closeModal(); toast(t('deleted')); await load(true); }
+  catch (e) { toast(e.message, true); }
+}
+
+VIEWS.land = d => {
+  const ms = d.marla_sqft, edit = allow('land'), pid = S.projectId;
+  const tick = (p, f) => edit ? `<button class="text-lg" title="${esc(p[f + '_at'])}" onclick="call('tickPurchase',{id:'${p.id}',field:'${f}'}).then(()=>load(true)).catch(e=>toast(e.message,true))">${isTrue(p[f]) ? '✅' : '⬜'}</button>` : (isTrue(p[f]) ? '✅' : '⬜');
+  const addForm = (kind, label) => edit ? `<details class="mt-3"><summary class="link text-sm">${t(label)}</summary><form class="grid md:grid-cols-4 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'${LAND_KIND[kind][1]}',{project_id:'${pid}'})">
+      ${landFields(kind, d)}<div><button class="btn bg-p">${t('save')}</button></div></form></details>` : '';
+  const th = edit ? '<th></th>' : '', cols = n => n + (edit ? 1 : 0);
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.land')}</h1>
+  <div class="grid md:grid-cols-4 gap-3 mb-2 text-sm">${[['total', d.area.total], ['non', d.area.non_saleable], ['sale', d.area.saleable], ['unalloc', d.area.total ? Math.max(0, d.area.unallocated) : 0]].map(([k, v]) => `<div class="card">${t('area.' + k)}<div class="text-lg font-semibold num">${areaBig(v, ms)}</div></div>`).join('')}</div>
+  ${d.area.total ? '' : `<p class="text-sm text-amber-700 mb-6">ℹ ${t('area.no_purchase')}</p>`}
+  <section class="card mb-6"><h2 class="font-semibold mb-3">${t('land.purchases')}</h2><table class="t">
+    <tr><th>${t('land.seller')}</th><th>${t('land.mauza')} / ${t('land.khasra')}</th><th>${t('land.area')}</th><th>${t('land.payment_clear')}</th><th>${t('land.intiqal_done')}</th>${th}</tr>
+    ${d.purchases.map(p => `<tr><td>${esc(p.seller_name)} <span class="num text-slate-500">${esc(p.seller_cnic)}</span></td><td>${esc(p.mauza)} <span class="num">${esc(p.khasra_nos)}</span></td><td class="num">${area(p.area_sqft, ms)}</td><td>${tick(p, 'payment_cleared')}</td><td>${tick(p, 'intiqal_done')}</td>${edit ? `<td>${landEditBtn('purchase', p.id)}</td>` : ''}</tr>`).join('') || `<tr><td colspan="${cols(5)}" class="text-slate-500">${t('nothing')}</td></tr>`}</table>
+    ${addForm('purchase', 'land.add_purchase')}</section>
+  <section class="card mb-6"><h2 class="font-semibold mb-3">${t('land.intiqals')}</h2><table class="t">
+    <tr><th>${t('land.intiqal_no')}</th><th>${t('date')}</th><th>${t('land.holder')}</th><th>${t('land.area')}</th><th>${t('land.issued')}</th><th>${t('land.balance')}</th>${th}</tr>
+    ${d.intiqals.map(i => `<tr><td class="num">${esc(i.intiqal_no)}</td><td class="num">${dmy(i.intiqal_date)}</td><td>${esc(i.holder_name)} <span class="text-xs text-slate-500">${isTrue(i.holder_is_filer) ? t('r.filer') : t('r.non_filer')}</span></td>
+      <td class="num">${area(i.area_sqft, ms)}</td><td class="num">${area(i.issued, ms)}</td><td class="num font-medium">${area(Math.max(0, i.balance), ms)}</td>${edit ? `<td>${landEditBtn('intiqal', i.id)}</td>` : ''}</tr>`).join('') || `<tr><td colspan="${cols(6)}" class="text-slate-500">${t('nothing')}</td></tr>`}</table>
+    ${addForm('intiqal', 'land.add_intiqal')}</section>
+  <section class="card"><h2 class="font-semibold mb-3">${t('land.parcels')}</h2><table class="t"><tr><th>${t('land.type')}</th><th>${t('c.name')}</th><th>${t('land.area')}</th><th>${t('land.width')}</th>${th}</tr>
+    ${d.parcels.map(p => `<tr><td>${L('parcelType', p.type)}</td><td>${esc(p.name)}</td><td class="num">${area(p.area_sqft, ms)}</td><td class="num">${esc(p.width_ft)}</td>${edit ? `<td>${landEditBtn('parcel', p.id)}</td>` : ''}</tr>`).join('') || `<tr><td colspan="${cols(4)}" class="text-slate-500">${t('nothing')}</td></tr>`}</table>
+    ${addForm('parcel', 'land.add_parcel')}</section>`;
+};
+
+VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>
+  ${S.user && S.user.role === 'admin' ? `<section class="card mb-6"><h2 class="font-semibold">${t('x.import_title')}</h2><p class="text-sm text-slate-500 mb-3">${t('x.import_help')}</p>
+    <div class="flex flex-wrap gap-2 items-center text-sm"><button class="inp" onclick="downloadTemplate()">⬇ ${t('x.template')}</button>
+      <label class="btn bg-p cursor-pointer">⬆ ${t('x.upload')}<input type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="importOld(this)"></label></div>
+    <div id="import-result" class="mt-3 text-sm"></div></section>` : ''}
+  <section class="card mb-6"><div class="flex flex-wrap justify-between items-start gap-2 mb-3">
+      <div><h2 class="font-semibold">${t('s.rates')}</h2><p class="text-sm text-slate-500">${t('s.rates_help')}</p></div>
+      <div id="rates-btns"></div></div>
+    <div class="flex flex-wrap items-end gap-3 mb-3 p-3 rounded" style="background:var(--p-soft)">
+      <label class="text-sm font-medium">${t('s.calc_amount')}<br><input id="calc-maliyat" type="text" inputmode="numeric" value="3,100,000" class="inp w-40 num text-lg money" oninput="calcRates()"></label>
+      <label class="text-sm">${t('r.area_marla')}<br><input id="calc-area" type="number" step="0.01" value="6.25" class="inp w-24 num" oninput="calcRates()"></label>
+      <label class="text-sm flex items-center gap-1"><input id="calc-bf" type="checkbox" checked onchange="renderRates();calcRates()"> ${t('r.buyer_filer')}</label>
+      <label class="text-sm flex items-center gap-1"><input id="calc-sf" type="checkbox" checked onchange="renderRates();calcRates()"> ${t('r.seller_filer')}</label>
+      <label class="text-sm">${t('r.land_value')}<br><input id="calc-land" type="text" inputmode="numeric" class="inp w-32 num money" oninput="calcRates()"></label>
+      <div class="ms-auto text-end text-lg">${t('r.grand')}: <b class="num" id="calc-g">—</b></div>
+    </div>
+    <div id="rates-table"></div>
+  </section>
+  <section class="card mb-6"><h2 class="font-semibold mb-1">${t('s.perms')}</h2><p class="text-sm text-slate-500 mb-3">${t('s.perms_help')}</p>
+    <form onsubmit="return savePerms(event)"><div class="overflow-x-auto"><table class="t">
+      <thead><tr><th>${t('s.action')}</th>${S.enums.roles.map(r => `<th class="text-center">${L('roles', r)}</th>`).join('')}</tr></thead>
+      ${['plots', 'land', 'registry'].map(g => `<tr><td colspan="${S.enums.roles.length + 1}" class="font-semibold" style="background:var(--p-soft)">${t('s.group_' + g)}</td></tr>` +
+        perms.defs.filter(d => d.group === g).map(d => `<tr><td>${t('perm.' + d.key)}</td>${S.enums.roles.map(r => `<td class="text-center">${r === 'admin'
+          ? '<input type="checkbox" checked disabled>' : `<input type="checkbox" data-perm="${d.key}" data-role="${r}" ${(perms.map[d.key] || []).includes(r) ? 'checked' : ''}>`}</td>`).join('')}</tr>`).join('')).join('')}
+    </table></div><button class="btn bg-p mt-3">${t('save')}</button></form></section>
+  <section class="card mb-6"><h2 class="font-semibold mb-3">${t('s.approval')}</h2>
+    <form class="grid md:grid-cols-2 gap-3 text-sm" onsubmit="return submitForm(event,'saveSettings',{})">
+      <label>${t('s.director_email')}<input name="director_email" value="${esc(st.director_email)}" class="inp w-full num"></label>
+      <label>${t('s.cc')}<input name="approval_cc" value="${esc(st.approval_cc)}" class="inp w-full num"></label>
+      <label>${t('s.sender_name')}<input name="sender_name" value="${esc(st.sender_name)}" class="inp w-full"></label>
+      <label>${t('s.sender_dept')}<input name="sender_department" value="${esc(st.sender_department)}" class="inp w-full"></label>
+      <label>${t('s.link_days')}<input name="link_valid_days" type="number" min="1" value="${esc(st.link_valid_days)}" class="inp w-24 num"></label>
+      <label>Web app URL<input name="web_app_url" value="${esc(st.web_app_url)}" class="inp w-full num"></label>
+      <div><button class="btn bg-p">${t('save')}</button></div></form></section>
+  <section class="card mb-6"><h2 class="font-semibold mb-3">${t('s.users')}</h2><table class="t"><tr><th>${t('c.name')}</th><th>${t('email')}</th><th>${t('s.role')}</th><th>${t('s.active')}</th></tr>
+    ${users.map(u => `<tr><td>${esc(u.name)}</td><td class="num">${esc(u.email)}</td><td>${L('roles', u.role)}</td><td>${u.is_active ? '✔' : '✖'}</td></tr>`).join('')}</table>
+    <details class="mt-3"><summary class="link text-sm">${t('s.add_user')}</summary><form class="grid md:grid-cols-3 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'saveUser',{})">
+      <select name="id" class="inp" onchange="fillUser(this)"><option value="">— new —</option>${users.map(u => `<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select>
+      <input name="name" required placeholder="${t('c.name')}" class="inp"><input name="email" type="email" required placeholder="${t('email')}" class="inp num">
+      <select name="role" class="inp">${opts('roles')}</select><input name="department" placeholder="${t('s.sender_dept')}" class="inp">
+      <input name="password" type="password" placeholder="${t('s.new_password')}" class="inp"><label class="flex gap-2 items-center"><input type="hidden" name="is_active" value="FALSE"><input type="checkbox" name="is_active" value="TRUE" checked> ${t('s.active')}</label>
+      <div><button class="btn bg-p">${t('save')}</button></div></form></details></section>
+  <section class="card"><h2 class="font-semibold mb-3">${t('s.change_pw')}</h2><form class="flex flex-wrap gap-2 text-sm" onsubmit="return submitForm(event,'changePassword',{})">
+    <input name="current" type="password" required placeholder="${t('s.current_pw')}" class="inp"><input name="password" type="password" required minlength="8" placeholder="${t('password')}" class="inp"><button class="btn bg-slate-800">${t('save')}</button></form></section>`;
+
+function fillUser(sel) {
+  const u = (S.data[2] || []).find(x => x.id === sel.value); const f = sel.form;
+  f.name.value = u ? u.name : ''; f.email.value = u ? u.email : ''; f.role.value = u ? u.role : 'viewer'; f.department.value = u ? (u.department || '') : '';
+}
+
+
+/** Settings > Registry rates: compact table (Item | Rate | Buyer | Seller), view / edit mode. */
+function initRates(rates) {
+  S.rateDraft = rates.map(r => Object.assign({}, r, { params: r.params ? JSON.parse(r.params) : {} }));
+  S.rateEdit = false; S.showZero = false; S.rateCalc = {};
+  renderRates(); calcRates();
+}
+const rateFiler = r => r.payer === 'buyer' ? document.getElementById('calc-bf').checked : document.getElementById('calc-sf').checked;
+function rateText(r) {
+  const pct = v => (v === '' || v === undefined ? '0' : String(num(v))) + '%';
+  switch (r.calc_type) {
+    case 'percent': return pct(r.rate) + (num(r.fixed_amount) ? ' + ' + fmt(r.fixed_amount) : '');
+    case 'percent_filer': return pct(rateFiler(r) ? r.rate : r.non_filer_rate) + ` <span class="text-xs text-slate-400">${rateFiler(r) ? t('r.filer') : t('r.non_filer')}</span>`;
+    case 'fixed': return 'Rs ' + fmt(r.fixed_amount);
+    case 'excise': return 'Rs ' + fmt(r.fixed_amount);
+    case 'percent_land': return pct(r.rate) + ` <span class="text-xs text-slate-400">${t('r.land_value')}</span>`;
+    default: return '';
+  }
+}
+function rateInputs(r) {
+  const inp = (f, v, w) => f === 'fixed_amount'
+    ? `<input value="${fmt(v)}" ${'type="text" inputmode="numeric"'} class="inp ${w || 'w-20'} num py-0.5 money" oninput="rd('${r.id}','${f}',moneyVal(this))">`
+    : `<input value="${esc(v)}" class="inp ${w || 'w-20'} num py-0.5" oninput="rd('${r.id}','${f}',this.value)">`;
+  switch (r.calc_type) {
+    case 'percent': return inp('rate', r.rate) + '% + Rs ' + inp('fixed_amount', r.fixed_amount, 'w-24');
+    case 'percent_filer': { const f = rateFiler(r) ? 'rate' : 'non_filer_rate'; return inp(f, r[f]) + `% <span class="text-xs text-slate-400">${rateFiler(r) ? t('r.filer') : t('r.non_filer')}</span>`; }
+    case 'fixed': case 'excise': return 'Rs ' + inp('fixed_amount', r.fixed_amount, 'w-24');
+    case 'percent_land': return inp('rate', r.rate) + '%';
+    default: return '';
+  }
+}
+function rulesBox(r) {
+  const keys = Object.keys(r.params || {});
+  if (!keys.length) return '';
+  return `<details class="inline-block ms-1"><summary class="cursor-pointer select-none list-none inline">⚙</summary>
+    <div class="mt-1 p-2 border rounded bg-white text-xs space-y-1">${keys.map(k => `<label class="flex items-center justify-between gap-2">${t('s.param_' + k)}
+      ${S.rateEdit ? `<input value="${esc(r.params[k])}" class="inp w-24 num py-0.5" oninput="rdp('${r.id}','${k}',this.value)">` : `<b class="num">${fmt(r.params[k])}</b>`}</label>`).join('')}</div></details>`;
+}
+function rd(id, f, v) { const r = S.rateDraft.find(x => x.id === id); r[f] = v; calcRates(); }
+function rdp(id, k, v) { const r = S.rateDraft.find(x => x.id === id); r.params[k] = num(v); calcRates(); }
+
+function renderRates() {
+  const box = document.getElementById('rates-table'); if (!box || !S.rateDraft) return;
+  const rows = S.rateDraft.filter(r => isTrue(r.is_active)).sort((a, b) => num(a.sort) - num(b.sort));
+  box.innerHTML = `<div class="overflow-x-auto"><table class="t">
+    <thead><tr><th>${t('r.item')}</th><th>${t('r.rate')}</th><th class="text-end">${t('r.buyer_exp')}</th><th class="text-end">${t('r.seller_exp_col')}</th></tr></thead>
+    <tbody>${rows.map(r => `<tr data-code="${r.code}">
+      <td>${esc(S.lang === 'ur' && r.label_ur ? r.label_ur : r.label)}${rulesBox(r)}</td>
+      <td class="num">${S.rateEdit ? rateInputs(r) : rateText(r)}</td>
+      <td class="text-end num font-medium" data-amt-b="${r.code}">${r.payer === 'buyer' ? '—' : ''}</td>
+      <td class="text-end num font-medium" data-amt-s="${r.code}">${r.payer === 'seller' ? '—' : ''}</td></tr>`).join('')}
+      <tr class="font-semibold"><td>${t('r.total')}</td><td></td><td class="text-end num" id="calc-b">—</td><td class="text-end num" id="calc-s">—</td></tr></tbody></table></div>
+    <div class="flex justify-between items-center mt-2 text-sm"><a class="link" id="zero-link" onclick="S.showZero=!S.showZero;calcRates()"></a></div>`;
+  document.getElementById('rates-btns').innerHTML = S.rateEdit
+    ? `<button class="btn bg-p" onclick="saveRates()">${t('save')}</button> <button class="inp" onclick="initRates(S.data[0])">${t('s.cancel_edit')}</button>`
+    : `<button class="inp" onclick="S.rateEdit=true;renderRates();calcRates()">✏ ${t('s.edit_rates')}</button>`;
+  applyRateCalc();
+}
+
+function applyRateCalc() {
+  const c = S.rateCalc || {}; let hidden = 0;
+  document.querySelectorAll('#rates-table tr[data-code]').forEach(tr => {
+    const code = tr.dataset.code, amt = c.lines ? c.lines[code] : undefined;
+    const b = tr.querySelector('[data-amt-b]'), s2 = tr.querySelector('[data-amt-s]');
+    if (b.textContent !== '') b.textContent = amt === undefined ? '—' : fmt(amt);
+    if (s2.textContent !== '') s2.textContent = amt === undefined ? '—' : fmt(amt);
+    const hide = c.lines && !S.showZero && !S.rateEdit && !amt;
+    tr.style.display = hide ? 'none' : ''; if (hide) hidden++;
+  });
+  const v = id => document.getElementById(id);
+  if (c.lines) { v('calc-b').textContent = fmt(c.buyer); v('calc-s').textContent = fmt(c.seller); v('calc-g').textContent = 'Rs. ' + fmt(c.grand); }
+  const zl = v('zero-link');
+  if (zl) zl.textContent = S.rateEdit ? '' : S.showZero ? t('s.hide_zero') : hidden ? t('s.show_all', { n: hidden }) : '';
+}
+
+function calcRates() {
+  clearTimeout(calcRates._t);
+  calcRates._t = setTimeout(async () => {
+    const v = id => document.getElementById(id);
+    if (!v('calc-maliyat') || !S.rateDraft) return;
+    try {
+      const r = await call('expensePreview', { kind: 'registry_expense', maliyat: moneyVal(v('calc-maliyat')), area_marla: v('calc-area').value,
+        buyer_is_filer: v('calc-bf').checked, seller_is_filer: v('calc-sf').checked, land_value: moneyVal(v('calc-land')), rates: rateEdits() });
+      const lines = {}; r.lines.forEach(l => lines[l.code] = l.amount);
+      S.rateCalc = { lines, buyer: r.buyer_total, seller: r.seller_total, grand: r.grand_total };
+      applyRateCalc();
+    } catch (e) {}
+  }, 300);
+}
+function rateEdits() {
+  return (S.rateDraft || []).map(r => ({ id: r.id, rate: r.rate, non_filer_rate: r.non_filer_rate, fixed_amount: r.fixed_amount, params: Object.keys(r.params || {}).length ? r.params : undefined }));
+}
+async function saveRates() {
+  try { await call('saveRates', { rates: rateEdits() }); toast(t('saved')); S.data[0] = await call('rates'); initRates(S.data[0]); }
+  catch (e) { toast(e.message, true); }
+}
+
+async function savePerms(ev) {
+  ev.preventDefault();
+  const map = {};
+  (S.data[3].defs || []).forEach(d => map[d.key] = []);
+  ev.target.querySelectorAll('[data-perm]').forEach(i => { if (i.checked) map[i.dataset.perm].push(i.dataset.role); });
+  try { await call('savePermissions', { map }); toast(t('saved')); const b = await call('bootstrap'); S.perms = b.perms || []; } catch (e) { toast(e.message, true); }
+  return false;
+}
+
+/** Live totals on the expense form. */
+function afterRender() {
+  if (S.view === 'plots') gridRender();
+  if (S.view === 'settings') initRates(S.data[0]);
+  document.querySelectorAll('form[id^="exp-"]').forEach(form => {
+    const kind = form.id.replace('exp-', '');
+    let timer;
+    const refresh = async () => {
+      try {
+        const r = await call('expensePreview', Object.assign(formData(form), { kind }));
+        form.querySelectorAll('[data-amount]').forEach(td => td.textContent = '—');
+        r.lines.forEach(l => { const td = form.querySelector(`[data-amount="${l.code}"]`); if (td) td.textContent = fmt(l.amount); });
+        form.querySelector('[data-total="bs"]').textContent = fmt(r.buyer_total) + ' / ' + fmt(r.seller_total);
+        form.querySelector('[data-total="grand"]').textContent = 'Rs. ' + fmt(r.grand_total);
+      } catch (e) {}
+    };
+    form.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(refresh, 400); });
+    form.addEventListener('change', refresh);
+    refresh();
+  });
+}
+
+// ===================================================================== start
+try {
+  google.script.history.setChangeHandler(e => { S.route = e.location.hash ? '#' + e.location.hash.replace(/^#/, '') : '#/'; load(); });
+  google.script.url.getLocation(loc => { if (loc.hash) S.route = '#' + loc.hash.replace(/^#/, ''); start(); });
+} catch (e) { start(); }
+function start() { loadTheme(); document.documentElement.dir = S.lang === 'ur' ? 'rtl' : 'ltr'; if (S.token) boot(); else render(); }
+</script>
+</body>
+</html>

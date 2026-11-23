@@ -929,18 +929,18 @@ function sellModal(ids) {
   if (!ids.length) return;
   const custs = S.grid.customers;
   modal(t('g.sell_title', { plots: plotNos(ids) }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "sell", ${JSON.stringify(ids)})'>
-    <div><input type="search" placeholder="${t('g.search_customer')}" class="inp w-full mb-1" oninput="filterCust(this.value)">
-      <select name="customer_id" id="cust-list" size="6" class="inp w-full" onchange="document.getElementById('nc').classList.add('hidden')">
-        ${custs.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select>
-      <a class="link text-xs" onclick="document.getElementById('cust-list').value='';document.getElementById('nc').classList.toggle('hidden')">＋ ${t('c.new')}</a></div>
-    <div id="nc" class="hidden grid grid-cols-2 gap-2 border rounded p-2">
+    <div><div class="flex gap-2 mb-1"><input type="search" placeholder="${t('g.search_customer')}" class="inp flex-1" oninput="filterCust(this.value)">
+        <button type="button" class="btn bg-p whitespace-nowrap" style="font-size:15px" onclick="document.getElementById('cust-list').value='';document.getElementById('nc').classList.toggle('hidden')"><span style="font-size:20px;line-height:1;vertical-align:-2px">＋</span> ${t('c.new')}</button></div>
+    <div id="nc" class="hidden grid grid-cols-2 gap-2 border rounded p-2 mb-2">
       <input name="nc_name" placeholder="${t('c.name')}" class="inp col-span-2">
       ${seg('nc_relation', ['s/o', 'd/o', 'w/o'], 's/o')}<input name="nc_father" placeholder="${t('c.father')}" class="inp">
       <input name="nc_cnic" placeholder="00000-0000000-0" class="inp num"><input name="nc_phone" placeholder="${t('c.phone')}" class="inp num"></div>
+      <select name="customer_id" id="cust-list" size="6" class="inp w-full" onchange="document.getElementById('nc').classList.add('hidden')">
+        ${custs.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select></div>
     <div class="flex gap-2"><label class="flex-1">${t('date')}<br>${dateInp()}</label><label class="flex-1">${t('p.file_no')}<br><input name="reference" class="inp w-full"></label></div>
     <button type="submit" class="btn bg-p w-full">${t('save')}</button></form>`);
 }
-function filterCustIn(inp) { const q = inp.value.toLowerCase(); Array.from(inp.nextElementSibling.options).forEach(o => { o.hidden = q && !o.text.toLowerCase().includes(q); }); }
+function filterCustIn(inp) { const q = inp.value.toLowerCase(); Array.from(inp.closest('.cust-pick').querySelector('select').options).forEach(o => { o.hidden = q && !o.text.toLowerCase().includes(q); }); }
 function filterCust(q) {
   q = q.toLowerCase(); const sel = document.getElementById('cust-list');
   Array.from(sel.options).forEach(o => { o.hidden = q && !o.text.toLowerCase().includes(q); });
@@ -1091,9 +1091,9 @@ function soldMenu(id) {
 
 function dateInp(name, v) { return `<input type="date" name="${name || 'date'}" value="${v || today()}" required class="inp">`; }
 function customerSelect(list) {
-  return `<input type="search" placeholder="${t('g.search_customer')}" class="inp w-full mb-1" oninput="filterCustIn(this)">
-    <select name="customer_id" size="6" required class="inp w-full">${list.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select>
-    <a class="link text-xs" onclick="go('#/customers')">${t('p.new_customer')}</a>`;
+  return `<div class="cust-pick"><div class="flex gap-2 mb-1"><input type="search" placeholder="${t('g.search_customer')}" class="inp flex-1" oninput="filterCustIn(this)">
+      <button type="button" class="btn bg-p whitespace-nowrap" style="font-size:15px" onclick="go('#/customers')"><span style="font-size:20px;line-height:1;vertical-align:-2px">＋</span> ${t('c.new')}</button></div>
+    <select name="customer_id" size="6" required class="inp w-full">${list.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select></div>`;
 }
 
 VIEWS.plot = d => {

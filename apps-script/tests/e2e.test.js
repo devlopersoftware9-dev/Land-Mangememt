@@ -10,6 +10,7 @@ class Range {
   setValues(v) { for (let i = 0; i < this.nr; i++) for (let j = 0; j < this.nc; j++) this.sh.set(this.r + i, this.c + j, v[i][j]); return this; }
   setValue(v) { this.sh.set(this.r, this.c, v); return this; }
   getValue() { const row = this.sh.rows[this.r - 1] || []; return row[this.c - 1] === undefined ? '' : row[this.c - 1]; }
+  getValues() { const out = []; for (let i = 0; i < this.nr; i++) { const row = this.sh.rows[this.r - 1 + i] || []; out.push(Array.from({ length: this.nc }, (_, j) => row[this.c - 1 + j] === undefined ? '' : row[this.c - 1 + j])); } return out; }
   setNumberFormat() { return this; } setFontWeight() { return this; } setBackground() { return this; }
 }
 class Sheet {
@@ -189,6 +190,25 @@ const case2 = api(acc, 'createDemand', { plot_id: p2.id, mode: 'client_self', de
 ok(!apiErr(acc, 'registryStep', { case_id: case2, step: 'cancel', reason: 'x' }).ok, 'only admin can cancel');
 api(admin, 'registryStep', { case_id: case2, step: 'cancel', reason: 'client changed mind' });
 ok(api(acc, 'plot', { id: p2.id }).plot.sale_status === 'payment_cleared', 'cancel returns plot to payment_cleared');
+
+// payment pending: registry proceeds with director approval
+const p3 = plots.find(p => p.plot_no === '23.06');
+api(admin, 'savePlot', { id: p3.id, size_marla: '5' });
+api(acc, 'sell', { plot_id: p3.id, customer_id: c2, date: '2026-02-01' });
+ok(apiErr(acc, 'createDemand', { plot_id: p3.id, mode: 'company_managed', demand_date: '2026-11-22', maliyat: 2500000 }).code === 'err.payment_not_cleared', 'no pending tick -> blocked');
+ok(apiErr(acc, 'createDemand', { plot_id: p3.id, mode: 'company_managed', demand_date: '2026-11-22', maliyat: 2500000, payment_pending: 'TRUE' }).code === 'err.pending_amount', 'pending amount required');
+const case3 = api(acc, 'createDemand', { plot_id: p3.id, mode: 'company_managed', demand_date: '2026-11-22', maliyat: 2500000, payment_pending: 'TRUE', pending_amount: '500000', pending_remarks: 'balance by 30 Dec' });
+let g3 = api(acc, 'plotGrid', { project_id: pid }).rows.find(r => r.id === p3.id);
+ok(g3.sale_status === 'registry_in_process' && g3.pay_pending === true, 'pending plot in registry: ' + JSON.stringify(g3));
+api(acc, 'registryStep', { case_id: case3, step: 'send_fard_approval' });
+mail = sent[sent.length - 1];
+ok(/^PAYMENT PENDING Rs.500000\/- -- Fard Approval Request--Plot_23.06/.test(mail.subject), 'pending subject: ' + mail.subject);
+ok(/Payment Pending: Rs. 500,000\/-/.test(mail.opts.htmlBody) && /proceeding with its registry/.test(mail.opts.htmlBody) && /balance by 30 Dec/.test(mail.opts.htmlBody), 'pending box in email');
+api(acc, 'clearPayment', { plot_id: p3.id, date: '2026-12-15' });
+g3 = api(acc, 'plotGrid', { project_id: pid }).rows.find(r => r.id === p3.id);
+ok(g3.sale_status === 'registry_in_process' && g3.pay_pending === false, 'payment cleared later, registry continues');
+const cv3 = api(acc, 'registryCase', { id: case3 });
+ok(cv3.case.pending_amount === '500000', 'case keeps pending record');
 
 // history protected
 ok(!apiErr(admin, 'savePlot', { id: p2.id, size_marla: '5' }).ok === false, 'admin edit still fine');

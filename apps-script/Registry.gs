@@ -33,7 +33,10 @@ var Registry = (function () {
   function createDemand(u, p) {
     Auth.need(u, 'fard_demand');
     var plot = Db.get('Plots', required(p.plot_id, 'plot'));
-    if (plot.sale_status !== 'payment_cleared') fail('err.payment_not_cleared', { plot: plot.plot_no });
+    var pending = bool(p.payment_pending) && plot.sale_status === 'sold';
+    if (plot.sale_status !== 'payment_cleared' && !pending) fail('err.payment_not_cleared', { plot: plot.plot_no });
+    var pendingAmount = pending ? int(p.pending_amount) : 0;
+    if (pending && pendingAmount <= 0) fail('err.pending_amount');
     if (ENUM.registryMode.indexOf(p.mode) < 0) fail('err.required', { field: 'mode' });
     var maliyat = int(p.maliyat);
     if (maliyat <= 0) fail('err.maliyat');
@@ -47,8 +50,9 @@ var Registry = (function () {
       reference: nextRef('RegistryCases', 'REQ-'), plot_id: plot.id, customer_id: plot.current_customer_id, mode: p.mode,
       status: 'demand', demand_date: date, area_sqft: sqft, area_marla: num(plot.size_marla) || Math.round(sqft / marlaSqft * 100) / 100,
       maliyat: maliyat, expense_paid: false, notes: str(p.notes), created_by: u.id,
+      payment_pending: pending, pending_amount: pending ? pendingAmount : '', pending_remarks: pending ? str(p.pending_remarks) : '',
     });
-    Plots.markRegistryStarted(u, plot, date, c.reference);
+    Plots.markRegistryStarted(u, plot, date, c.reference, pending);
     audit(u, 'registry.demand', 'RegistryCases', c.id);
     return c.id;
   }

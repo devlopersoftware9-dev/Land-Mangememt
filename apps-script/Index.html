@@ -69,7 +69,7 @@ en: {
     land: 'Land purchase, intiqals, parcels', send_approval: 'Send Fard approval email', verify_approval: 'Check & Verify director reply', fard_jari: 'Select intiqal + Fard Jari',
     fard_received: 'Fard received', hand_over_fard: 'Hand over fard (Raasta A)', client_registry: 'Record client registry (Raasta A)', expense: 'Registry expense sheet + email',
     expense_paid: 'Expense Paid tick', registry_done: 'Registry done', record_in_office: 'Record registry in office', hand_over: 'Hand over registry', cancel_case: 'Cancel registry file' },
-  g: { sold: 'Sold', payment: 'Payment Clear', fard: 'Fard Demand', registry: 'Registry', clear_filters: 'Clear filters', selected: '{n} selected',
+  g: { pending: 'Payment pending', pending_title: 'Payment not cleared yet', pending_help: 'Proceed with registry on director approval. The pending amount will be shown in the fard approval email.', pending_tick: 'Payment is pending – proceed with director approval', pending_amount: 'Pending amount (Rs.)', pending_remarks: 'Remarks (e.g. balance by 30 Dec)', pending_click: 'Payment pending – click when full payment is received', pending_plot: 'Registry is in process with director approval, but payment is still pending. Tick Payment Clear when the full payment is received.', pending_case: 'Payment pending: Rs. {amount}/- – registry proceeding with director approval.', pending_cleared: 'Payment of Rs. {amount}/- was pending at demand – now cleared.', sold: 'Sold', payment: 'Payment Clear', fard: 'Fard Demand', registry: 'Registry', clear_filters: 'Clear filters', selected: '{n} selected',
     sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
     sell_title: 'Sell plot {plots}', pay_title: 'Payment Clear: {plots}', demand_title: 'Fard demand – Plot {plot}', sold_menu: 'Plot {plot} – {name}',
     transfer_open: 'Transfer / full details', done_n: 'Done ({n}).', need_payment: 'Payment Clear first', need_sold: 'Sell first' },
@@ -142,7 +142,7 @@ en: {
     payer: { buyer: 'Buyer', seller: 'Seller' },
     result: { approved: 'Approved', rejected: 'Rejected', unclear: 'Unclear', unknown_sender: 'Unknown sender', unmatched: 'Not matched', not_authenticated: 'Not verified', already_decided: 'Already answered', duplicate: 'Duplicate' },
   },
-  err: { in_use: 'This record is used elsewhere (intiqal / fard jari), so it cannot be deleted.', area_below_issued: 'Area cannot be less than the area already issued ({issued} marla).', required: '{field} is required.', date: '{field}: enter a valid date.', login: 'Email or password is wrong.', session: 'Please log in again.',
+  err: { pending_amount: 'Enter the pending payment amount.', in_use: 'This record is used elsewhere (intiqal / fard jari), so it cannot be deleted.', area_below_issued: 'Area cannot be less than the area already issued ({issued} marla).', required: '{field} is required.', date: '{field}: enter a valid date.', login: 'Email or password is wrong.', session: 'Please log in again.',
     not_allowed: 'Your role is not allowed to do this.', not_found: 'Record not found.', busy: 'System is busy, try again.', server: 'Error: {msg}',
     plot_status: 'Plot {plot} is "{status}", so this is not possible.', same_customer: 'Plot is already with this customer.',
     payment_not_cleared: 'Payment of plot {plot} is not cleared yet.', maliyat: 'Registry maliyat is required.', plot_size_missing: 'Enter the size of plot {plot} first.',
@@ -159,7 +159,7 @@ ur: {
     land: 'زمین، انتقالات، رقبے', send_approval: 'فرد منظوری کی ای میل', verify_approval: 'ڈائریکٹر کے جواب کی تصدیق', fard_jari: 'انتقال منتخب + فرد جاری',
     fard_received: 'فرد وصول', hand_over_fard: 'فرد حوالے (راستہ A)', client_registry: 'کلائنٹ کی رجسٹری درج (راستہ A)', expense: 'رجسٹری اخراجات + ای میل',
     expense_paid: 'اخراجات ادا ٹک', registry_done: 'رجسٹری ہو گئی', record_in_office: 'رجسٹری دفتر میں درج', hand_over: 'رجسٹری حوالے', cancel_case: 'رجسٹری فائل منسوخ' },
-  g: { sold: 'فروخت', payment: 'پیمنٹ کلیئر', fard: 'فرد ڈیمانڈ', registry: 'رجسٹری', clear_filters: 'فلٹر ہٹائیں', selected: '{n} منتخب',
+  g: { pending: 'پیمنٹ باقی', pending_title: 'پیمنٹ ابھی کلیئر نہیں', pending_help: 'ڈائریکٹر کی منظوری سے رجسٹری آگے چلائیں۔ باقی رقم فرد منظوری کی ای میل میں دکھائی جائے گی۔', pending_tick: 'پیمنٹ باقی ہے – ڈائریکٹر کی منظوری سے آگے چلائیں', pending_amount: 'باقی رقم (روپے)', pending_remarks: 'ریمارکس (مثلاً 30 دسمبر تک بقایا)', pending_click: 'پیمنٹ باقی – پوری پیمنٹ آنے پر کلک کریں', pending_plot: 'ڈائریکٹر کی منظوری سے رجسٹری جاری ہے، مگر پیمنٹ ابھی باقی ہے۔ پوری پیمنٹ آنے پر پیمنٹ کلیئر پر ٹک کریں۔', pending_case: 'پیمنٹ باقی: {amount} روپے – ڈائریکٹر کی منظوری سے رجسٹری جاری ہے۔', pending_cleared: 'ڈیمانڈ کے وقت {amount} روپے باقی تھے – اب کلیئر ہو گئے۔', sold: 'فروخت', payment: 'پیمنٹ کلیئر', fard: 'فرد ڈیمانڈ', registry: 'رجسٹری', clear_filters: 'فلٹر ہٹائیں', selected: '{n} منتخب',
     sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
     sell_title: 'پلاٹ {plots} فروخت کریں', pay_title: 'پیمنٹ کلیئر: {plots}', demand_title: 'فرد ڈیمانڈ – پلاٹ {plot}', sold_menu: 'پلاٹ {plot} – {name}',
     transfer_open: 'منتقلی / مکمل تفصیل', done_n: 'ہو گیا ({n})۔', need_payment: 'پہلے پیمنٹ کلیئر کریں', need_sold: 'پہلے فروخت کریں' },
@@ -232,7 +232,7 @@ ur: {
     payer: { buyer: 'خریدار', seller: 'فروخت کنندہ' },
     result: { approved: 'منظور', rejected: 'نامنظور', unclear: 'غیر واضح', unknown_sender: 'نامعلوم بھیجنے والا', unmatched: 'میچ نہیں ہوا', not_authenticated: 'تصدیق نہیں ہوئی', already_decided: 'پہلے ہی جواب دیا جا چکا', duplicate: 'دوہری' },
   },
-  err: { in_use: 'یہ ریکارڈ کہیں اور استعمال ہو رہا ہے (انتقال / فرد جاری)، اس لیے حذف نہیں ہو سکتا۔', area_below_issued: 'رقبہ جاری شدہ رقبے ({issued} مرلہ) سے کم نہیں ہو سکتا۔', required: '{field} ضروری ہے۔', date: '{field}: درست تاریخ درج کریں۔', login: 'ای میل یا پاس ورڈ غلط ہے۔', session: 'دوبارہ لاگ اِن کریں۔',
+  err: { pending_amount: 'باقی پیمنٹ کی رقم درج کریں۔', in_use: 'یہ ریکارڈ کہیں اور استعمال ہو رہا ہے (انتقال / فرد جاری)، اس لیے حذف نہیں ہو سکتا۔', area_below_issued: 'رقبہ جاری شدہ رقبے ({issued} مرلہ) سے کم نہیں ہو سکتا۔', required: '{field} ضروری ہے۔', date: '{field}: درست تاریخ درج کریں۔', login: 'ای میل یا پاس ورڈ غلط ہے۔', session: 'دوبارہ لاگ اِن کریں۔',
     not_allowed: 'آپ کے رول کو اس کی اجازت نہیں۔', not_found: 'ریکارڈ نہیں ملا۔', busy: 'سسٹم مصروف ہے، دوبارہ کوشش کریں۔', server: 'خرابی: {msg}',
     plot_status: 'پلاٹ {plot} اس وقت "{status}" ہے، یہ ممکن نہیں۔', same_customer: 'پلاٹ پہلے ہی اسی کسٹمر کے پاس ہے۔',
     payment_not_cleared: 'پلاٹ {plot} کی پیمنٹ ابھی کلیئر نہیں ہوئی۔', maliyat: 'رجسٹری مالیت ضروری ہے۔', plot_size_missing: 'پہلے پلاٹ {plot} کا سائز درج کریں۔',
@@ -585,7 +585,7 @@ VIEWS.plots = d => {
       <h1 class="text-xl font-semibold">${t('nav.plots')} <span id="g-count" class="text-slate-400 num text-base"></span></h1>
       <div class="flex flex-wrap gap-2 text-sm">
         <input type="search" value="${esc(f.q || '')}" placeholder="${t('p.search')}" class="inp w-56" oninput="gf('q', this.value)">
-        ${sel('status', `<option value="">${t('p.status')}: ${t('all')}</option>${(S.enums.plotStatus || []).map(v => `<option value="${v}" ${v === f.status ? 'selected' : ''}>${L('plotStatus', v)}</option>`).join('')}`)}
+        ${sel('status', `<option value="">${t('p.status')}: ${t('all')}</option>${(S.enums.plotStatus || []).map(v => `<option value="${v}" ${v === f.status ? 'selected' : ''}>${L('plotStatus', v)}</option>`).join('')}<option value="pay_pending" ${f.status === 'pay_pending' ? 'selected' : ''}>⚠ ${t('g.pending')}</option>`)}
         ${sel('street', `<option value="">${t('p.street')}: ${t('all')}</option>${d.streets.map(x => `<option value="${x.id}" ${x.id === f.street ? 'selected' : ''}>${t('p.street')} ${esc(x.number)}</option>`).join('')}<option value="-" ${f.street === '-' ? 'selected' : ''}>${L('category', 'commercial')}</option>`)}
         ${sel('facing', `<option value="">${t('p.facing')}: ${t('all')}</option><option value="East" ${f.facing === 'East' ? 'selected' : ''}>${t('p.east')}</option><option value="West" ${f.facing === 'West' ? 'selected' : ''}>${t('p.west')}</option>`)}
         ${sel('size', `<option value="">${t('p.size')}: ${t('all')}</option>${[...new Set(d.rows.map(r => r.size_marla).filter(Boolean))].sort((a, b) => num(a) - num(b)).map(v => `<option value="${esc(v)}" ${v === f.size ? 'selected' : ''}>${esc(v)} M</option>`).join('')}`)}
@@ -604,7 +604,7 @@ function gf(k, v) { S.gf[k] = v; clearTimeout(gf._t); gf._t = setTimeout(gridRen
 function gridFiltered() {
   const f = S.gf || {}, q = (f.q || '').toLowerCase().trim();
   return (S.grid ? S.grid.rows : []).filter(r =>
-    (!f.status || r.sale_status === f.status) &&
+    (!f.status || (f.status === 'pay_pending' ? r.pay_pending : r.sale_status === f.status)) &&
     (!f.street || (f.street === '-' ? !r.street_id : r.street_id === f.street)) &&
     (!f.facing || r.facing === f.facing) && (!f.size || r.size_marla === f.size) &&
     (!q || (r.plot_no + ' ' + r.customer + ' ' + r.cnic + ' ' + r.phone).toLowerCase().includes(q)));
@@ -618,10 +618,10 @@ function gridRender() {
   const box = (checked, enabled, onclick, title) =>
     `<input type="checkbox" class="w-5 h-5 cursor-pointer accent-[var(--p)]" ${checked ? 'checked' : ''} ${enabled ? '' : 'disabled'} title="${esc(title || '')}" onclick="event.preventDefault();${enabled ? onclick : ''}">`;
   body.innerHTML = rows.map(r => {
-    const sold = HAS_SOLD.includes(r.sale_status), paid = HAS_PAID.includes(r.sale_status);
+    const sold = HAS_SOLD.includes(r.sale_status), paid = HAS_PAID.includes(r.sale_status) && !r.pay_pending;
     const fard = r.case_id
       ? `<a class="chip cursor-pointer" style="background:#a855f71f;color:#7e22ce;border:1px solid #a855f755" onclick="go('#/case/${r.case_id}')">${esc(L('caseStatus', r.case_status))}</a>`
-      : r.sale_status === 'registered' ? '' : box(false, allow('fard_demand') && r.sale_status === 'payment_cleared', `demandModal('${r.id}')`, r.sale_status === 'payment_cleared' ? t('g.fard') : t('g.need_payment'));
+      : r.sale_status === 'registered' ? '' : box(false, allow('fard_demand') && ['payment_cleared', 'sold'].includes(r.sale_status), `demandModal('${r.id}')`, ['payment_cleared', 'sold'].includes(r.sale_status) ? t('g.fard') : t('g.need_sold'));
     return `<tr class="${G.sel.has(r.id) ? 'sel' : ''}">
       <td><input type="checkbox" ${G.sel.has(r.id) ? 'checked' : ''} onclick="gToggle('${r.id}', this.checked)"></td>
       <td><a class="link num font-medium" onclick="go('#/plot/${r.id}')">${esc(r.plot_no)}</a>${r.has_notes ? ' <span title="notes">📝</span>' : ''}
@@ -630,7 +630,7 @@ function gridRender() {
       <td>${r.facing ? t('p.' + r.facing.toLowerCase()) : '—'}</td>
       <td>${r.customer ? `${esc(r.customer)}<div class="text-xs text-slate-400 num">${esc(r.phone)}</div>` : '<span class="text-slate-300">—</span>'}</td>
       <td class="text-center">${box(sold, r.sale_status !== 'blocked' && r.sale_status !== 'registry_in_process' && (sold ? (allow('cancel_sale') || allow('repurchase') || allow('transfer')) : allow('sell')), sold ? `soldMenu('${r.id}')` : `sellModal(['${r.id}'])`)}</td>
-      <td class="text-center">${box(paid, allow('payment_clear') && r.sale_status === 'sold', `payModal(['${r.id}'])`, sold ? '' : t('g.need_sold'))}</td>
+      <td class="text-center">${r.pay_pending ? pendChip(r.id) : box(paid, allow('payment_clear') && r.sale_status === 'sold', `payModal(['${r.id}'])`, sold ? '' : t('g.need_sold'))}</td>
       <td class="text-center">${fard}</td>
       <td class="text-center">${r.sale_status === 'registered' ? '<span class="text-lg" style="color:#2563eb">✔</span>' : ''}</td>
       <td class="text-slate-500">${L('construction', r.construction_status)}</td></tr>`;
@@ -647,7 +647,7 @@ function bulkBar() {
   const el = document.getElementById('g-bulk'); if (!el) return;
   if (!G.sel.size || !(allow('sell') || allow('payment_clear'))) { el.innerHTML = ''; return; }
   const rows = S.grid.rows.filter(r => G.sel.has(r.id));
-  const avail = rows.filter(r => r.sale_status === 'available').map(r => r.id), sold = rows.filter(r => r.sale_status === 'sold').map(r => r.id);
+  const avail = rows.filter(r => r.sale_status === 'available').map(r => r.id), sold = rows.filter(r => r.sale_status === 'sold' || r.pay_pending).map(r => r.id);
   el.innerHTML = `<div class="card mb-3 flex flex-wrap items-center gap-3 text-sm" style="background:var(--p-soft)">
     <b>${t('g.selected', { n: G.sel.size })}</b>
     ${allow('sell') ? `<button class="btn bg-p" ${avail.length ? '' : 'disabled style="opacity:.4"'} onclick='sellModal(${JSON.stringify(avail)})'>${t('g.sell_selected', { n: avail.length })}</button>` : ''}
@@ -712,6 +712,19 @@ function payModal(ids) {
     <button type="submit" class="btn bg-orange-600 w-full">${t('p.payment_clear')}</button></form>`);
 }
 
+// Payment not cleared yet: registry may proceed with director approval (shown in the fard email).
+function pendingFields() {
+  return `<div class="rounded border border-amber-400 bg-amber-50 p-3 space-y-2">
+    <div class="font-medium text-amber-800">⚠ ${t('g.pending_title')}</div><p class="text-amber-800">${t('g.pending_help')}</p>
+    <label class="flex gap-2 items-start"><input type="checkbox" name="payment_pending" value="TRUE" required class="mt-1"> ${t('g.pending_tick')}</label>
+    <label class="block">${t('g.pending_amount')}<br><input name="pending_amount" type="text" inputmode="numeric" required class="inp w-full num money"></label>
+    <input name="pending_remarks" placeholder="${t('g.pending_remarks')}" class="inp w-full"></div>`;
+}
+function pendChip(id) {
+  const can = allow('payment_clear');
+  return `<span class="chip ${can ? 'cursor-pointer' : ''}" style="background:#f59e0b22;color:#b45309;border:1px solid #f59e0b88" title="${t('g.pending_click')}" ${can ? `onclick="payModal(['${id}'])"` : ''}>⚠ ${t('g.pending')}</span>`;
+}
+
 function demandModal(id) {
   const r = S.grid.rows.find(x => x.id === id);
   modal(t('g.demand_title', { plot: r.plot_no }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "demand", ["${id}"])'>
@@ -719,6 +732,7 @@ function demandModal(id) {
     <label>${t('r.mode')}<br><select name="mode" class="inp w-full">${opts('registryMode')}</select></label>
     <div class="flex gap-2"><label class="flex-1">${t('r.demand_date')}<br>${dateInp('demand_date')}</label>
       <label class="flex-1">${t('r.maliyat')}<br><input name="maliyat" type="text" inputmode="numeric" required class="inp w-full num money"></label></div>
+    ${r.sale_status === 'sold' ? pendingFields() : ''}
     <button type="submit" class="btn bg-purple-700 w-full">${t('r.create')}</button></form>`);
 }
 
@@ -748,15 +762,16 @@ VIEWS.plot = d => {
   let actions = '';
   {
     if (s === 'available' && allow('sell')) actions += box(t('p.sell'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'sell');
+    if (isTrue(p.payment_pending) && allow('payment_clear')) actions += `<div class="rounded border border-amber-400 bg-amber-50 p-2 text-sm text-amber-800">⚠ ${t('g.pending_plot')}</div>` + box(t('p.payment_clear'), `<p class="text-slate-500">${t('p.payment_clear_help')}</p>${dateInp()}<label class="flex gap-2"><input type="checkbox" required> ${t('p.payment_tick')}</label>`, 'clearPayment', null, t('are_you_sure'), 'bg-orange-600');
     if (s === 'sold' && allow('payment_clear')) actions += box(t('p.payment_clear'), `<p class="text-slate-500">${t('p.payment_clear_help')}</p>${dateInp()}<label class="flex gap-2"><input type="checkbox" required> ${t('p.payment_tick')}</label>`, 'clearPayment', null, t('are_you_sure'), 'bg-orange-600');
     if (s === 'sold' || s === 'payment_cleared') {
       if (allow('transfer')) actions += box(t('p.transfer'), customerSelect(d.customers) + dateInp() + `<input name="reference" placeholder="${t('p.file_no')}" class="inp w-full">`, 'transfer', null, null, 'bg-slate-800');
       if (allow('cancel_sale')) actions += box(t('p.cancel'), dateInp() + `<textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'cancelSale', null, t('are_you_sure'), 'bg-red-600');
     }
     if (['sold', 'payment_cleared', 'registered'].includes(s) && allow('repurchase')) actions += box(t('p.repurchase'), `<p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}<input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'repurchase', null, t('are_you_sure'), 'bg-slate-800');
-    if (s === 'payment_cleared' && allow('fard_demand')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
+    if ((s === 'payment_cleared' || s === 'sold') && allow('fard_demand')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
       <div class="font-medium">${t('r.new_demand')}</div><select name="mode" class="inp w-full">${opts('registryMode')}</select>${dateInp('demand_date')}
-      <input name="maliyat" type="text" inputmode="numeric" required placeholder="${t('r.maliyat')}" class="inp w-full num money"><button class="btn bg-purple-700">${t('r.create')}</button></form>`;
+      <input name="maliyat" type="text" inputmode="numeric" required placeholder="${t('r.maliyat')}" class="inp w-full num money">${s === 'sold' ? pendingFields() : ''}<button class="btn bg-purple-700">${t('r.create')}</button></form>`;
     if (allow('construction')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'construction',{plot_id:'${p.id}'})">
       <div class="font-medium">${t('p.construction')}</div><select name="status" class="inp w-full">${opts('construction', p.construction_status)}</select>${dateInp()}<button class="btn bg-slate-600">${t('save')}</button></form>`;
   }
@@ -886,6 +901,8 @@ VIEWS.case = d => {
   const line = (k, v) => v ? `<div>${k}: <span class="num">${v}</span></div>` : '';
   return `<div class="flex flex-wrap items-center gap-3 mb-4"><h1 class="text-xl font-semibold"><span class="num">${esc(c.reference)}</span> · ${t('plot')} <a class="link num" onclick="go('#/plot/${d.plot.id}')">${esc(d.plot.plot_no)}</a></h1>
     <span class="chip bg-purple-100 text-purple-800">${L('caseStatus', st)}</span><span class="chip bg-slate-200">${L('registryMode', c.mode)}</span></div>
+  ${isTrue(c.payment_pending) ? `<div class="rounded border ${isTrue(d.plot.payment_pending) ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800'} p-3 mb-4 text-sm">
+    ${isTrue(d.plot.payment_pending) ? '⚠ ' + t('g.pending_case', { amount: fmt(c.pending_amount) }) : '✔ ' + t('g.pending_cleared', { amount: fmt(c.pending_amount) })}${c.pending_remarks ? ` <span class="opacity-75">— ${esc(c.pending_remarks)}</span>` : ''}</div>` : ''}
   <ol class="flex flex-wrap gap-1 mb-6 text-xs">${steps.map((s, i) => `<li class="px-2 py-1 rounded ${pos >= 0 && i < pos ? 'bg-emerald-100 text-emerald-800' : i === pos ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500'}">${L('caseStatus', s)}</li>`).join('')}</ol>
   <div class="grid md:grid-cols-3 gap-6">
     <section class="card text-sm space-y-1"><h2 class="font-semibold mb-2">${t('r.ref')}</h2>

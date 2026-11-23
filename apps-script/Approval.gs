@@ -27,7 +27,7 @@ var Approval = (function () {
 
   /** Same subject style as the Google Sheet, plus [APR-xxxx] to match replies. */
   function subject(type, ref, c, plot, project, exp) {
-    if (type === 'fard') return 'Fard Approval Request--Plot_' + plot.plot_no + ' ' + project.code + ' ' + fmtMarla(c.area_marla) + ' Marla Maliyat Rs.' + int(c.maliyat) + '/- [' + ref + ']';
+    if (type === 'fard') return (bool(c.payment_pending) && bool(plot.payment_pending) ? 'PAYMENT PENDING Rs.' + int(c.pending_amount) + '/- -- ' : '') + 'Fard Approval Request--Plot_' + plot.plot_no + ' ' + project.code + ' ' + fmtMarla(c.area_marla) + ' Marla Maliyat Rs.' + int(c.maliyat) + '/- [' + ref + ']';
     if (type === 'registry_expense') return 'Request Approval--Registery Exp Rs.' + int(exp.grand_total) + '/- Plot_' + plot.plot_no + ' [' + ref + ']';
     return 'Rs.' + int(exp.seller_total) + '/- Request Approval--Seller Exp (236-C) Plot_' + plot.plot_no + ' [' + ref + ']';
   }
@@ -43,6 +43,12 @@ var Approval = (function () {
     if (c.seller_name) h += row('Seller', esc(c.seller_name));
     h += row('Registry by', c.mode === 'company_managed' ? 'Company' : 'Client himself');
     h += '</table>';
+    if (bool(c.payment_pending) && bool(plot.payment_pending)) {
+      h += '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:10px 12px;margin:12px 0">' +
+        '<b style="color:#b45309">&#9888; Payment Pending: Rs. ' + money(c.pending_amount) + '/-</b><br>' +
+        'The full payment of this plot has not been received yet. With your approval, we are proceeding with its registry.' +
+        (c.pending_remarks ? '<br><span style="color:#64748b">Remarks: ' + esc(c.pending_remarks) + '</span>' : '') + '</div>';
+    }
 
     if (exp) {
       var lines = Db.where('ExpenseLines', 'expense_id', exp.id).sort(function (a, b) { return num(a.sort) - num(b.sort); });

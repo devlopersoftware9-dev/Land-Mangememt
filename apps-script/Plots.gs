@@ -43,6 +43,12 @@ var Plots = (function () {
 
   function clearPayment(u, p) {
     var plot = load(p), date = validDate(p.date, 'date');
+    if (bool(plot.payment_pending)) {
+      // registry already moving with director approval: only record that the money came in
+      Db.update('Plots', plot.id, { payment_pending: false, payment_cleared_at: nowIso(), payment_cleared_by: u.id });
+      event(u, plot, 'payment_cleared', plot.current_customer_id, plot.current_customer_id, date, '', p.notes);
+      return true;
+    }
     expect(plot, ['sold'], 'payment_clear');
     Db.update('Plots', plot.id, { sale_status: 'payment_cleared', payment_cleared_at: nowIso(), payment_cleared_by: u.id });
     event(u, plot, 'payment_cleared', plot.current_customer_id, plot.current_customer_id, date, '', p.notes);
@@ -91,10 +97,10 @@ var Plots = (function () {
   }
 
   // ---- called by Registry
-  function markRegistryStarted(u, plot, date, ref) {
-    expect(plot, ['payment_cleared'], 'registry');
-    Db.update('Plots', plot.id, { sale_status: 'registry_in_process' });
-    event(u, plot, 'registry_started', plot.current_customer_id, plot.current_customer_id, date, ref);
+  function markRegistryStarted(u, plot, date, ref, pending) {
+    expect(plot, pending ? ['sold'] : ['payment_cleared'], 'registry');
+    Db.update('Plots', plot.id, { sale_status: 'registry_in_process', payment_pending: !!pending });
+    event(u, plot, 'registry_started', plot.current_customer_id, plot.current_customer_id, date, ref, pending ? 'Payment pending – proceeding with director approval' : '');
   }
   function markRegistered(u, plot, date, registryNo) {
     expect(plot, ['registry_in_process'], 'register');
@@ -103,7 +109,7 @@ var Plots = (function () {
   }
   function revertRegistry(u, plot, ref, reason) {
     if (plot.sale_status !== 'registry_in_process') return;
-    Db.update('Plots', plot.id, { sale_status: 'payment_cleared' });
+    Db.update('Plots', plot.id, { sale_status: bool(plot.payment_pending) ? 'sold' : 'payment_cleared', payment_pending: false });
     event(u, plot, 'note', '', '', today(), ref, 'Registry file cancelled: ' + reason);
   }
 

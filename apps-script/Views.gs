@@ -129,7 +129,7 @@ var Views = (function () {
         id: x.id, plot_no: x.plot_no, street: streets[x.street_id] || '', street_id: x.street_id, size_marla: x.size_marla,
         facing: x.facing || '', category: x.category, sale_status: x.sale_status, construction_status: x.construction_status,
         customer: c ? c.name : '', customer_id: x.current_customer_id || '', cnic: c ? c.cnic : '', phone: c ? c.phone : '',
-        sold_on: x.sold_on, case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
+        sold_on: x.sold_on, pay_pending: bool(x.payment_pending), case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
       };
     });
   }

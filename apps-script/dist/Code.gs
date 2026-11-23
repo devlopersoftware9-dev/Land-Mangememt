@@ -273,13 +273,13 @@ var SCHEMA = {
   Users: ['id', 'name', 'email', 'role', 'department', 'locale', 'is_active', 'salt', 'password_hash', 'created_at'],
   Customers: ['id', 'name', 'name_ur', 'relation', 'father_name', 'cnic', 'phone', 'email', 'address', 'is_filer', 'nominee_name', 'nominee_cnic', 'nominee_relation', 'created_at'],
   Streets: ['id', 'project_id', 'number', 'width_ft'],
-  Plots: ['id', 'project_id', 'street_id', 'plot_no', 'category', 'size_marla', 'area_sqft', 'width_ft', 'depth_ft', 'is_corner', 'is_park_facing', 'sale_status', 'construction_status', 'current_customer_id', 'sold_on', 'payment_cleared_at', 'payment_cleared_by', 'notes', 'created_at', 'updated_at', 'facing'],
+  Plots: ['id', 'project_id', 'street_id', 'plot_no', 'category', 'size_marla', 'area_sqft', 'width_ft', 'depth_ft', 'is_corner', 'is_park_facing', 'sale_status', 'construction_status', 'current_customer_id', 'sold_on', 'payment_cleared_at', 'payment_cleared_by', 'notes', 'created_at', 'updated_at', 'facing', 'payment_pending'],
   PlotEvents: ['id', 'plot_id', 'event', 'from_customer_id', 'to_customer_id', 'event_date', 'reference', 'notes', 'meta', 'created_by', 'created_at'],
   Ownerships: ['id', 'plot_id', 'customer_id', 'started_on', 'ended_on', 'start_event', 'end_event'],
   LandPurchases: ['id', 'project_id', 'seller_name', 'seller_father_name', 'seller_cnic', 'seller_phone', 'mauza', 'khewat_no', 'khatooni_no', 'khasra_nos', 'area_sqft', 'agreement_date', 'payment_cleared', 'payment_cleared_at', 'intiqal_done', 'intiqal_done_at', 'notes', 'created_at'],
   Intiqals: ['id', 'project_id', 'land_purchase_id', 'intiqal_no', 'intiqal_date', 'holder_name', 'holder_cnic', 'holder_is_filer', 'holder_acquired_on', 'khasra_nos', 'area_sqft', 'notes', 'created_at'],
   Parcels: ['id', 'project_id', 'type', 'name', 'area_sqft', 'width_ft', 'notes'],
-  RegistryCases: ['id', 'reference', 'plot_id', 'customer_id', 'mode', 'status', 'demand_date', 'area_marla', 'area_sqft', 'maliyat', 'seller_name', 'fard_jari_at', 'fard_jari_by', 'fard_jari_message', 'fard_no', 'fard_received_on', 'fard_handed_over_on', 'registry_no', 'registry_date', 'registry_office', 'buyer_intiqal_no', 'registry_recorded_on', 'registry_copy_url', 'handed_over_on', 'expense_paid', 'expense_paid_at', 'expense_paid_by', 'notes', 'created_by', 'created_at', 'updated_at'],
+  RegistryCases: ['id', 'reference', 'plot_id', 'customer_id', 'mode', 'status', 'demand_date', 'area_marla', 'area_sqft', 'maliyat', 'seller_name', 'fard_jari_at', 'fard_jari_by', 'fard_jari_message', 'fard_no', 'fard_received_on', 'fard_handed_over_on', 'registry_no', 'registry_date', 'registry_office', 'buyer_intiqal_no', 'registry_recorded_on', 'registry_copy_url', 'handed_over_on', 'expense_paid', 'expense_paid_at', 'expense_paid_by', 'notes', 'created_by', 'created_at', 'updated_at', 'payment_pending', 'pending_amount', 'pending_remarks'],
   CaseIntiqals: ['id', 'case_id', 'intiqal_id', 'area_sqft'],
   Approvals: ['id', 'reference', 'case_id', 'expense_id', 'type', 'status', 'to_email', 'cc', 'subject', 'sent_at', 'sent_by', 'approve_token_hash', 'reject_token_hash', 'tokens_expire_at', 'decision', 'decision_channel', 'decided_at', 'decided_from_email', 'director_remarks', 'verified_by', 'verified_at', 'verify_remarks', 'created_at'],
   InboundEmails: ['id', 'message_id', 'from_email', 'subject', 'body_text', 'auth_results', 'received_at', 'approval_id', 'result', 'processed_at'],
@@ -299,6 +299,19 @@ var Db = (function () {
   function sheet(table) {
     var sh = SpreadsheetApp.getActive().getSheetByName(table);
     if (!sh) fail('err.setup_missing', { table: table });
+    return sh;
+  }
+
+  /** New columns added to SCHEMA after setup: add them to the sheet on the first write. */
+  var widened = {};
+  function wsheet(table) {
+    var sh = sheet(table);
+    if (widened[table]) return sh;
+    var cols = SCHEMA[table], have = sh.getMaxColumns();
+    if (have < cols.length) sh.insertColumnsAfter(have, cols.length - have);
+    var head = sh.getRange(1, 1, 1, cols.length).getValues()[0];
+    if (String(head[cols.length - 1]) !== cols[cols.length - 1]) sh.getRange(1, 1, 1, cols.length).setValues([cols]);
+    widened[table] = true;
     return sh;
   }
 
@@ -369,7 +382,7 @@ var Db = (function () {
     if (cols.indexOf('created_at') >= 0 && !obj.created_at) rec.created_at = nowIso();
     Object.keys(obj).forEach(function (k) { rec[k] = obj[k]; });
     var row = cols.map(function (c) { return toCell(rec[c]); });
-    var sh = sheet(table);
+    var sh = wsheet(table);
     // format as text BEFORE writing, so "21.10" / dates are never converted
     sh.getRange(sh.getLastRow() + 1, 1, 1, cols.length).setNumberFormat('@').setValues([row]);
     delete cache[table];
@@ -390,7 +403,7 @@ var Db = (function () {
       Object.keys(o).forEach(function (k) { rec[k] = o[k]; });
       return cols.map(function (c) { return toCell(rec[c]); });
     });
-    var sh = sheet(table);
+    var sh = wsheet(table);
     sh.getRange(sh.getLastRow() + 1, 1, rows.length, cols.length).setNumberFormat('@').setValues(rows);
     delete cache[table];
   }
@@ -402,7 +415,7 @@ var Db = (function () {
     if (cols.indexOf('updated_at') >= 0) patch.updated_at = nowIso();
     Object.keys(patch).forEach(function (k) { rec[k] = patch[k]; });
     var row = cols.map(function (c) { return toCell(rec[c]); });
-    sheet(table).getRange(rec._row, 1, 1, cols.length).setValues([row]);
+    wsheet(table).getRange(rec._row, 1, 1, cols.length).setValues([row]);
     delete cache[table];
     return rec;
   }
@@ -728,6 +741,12 @@ var Plots = (function () {
 
   function clearPayment(u, p) {
     var plot = load(p), date = validDate(p.date, 'date');
+    if (bool(plot.payment_pending)) {
+      // registry already moving with director approval: only record that the money came in
+      Db.update('Plots', plot.id, { payment_pending: false, payment_cleared_at: nowIso(), payment_cleared_by: u.id });
+      event(u, plot, 'payment_cleared', plot.current_customer_id, plot.current_customer_id, date, '', p.notes);
+      return true;
+    }
     expect(plot, ['sold'], 'payment_clear');
     Db.update('Plots', plot.id, { sale_status: 'payment_cleared', payment_cleared_at: nowIso(), payment_cleared_by: u.id });
     event(u, plot, 'payment_cleared', plot.current_customer_id, plot.current_customer_id, date, '', p.notes);
@@ -776,10 +795,10 @@ var Plots = (function () {
   }
 
   // ---- called by Registry
-  function markRegistryStarted(u, plot, date, ref) {
-    expect(plot, ['payment_cleared'], 'registry');
-    Db.update('Plots', plot.id, { sale_status: 'registry_in_process' });
-    event(u, plot, 'registry_started', plot.current_customer_id, plot.current_customer_id, date, ref);
+  function markRegistryStarted(u, plot, date, ref, pending) {
+    expect(plot, pending ? ['sold'] : ['payment_cleared'], 'registry');
+    Db.update('Plots', plot.id, { sale_status: 'registry_in_process', payment_pending: !!pending });
+    event(u, plot, 'registry_started', plot.current_customer_id, plot.current_customer_id, date, ref, pending ? 'Payment pending – proceeding with director approval' : '');
   }
   function markRegistered(u, plot, date, registryNo) {
     expect(plot, ['registry_in_process'], 'register');
@@ -788,7 +807,7 @@ var Plots = (function () {
   }
   function revertRegistry(u, plot, ref, reason) {
     if (plot.sale_status !== 'registry_in_process') return;
-    Db.update('Plots', plot.id, { sale_status: 'payment_cleared' });
+    Db.update('Plots', plot.id, { sale_status: bool(plot.payment_pending) ? 'sold' : 'payment_cleared', payment_pending: false });
     event(u, plot, 'note', '', '', today(), ref, 'Registry file cancelled: ' + reason);
   }
 
@@ -997,7 +1016,10 @@ var Registry = (function () {
   function createDemand(u, p) {
     Auth.need(u, 'fard_demand');
     var plot = Db.get('Plots', required(p.plot_id, 'plot'));
-    if (plot.sale_status !== 'payment_cleared') fail('err.payment_not_cleared', { plot: plot.plot_no });
+    var pending = bool(p.payment_pending) && plot.sale_status === 'sold';
+    if (plot.sale_status !== 'payment_cleared' && !pending) fail('err.payment_not_cleared', { plot: plot.plot_no });
+    var pendingAmount = pending ? int(p.pending_amount) : 0;
+    if (pending && pendingAmount <= 0) fail('err.pending_amount');
     if (ENUM.registryMode.indexOf(p.mode) < 0) fail('err.required', { field: 'mode' });
     var maliyat = int(p.maliyat);
     if (maliyat <= 0) fail('err.maliyat');
@@ -1011,8 +1033,9 @@ var Registry = (function () {
       reference: nextRef('RegistryCases', 'REQ-'), plot_id: plot.id, customer_id: plot.current_customer_id, mode: p.mode,
       status: 'demand', demand_date: date, area_sqft: sqft, area_marla: num(plot.size_marla) || Math.round(sqft / marlaSqft * 100) / 100,
       maliyat: maliyat, expense_paid: false, notes: str(p.notes), created_by: u.id,
+      payment_pending: pending, pending_amount: pending ? pendingAmount : '', pending_remarks: pending ? str(p.pending_remarks) : '',
     });
-    Plots.markRegistryStarted(u, plot, date, c.reference);
+    Plots.markRegistryStarted(u, plot, date, c.reference, pending);
     audit(u, 'registry.demand', 'RegistryCases', c.id);
     return c.id;
   }
@@ -1244,7 +1267,7 @@ var Approval = (function () {
 
   /** Same subject style as the Google Sheet, plus [APR-xxxx] to match replies. */
   function subject(type, ref, c, plot, project, exp) {
-    if (type === 'fard') return 'Fard Approval Request--Plot_' + plot.plot_no + ' ' + project.code + ' ' + fmtMarla(c.area_marla) + ' Marla Maliyat Rs.' + int(c.maliyat) + '/- [' + ref + ']';
+    if (type === 'fard') return (bool(c.payment_pending) && bool(plot.payment_pending) ? 'PAYMENT PENDING Rs.' + int(c.pending_amount) + '/- -- ' : '') + 'Fard Approval Request--Plot_' + plot.plot_no + ' ' + project.code + ' ' + fmtMarla(c.area_marla) + ' Marla Maliyat Rs.' + int(c.maliyat) + '/- [' + ref + ']';
     if (type === 'registry_expense') return 'Request Approval--Registery Exp Rs.' + int(exp.grand_total) + '/- Plot_' + plot.plot_no + ' [' + ref + ']';
     return 'Rs.' + int(exp.seller_total) + '/- Request Approval--Seller Exp (236-C) Plot_' + plot.plot_no + ' [' + ref + ']';
   }
@@ -1260,6 +1283,12 @@ var Approval = (function () {
     if (c.seller_name) h += row('Seller', esc(c.seller_name));
     h += row('Registry by', c.mode === 'company_managed' ? 'Company' : 'Client himself');
     h += '</table>';
+    if (bool(c.payment_pending) && bool(plot.payment_pending)) {
+      h += '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:10px 12px;margin:12px 0">' +
+        '<b style="color:#b45309">&#9888; Payment Pending: Rs. ' + money(c.pending_amount) + '/-</b><br>' +
+        'The full payment of this plot has not been received yet. With your approval, we are proceeding with its registry.' +
+        (c.pending_remarks ? '<br><span style="color:#64748b">Remarks: ' + esc(c.pending_remarks) + '</span>' : '') + '</div>';
+    }
 
     if (exp) {
       var lines = Db.where('ExpenseLines', 'expense_id', exp.id).sort(function (a, b) { return num(a.sort) - num(b.sort); });
@@ -1610,7 +1639,7 @@ var Views = (function () {
         id: x.id, plot_no: x.plot_no, street: streets[x.street_id] || '', street_id: x.street_id, size_marla: x.size_marla,
         facing: x.facing || '', category: x.category, sale_status: x.sale_status, construction_status: x.construction_status,
         customer: c ? c.name : '', customer_id: x.current_customer_id || '', cnic: c ? c.cnic : '', phone: c ? c.phone : '',
-        sold_on: x.sold_on, case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
+        sold_on: x.sold_on, pay_pending: bool(x.payment_pending), case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
       };
     });
   }

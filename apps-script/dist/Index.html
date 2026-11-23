@@ -591,6 +591,8 @@ VIEWS.dashboard = d => {
   return `<div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">${(S.enums.plotStatus || []).map(s => `
       <a class="card border-t-4 cursor-pointer" style="border-color:${COLORS[s]}" onclick="S.gf={status:'${s}'};go('#/plots')">
         <div class="text-sm text-slate-500">${L('plotStatus', s)}</div><div class="text-2xl font-semibold num">${d.byStatus[s] || 0}</div></a>`).join('')}</div>
+  <section class="card mb-6"><h2 class="font-semibold mb-2">${t('land.intiqals')}</h2>
+    ${intiqalTable(d.intiqals, ms)}</section>
   <div class="grid md:grid-cols-2 gap-6">
     <section class="card"><h2 class="font-semibold mb-2">${t('dash.to_verify')} <span class="text-sm text-slate-500">· ${t('dash.waiting', { n: d.waitingDirector })}</span></h2>
       ${d.toVerify.length ? d.toVerify.map(a => `<a class="flex justify-between border-b py-2 text-sm cursor-pointer hover:bg-slate-50" onclick="go('#/approval/${a.id}')">
@@ -601,8 +603,6 @@ VIEWS.dashboard = d => {
         <span>${L('caseStatus', s)} <span class="text-slate-400">(${L('roles', d.actors[s])})</span></span><span class="num">${d.caseCounts[s]}</span></a>`).join('') : `<p class="text-sm text-slate-500">${t('nothing')}</p>`}
     </section>
     <section class="card"><h2 class="font-semibold mb-2">${t('dash.area')}</h2>${areaTable(d.area, ms)}</section>
-    <section class="card" style="grid-column:1/-1"><h2 class="font-semibold mb-2">${t('land.intiqals')}</h2>
-      ${intiqalTable(d.intiqals, ms)}</section>
     <section class="card"><h2 class="font-semibold mb-2">${t('dash.construction')}</h2>
       ${(S.enums.construction || []).map(c => `<div class="flex justify-between border-b py-1 text-sm"><span>${L('construction', c)}</span><span class="num">${d.byConstruction[c] || 0}</span></div>`).join('')}</section>
   </div>`;

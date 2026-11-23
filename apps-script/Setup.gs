@@ -25,6 +25,7 @@ function onOpen() {
     .addItem('2. Save web app URL', 'saveWebAppUrl')
     .addItem('Reset admin password', 'resetAdminPassword')
     .addItem('Check inbox now', 'pollApprovalInbox')
+    .addItem('Refresh Plot / Registry register tabs', 'refreshRegisters')
     .addToUi();
 }
 
@@ -140,10 +141,12 @@ function resetAdminPassword() {
 
 function installTriggers() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (['pollApprovalInbox', 'expireApprovalLinks'].indexOf(t.getHandlerFunction()) >= 0) ScriptApp.deleteTrigger(t);
+    if (['pollApprovalInbox', 'expireApprovalLinks', 'refreshRegisters'].indexOf(t.getHandlerFunction()) >= 0) ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('pollApprovalInbox').timeBased().everyMinutes(5).create();
   ScriptApp.newTrigger('expireApprovalLinks').timeBased().everyHours(1).create();
+  ScriptApp.newTrigger('refreshRegisters').timeBased().everyMinutes(10).create();
+  refreshRegisters();
 }
 
 /** After deploying: stores the /exec URL so approval emails link to it. */

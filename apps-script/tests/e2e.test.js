@@ -11,7 +11,7 @@ class Range {
   setValue(v) { this.sh.set(this.r, this.c, v); return this; }
   getValue() { const row = this.sh.rows[this.r - 1] || []; return row[this.c - 1] === undefined ? '' : row[this.c - 1]; }
   getValues() { const out = []; for (let i = 0; i < this.nr; i++) { const row = this.sh.rows[this.r - 1 + i] || []; out.push(Array.from({ length: this.nc }, (_, j) => row[this.c - 1 + j] === undefined ? '' : row[this.c - 1 + j])); } return out; }
-  setNumberFormat() { return this; } setFontWeight() { return this; } setBackground() { return this; }
+  setNumberFormat() { return this; } setFontWeight() { return this; } setBackground() { return this; } setFontColor() { return this; }
 }
 class Sheet {
   constructor(name) { this.name = name; this.rows = []; }
@@ -21,7 +21,7 @@ class Sheet {
   getLastRow() { return this.rows.length; }
   appendRow(v) { this.rows.push(v.slice()); }
   deleteRow(r) { this.rows.splice(r - 1, 1); }
-  getMaxColumns() { return 50; } getMaxRows() { return 1000; } setFrozenRows() {}
+  getMaxColumns() { return 50; } getMaxRows() { return 1000; } setFrozenRows() {} clearContents() { this.rows = []; }
 }
 const sheets = {};
 const ss = {
@@ -251,6 +251,33 @@ ok(g56.every(r => r.sale_status === 'registered') && g56.find(r => r.id === p6.i
 ok(apiErr(acc, 'importRegistries', { project_id: pid, rows: [] }).code === 'err.not_allowed', 'import admin only');
 const ex1 = api(acc, 'exportData', { project_id: pid, kind: 'plots' }), ex2 = api(acc, 'exportData', { project_id: pid, kind: 'registries' });
 ok(ex1.rows.length === 297 && ex1.rows[0].length === ex1.head.length && ex2.rows.some(r => r[0] === 'OLD-0001') && ex2.rows[0].length === ex2.head.length, 'export plots + registries');
+
+// generic Excel import + backup + register tabs
+const ik = (kind, rows) => api(admin, 'importKind', { project_id: pid, kind, rows });
+let r1 = ik('customers', [{ name: 'Excel Person', relation: 's/o', father_name: 'Dad', cnic: '35202-7777777-1', phone: '0300', is_filer: 'Yes' }, { name: 'Excel Person 2', cnic: '123' }]);
+ok(r1[0].ok && r1[0].msg === 'added' && !r1[1].ok && r1[1].code === 'err.cnic', 'customers import: ' + JSON.stringify(r1));
+r1 = ik('customers', [{ name: 'Excel Person', cnic: '3520277777771', phone: '0311' }]);
+ok(r1[0].msg === 'updated', 'customer matched by CNIC');
+r1 = ik('intiqals', [{ intiqal_no: '3001', holder_name: 'Excel Holder', holder_is_filer: 'No', kanal: '2', intiqal_date: '01-02-2024' }, { intiqal_no: '3002', holder_name: 'No Area' }]);
+ok(r1[0].ok && !r1[1].ok && r1[1].code === 'err.area_required', 'intiqal import: ' + JSON.stringify(r1));
+ok(Number(api(lm, 'land', { project_id: pid }).intiqals.find(i => i.intiqal_no === '3001').area_sqft) === 10800, 'intiqal area from kanal');
+r1 = ik('intiqals', [{ intiqal_no: '3001', holder_name: 'Excel Holder', marla: '30' }]);
+ok(r1[0].msg === 'updated' && Number(api(lm, 'land', { project_id: pid }).intiqals.find(i => i.intiqal_no === '3001').area_sqft) === 8100, 'intiqal updated');
+r1 = ik('purchases', [{ seller_name: 'Excel Seller', khasra_nos: '77', kanal: '4', payment_cleared: 'Yes' }]);
+ok(r1[0].ok && api(lm, 'land', { project_id: pid }).purchases.find(x => x.seller_name === 'Excel Seller').payment_cleared === 'TRUE', 'purchase import with tick');
+r1 = ik('parcels', [{ type: 'Green Belt', name: 'GB-1', marla: '12' }, { type: 'xyz', name: 'bad' }]);
+ok(r1[0].ok && !r1[1].ok, 'parcel import: ' + JSON.stringify(r1));
+const p7 = plots.find(p => p.plot_no === '23.10');
+r1 = ik('plots', [{ plot_no: '23.1', size_marla: '6', facing: 'west', customer_name: 'Excel Buyer', cnic: '35202-8888888-1', sold_on: '05-05-2025', payment_clear: 'yes' }, { plot_no: '77.77' }]);
+ok(r1[0].ok && /sold, payment clear/.test(r1[0].msg) && !r1[1].ok, 'plot import: ' + JSON.stringify(r1));
+const g7 = api(acc, 'plot', { id: p7.id }).plot;
+ok(g7.sale_status === 'payment_cleared' && g7.size_marla === '6' && g7.facing === 'West' && g7.sold_on === '2025-05-05', 'plot imported: ' + JSON.stringify([g7.sale_status, g7.size_marla, g7.facing]));
+ok(apiErr(acc, 'importKind', { project_id: pid, kind: 'customers', rows: [] }).code === 'err.not_allowed', 'generic import admin only');
+const bk = api(admin, 'backup', {});
+ok(bk.length === Object.keys(ctx.SCHEMA).length && !JSON.stringify(bk).includes('password_hash') && bk.find(t => t.name === 'Plots').rows.length >= 297, 'backup: all tables, no secrets');
+ok(apiErr(acc, 'backup', {}).code === 'err.not_allowed', 'backup admin only');
+vm.runInContext('refreshRegisters()', ctx);
+ok(sheets['Plot Register'] && sheets['Plot Register'].rows.length >= 298 && sheets['Registry Register'].rows[0][0] === 'Ref', 'register tabs written');
 
 // history protected
 ok(!apiErr(admin, 'savePlot', { id: p2.id, size_marla: '5' }).ok === false, 'admin edit still fine');

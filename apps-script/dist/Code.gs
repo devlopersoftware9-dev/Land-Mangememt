@@ -237,6 +237,8 @@ var API = {
   saveParcel: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveParcel(u, p); } },
   exportData: { fn: function (u, p) { return DataIO.exportData(u, p); } },
   importRegistries: { write: true, fn: function (u, p) { return DataIO.importRegistries(u, p); } },
+  importKind: { write: true, fn: function (u, p) { return DataIO.importKind(u, p); } },
+  backup: { fn: function (u) { return DataIO.backup(u); } },
   deleteLand: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.remove(u, p); } },
 
   // registry
@@ -1824,6 +1826,7 @@ function onOpen() {
     .addItem('2. Save web app URL', 'saveWebAppUrl')
     .addItem('Reset admin password', 'resetAdminPassword')
     .addItem('Check inbox now', 'pollApprovalInbox')
+    .addItem('Refresh Plot / Registry register tabs', 'refreshRegisters')
     .addToUi();
 }
 
@@ -1939,10 +1942,12 @@ function resetAdminPassword() {
 
 function installTriggers() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (['pollApprovalInbox', 'expireApprovalLinks'].indexOf(t.getHandlerFunction()) >= 0) ScriptApp.deleteTrigger(t);
+    if (['pollApprovalInbox', 'expireApprovalLinks', 'refreshRegisters'].indexOf(t.getHandlerFunction()) >= 0) ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('pollApprovalInbox').timeBased().everyMinutes(5).create();
   ScriptApp.newTrigger('expireApprovalLinks').timeBased().everyHours(1).create();
+  ScriptApp.newTrigger('refreshRegisters').timeBased().everyMinutes(10).create();
+  refreshRegisters();
 }
 
 /** After deploying: stores the /exec URL so approval emails link to it. */
@@ -2202,5 +2207,113 @@ var DataIO = (function () {
     });
   }
 
-  return { exportData: exportData, importRegistries: importRegistries };
+  // ------------------------------------------------------------------ full backup (all tables, no secrets)
+  var SECRET = { Users: ['salt', 'password_hash'], Approvals: ['approve_token_hash', 'reject_token_hash'] };
+  function backup(u) {
+    Auth.require(u, 'admin');
+    return Object.keys(SCHEMA).map(function (t) {
+      var cols = SCHEMA[t].filter(function (c) { return (SECRET[t] || []).indexOf(c) < 0; });
+      return { name: t, head: cols, rows: Db.all(t).map(function (r) { return cols.map(function (c) { return r[c]; }); }) };
+    });
+  }
+
+  // ------------------------------------------------------------------ generic Excel import (one kind per file)
+  var yes = function (v) { return /^(y|yes|true|1|haan|han|✓|✔)$/i.test(str(v)); };
+  function one(list, test) { return list.filter(test)[0] || null; }
+
+  function importRow(u, pid, ms, kind, r) {
+    if (kind === 'customers') {
+      var cnic = cnicOf(r.cnic), name = required(r.name, 'name');
+      var c = cnic ? one(Db.all('Customers'), function (x) { return x.cnic === cnic; }) : one(Db.all('Customers'), function (x) { return x.name.toLowerCase() === name.toLowerCase() && (!r.father_name || x.father_name.toLowerCase() === str(r.father_name).toLowerCase()); });
+      var data = { id: c ? c.id : '', name: name, relation: str(r.relation).toLowerCase().replace(/\s/g, '') || (c && c.relation), father_name: str(r.father_name) || (c && c.father_name), cnic: cnic || (c && c.cnic),
+        phone: str(r.phone) || (c && c.phone), address: str(r.address) || (c && c.address), is_filer: r.is_filer !== '' && r.is_filer !== undefined ? yes(r.is_filer) : (c && bool(c.is_filer)) };
+      Plots.saveCustomer(u, data);
+      return c ? 'updated' : 'added';
+    }
+    if (kind === 'intiqals') {
+      var no = required(r.intiqal_no, 'intiqal_no');
+      var i = one(Db.where('Intiqals', 'project_id', pid), function (x) { return x.intiqal_no === no; });
+      Land.saveIntiqal(u, { id: i ? i.id : '', project_id: pid, intiqal_no: no, intiqal_date: r.intiqal_date ? looseDate(r.intiqal_date, 'date') : (i ? i.intiqal_date : ''),
+        holder_name: r.holder_name || (i && i.holder_name), holder_cnic: r.holder_cnic ? cnicOf(r.holder_cnic) : (i ? i.holder_cnic : ''),
+        holder_is_filer: r.holder_is_filer !== '' ? yes(r.holder_is_filer) : (i ? bool(i.holder_is_filer) : true), holder_acquired_on: r.holder_acquired_on ? looseDate(r.holder_acquired_on, 'date') : (i ? i.holder_acquired_on : ''),
+        khasra_nos: str(r.khasra_nos) || (i && i.khasra_nos), kanal: r.kanal, marla: r.marla, sqft: (r.kanal || r.marla || r.sqft) ? r.sqft : (i ? i.area_sqft : 0), land_purchase_id: i ? i.land_purchase_id : '', notes: i ? i.notes : '' });
+      return i ? 'updated' : 'added';
+    }
+    if (kind === 'purchases') {
+      var seller = required(r.seller_name, 'seller');
+      var lp = one(Db.where('LandPurchases', 'project_id', pid), function (x) { return x.seller_name.toLowerCase() === seller.toLowerCase() && x.khasra_nos === str(r.khasra_nos); });
+      Land.savePurchase(u, { id: lp ? lp.id : '', project_id: pid, seller_name: seller, seller_father_name: str(r.seller_father_name), seller_cnic: r.seller_cnic ? cnicOf(r.seller_cnic) : '', seller_phone: str(r.seller_phone),
+        mauza: str(r.mauza), khewat_no: str(r.khewat_no), khatooni_no: str(r.khatooni_no), khasra_nos: str(r.khasra_nos), kanal: r.kanal, marla: r.marla, sqft: r.sqft,
+        agreement_date: r.agreement_date ? looseDate(r.agreement_date, 'date') : '' });
+      var rec = lp || Db.where('LandPurchases', 'project_id', pid).slice(-1)[0];
+      ['payment_cleared', 'intiqal_done'].forEach(function (f) { if (r[f] !== '' && yes(r[f]) !== bool(Db.get('LandPurchases', rec.id)[f])) Land.tickPurchase(u, { id: rec.id, field: f }); });
+      return lp ? 'updated' : 'added';
+    }
+    if (kind === 'parcels') {
+      var type = str(r.type).toLowerCase().replace(/[\s-]+/g, '_');
+      var pname = required(r.name, 'name');
+      var pc = one(Db.where('Parcels', 'project_id', pid), function (x) { return x.name.toLowerCase() === pname.toLowerCase(); });
+      Land.saveParcel(u, { id: pc ? pc.id : '', project_id: pid, type: type, name: pname, kanal: r.kanal, marla: r.marla, sqft: r.sqft, width_ft: str(r.width_ft) });
+      return pc ? 'updated' : 'added';
+    }
+    if (kind === 'plots') {
+      var pno = required(r.plot_no, 'plot');
+      var list = Db.where('Plots', 'project_id', pid);
+      var x = one(list, function (q) { return q.plot_no === pno; }) || (/^\d+\.\d$/.test(pno) ? one(list, function (q) { return q.plot_no === pno + '0'; }) : null);
+      if (!x) fail('err.not_found', { table: 'Plots', id: pno });
+      var f = str(r.facing).toLowerCase();
+      Plots.savePlot(u, { id: x.id, size_marla: str(r.size_marla) || x.size_marla, area_sqft: str(r.size_marla) ? '' : x.area_sqft, width_ft: x.width_ft, depth_ft: x.depth_ft,
+        category: /comm/i.test(str(r.category)) ? 'commercial' : /res/i.test(str(r.category)) ? 'residential' : x.category, is_corner: bool(x.is_corner), is_park_facing: bool(x.is_park_facing),
+        notes: str(r.notes) || x.notes, facing: f[0] === 'e' ? 'East' : f[0] === 'w' ? 'West' : x.facing });
+      var msg = 'updated';
+      if (str(r.customer_name)) {
+        x = Db.get('Plots', x.id);
+        if (x.sale_status !== 'available') return msg + ' (already ' + x.sale_status + ', sale not changed)';
+        var cc = cnicOf(r.cnic), cust = cc ? one(Db.all('Customers'), function (q) { return q.cnic === cc; }) : one(Db.all('Customers'), function (q) { return q.name.toLowerCase() === str(r.customer_name).toLowerCase(); });
+        var cid = cust ? cust.id : Plots.saveCustomer(u, { name: str(r.customer_name), relation: str(r.relation).toLowerCase().replace(/\s/g, ''), father_name: str(r.father_name), cnic: cc, phone: str(r.phone) });
+        var d = looseDate(required(r.sold_on, 'date'), 'date');
+        Plots.sell(u, { plot_id: x.id, customer_id: cid, date: d, reference: 'Excel import' });
+        msg += ', sold';
+        if (yes(r.payment_clear)) { Plots.clearPayment(u, { plot_id: x.id, date: r.payment_date ? looseDate(r.payment_date, 'date') : d }); msg += ', payment clear'; }
+      }
+      return msg;
+    }
+    fail('err.unknown_action');
+  }
+
+  function importKind(u, p) {
+    Auth.require(u, 'admin');
+    if (p.kind === 'registries') return importRegistries(u, p);
+    var pid = required(p.project_id, 'project'), ms = num(Db.get('Projects', pid).marla_sqft || 270);
+    var out = (p.rows || []).map(function (r, i) {
+      try { return { row: i + 2, plot: str(r.plot_no || r.intiqal_no || r.name || r.seller_name), ok: true, msg: importRow(u, pid, ms, p.kind, r) }; }
+      catch (e) { Db.clearCache(); return { row: i + 2, plot: str(r.plot_no || r.intiqal_no || r.name || r.seller_name), ok: false, code: e.code || 'err.unknown', params: e.params || {}, msg: e.code ? '' : String(e.message || e) }; }
+    });
+    try { refreshRegisters(); } catch (e) {}
+    return out;
+  }
+
+  return { exportData: exportData, importRegistries: importRegistries, importKind: importKind, backup: backup };
 })();
+
+
+/**
+ * Readable "register" tabs in the Google Sheet (Plot Register, Registry Register), rebuilt from the
+ * database tabs every 10 minutes and after imports. Read-only views: edit through the app.
+ */
+function refreshRegisters() {
+  var ss = SpreadsheetApp.getActive(), u = { id: 'system', role: 'admin' };
+  Db.all('Projects').forEach(function (proj) {
+    [['plots', 'Plot Register'], ['registries', 'Registry Register']].forEach(function (k) {
+      var d = DataIO.exportData(u, { project_id: proj.id, kind: k[0] });
+      var name = k[1] + (Db.all('Projects').length > 1 ? ' ' + proj.code : '');
+      var sh = ss.getSheetByName(name) || ss.insertSheet(name);
+      sh.clearContents();
+      var data = [d.head].concat(d.rows.map(function (r) { return r.map(function (v) { return v === null || v === undefined ? '' : v; }); }));
+      sh.getRange(1, 1, data.length, d.head.length).setNumberFormat('@').setValues(data.map(function (r) { return r.map(String); }));
+      sh.getRange(1, 1, 1, d.head.length).setFontWeight('bold').setBackground('#0f766e').setFontColor('#ffffff');
+      sh.setFrozenRows(1);
+      sh.getRange(data.length + 2, 1).setValue('Updated ' + nowIso() + ' – read only view, make changes in the app.').setFontColor('#64748b');
+    });
+  });
+}

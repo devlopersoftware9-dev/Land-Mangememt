@@ -234,6 +234,8 @@ var API = {
   saveParcel: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveParcel(u, p); } },
   exportData: { fn: function (u, p) { return DataIO.exportData(u, p); } },
   importRegistries: { write: true, fn: function (u, p) { return DataIO.importRegistries(u, p); } },
+  importKind: { write: true, fn: function (u, p) { return DataIO.importKind(u, p); } },
+  backup: { fn: function (u) { return DataIO.backup(u); } },
   deleteLand: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.remove(u, p); } },
 
   // registry

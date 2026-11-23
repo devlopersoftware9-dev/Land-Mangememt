@@ -82,7 +82,7 @@ en: {
     land: 'Land purchase, intiqals, parcels', send_approval: 'Send Fard approval email', verify_approval: 'Check & Verify director reply', fard_jari: 'Select intiqal + Fard Jari',
     fard_received: 'Fard received', hand_over_fard: 'Hand over fard (Raasta A)', client_registry: 'Record client registry (Raasta A)', expense: 'Registry expense sheet + email',
     expense_paid: 'Expense Paid tick', registry_done: 'Registry done', record_in_office: 'Record registry in office', hand_over: 'Hand over registry', cancel_case: 'Cancel registry file' },
-  x: { excel: 'Excel', preparing: 'Preparing Excel…', import_title: 'Import old registries (Excel)', import_help: 'Registries done before this system: download the template, fill one row per registry, then upload. Plot is marked sold, payment clear and registered automatically; partial registries are allowed.', template: 'Download template', upload: 'Upload filled Excel', confirm: 'Import {n} registries?', working: 'Importing… please wait', done: '{ok} imported, {bad} with errors' },
+  x: { excel: 'Excel', preparing: 'Preparing Excel…', data_title: 'Excel import / backup', import_help: 'Choose what to import, download its template, fill one row per record and upload. Existing records are matched (plot no, CNIC, intiqal no, name) and updated; new ones are added. Each row shows its result.', template: 'Download template', upload: 'Upload filled Excel', confirm: 'Import {n} rows into {kind}?', wrong_template: 'Column headings do not match the template.', backup: 'Full backup (Excel)', backup_help: 'Downloads every table (plots, customers, registries, land, history…) in one Excel file. Keep it safe; passwords are not included.', kind_registries: 'Old registries', kind_plots: 'Plots (details + old sales)', kind_customers: 'Customers', kind_intiqals: 'Intiqals', kind_purchases: 'Land purchases', kind_parcels: 'Roads / parks / masjid…', working: 'Importing… please wait', done: '{ok} imported, {bad} with errors' },
   g: { pending: 'Payment pending', pending_title: 'Payment not cleared yet', pending_help: 'Proceed with registry on director approval. The pending amount will be shown in the fard approval email.', pending_tick: 'Payment is pending – proceed with director approval', pending_amount: 'Pending amount (Rs.)', pending_remarks: 'Remarks (e.g. balance by 30 Dec)', pending_click: 'Payment pending – click when full payment is received', pending_plot: 'Registry is in process with director approval, but payment is still pending. Tick Payment Clear when the full payment is received.', pending_case: 'Payment pending: Rs. {amount}/- – registry proceeding with director approval.', pending_cleared: 'Payment of Rs. {amount}/- was pending at demand – now cleared.', sold: 'Sold', payment: 'Payment Clear', fard: 'Fard Demand', registry: 'Registry', clear_filters: 'Clear filters', selected: '{n} selected',
     sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
     sell_title: 'Sell plot {plots}', pay_title: 'Payment Clear: {plots}', demand_title: 'Fard demand – Plot {plot}', sold_menu: 'Plot {plot} – {name}',
@@ -173,7 +173,7 @@ ur: {
     land: 'زمین، انتقالات، رقبے', send_approval: 'فرد منظوری کی ای میل', verify_approval: 'ڈائریکٹر کے جواب کی تصدیق', fard_jari: 'انتقال منتخب + فرد جاری',
     fard_received: 'فرد وصول', hand_over_fard: 'فرد حوالے (راستہ A)', client_registry: 'کلائنٹ کی رجسٹری درج (راستہ A)', expense: 'رجسٹری اخراجات + ای میل',
     expense_paid: 'اخراجات ادا ٹک', registry_done: 'رجسٹری ہو گئی', record_in_office: 'رجسٹری دفتر میں درج', hand_over: 'رجسٹری حوالے', cancel_case: 'رجسٹری فائل منسوخ' },
-  x: { excel: 'ایکسل', preparing: 'ایکسل تیار ہو رہا ہے…', import_title: 'پرانی رجسٹریاں درج کریں (ایکسل)', import_help: 'اس سسٹم سے پہلے کی رجسٹریاں: ٹیمپلیٹ ڈاؤن لوڈ کریں، ہر رجسٹری کی ایک لائن بھریں، پھر اپ لوڈ کریں۔ پلاٹ خود بخود فروخت، پیمنٹ کلیئر اور رجسٹرڈ ہو جائے گا؛ جزوی رجسٹری بھی ہو سکتی ہے۔', template: 'ٹیمپلیٹ ڈاؤن لوڈ', upload: 'بھری ہوئی ایکسل اپ لوڈ', confirm: '{n} رجسٹریاں درج کریں؟', working: 'درج ہو رہی ہیں… انتظار کریں', done: '{ok} درج ہوئیں، {bad} میں غلطی' },
+  x: { excel: 'ایکسل', preparing: 'ایکسل تیار ہو رہا ہے…', data_title: 'ایکسل امپورٹ / بیک اپ', import_help: 'منتخب کریں کیا درج کرنا ہے، اس کا ٹیمپلیٹ ڈاؤن لوڈ کریں، ہر ریکارڈ کی ایک لائن بھریں اور اپ لوڈ کریں۔ پہلے سے موجود ریکارڈ (پلاٹ نمبر، شناختی کارڈ، انتقال نمبر، نام) اپڈیٹ ہوں گے، نئے شامل ہوں گے۔', template: 'ٹیمپلیٹ ڈاؤن لوڈ', upload: 'بھری ہوئی ایکسل اپ لوڈ', confirm: '{n} لائنیں {kind} میں درج کریں؟', wrong_template: 'کالم کے نام ٹیمپلیٹ سے نہیں ملتے۔', backup: 'مکمل بیک اپ (ایکسل)', backup_help: 'تمام ڈیٹا (پلاٹس، کسٹمرز، رجسٹریاں، زمین، ہسٹری…) ایک ایکسل فائل میں۔ پاس ورڈ شامل نہیں۔', kind_registries: 'پرانی رجسٹریاں', kind_plots: 'پلاٹس (تفصیل + پرانی سیل)', kind_customers: 'کسٹمرز', kind_intiqals: 'انتقالات', kind_purchases: 'زمین کی خریداری', kind_parcels: 'سڑکیں / پارک / مسجد…', working: 'درج ہو رہی ہیں… انتظار کریں', done: '{ok} درج ہوئیں، {bad} میں غلطی' },
   g: { pending: 'پیمنٹ باقی', pending_title: 'پیمنٹ ابھی کلیئر نہیں', pending_help: 'ڈائریکٹر کی منظوری سے رجسٹری آگے چلائیں۔ باقی رقم فرد منظوری کی ای میل میں دکھائی جائے گی۔', pending_tick: 'پیمنٹ باقی ہے – ڈائریکٹر کی منظوری سے آگے چلائیں', pending_amount: 'باقی رقم (روپے)', pending_remarks: 'ریمارکس (مثلاً 30 دسمبر تک بقایا)', pending_click: 'پیمنٹ باقی – پوری پیمنٹ آنے پر کلک کریں', pending_plot: 'ڈائریکٹر کی منظوری سے رجسٹری جاری ہے، مگر پیمنٹ ابھی باقی ہے۔ پوری پیمنٹ آنے پر پیمنٹ کلیئر پر ٹک کریں۔', pending_case: 'پیمنٹ باقی: {amount} روپے – ڈائریکٹر کی منظوری سے رجسٹری جاری ہے۔', pending_cleared: 'ڈیمانڈ کے وقت {amount} روپے باقی تھے – اب کلیئر ہو گئے۔', sold: 'فروخت', payment: 'پیمنٹ کلیئر', fard: 'فرد ڈیمانڈ', registry: 'رجسٹری', clear_filters: 'فلٹر ہٹائیں', selected: '{n} منتخب',
     sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
     sell_title: 'پلاٹ {plots} فروخت کریں', pay_title: 'پیمنٹ کلیئر: {plots}', demand_title: 'فرد ڈیمانڈ – پلاٹ {plot}', sold_menu: 'پلاٹ {plot} – {name}',
@@ -756,40 +756,61 @@ async function exportXlsx(kind) {
     X.writeFile(wb, `${(S.project && S.project.code) || 'RG2'}_${d.name}_${today()}.xlsx`);
   } catch (e) { toast(e.message, true); }
 }
-const OLD_COLS = [['plot_no', 'Plot No'], ['area_marla', 'Registry Area (Marla)'], ['buyer_name', 'Buyer Name'], ['relation', 'Relation (s/o d/o w/o)'], ['father_name', 'Father / Husband Name'],
-  ['cnic', 'CNIC'], ['phone', 'Phone'], ['registry_no', 'Registry No'], ['registry_date', 'Registry Date (DD-MM-YYYY)'], ['registry_office', 'Registry Office'], ['maliyat', 'Maliyat'],
-  ['mode', 'Registry By (Client / Company)'], ['fard_no', 'Fard No'], ['seller_intiqal_no', 'Seller Intiqal No'], ['buyer_intiqal_no', 'Buyer Intiqal No'], ['notes', 'Notes']];
-async function downloadTemplate() {
+const IMPORT_KINDS = {
+  registries: [['plot_no', 'Plot No'], ['area_marla', 'Registry Area (Marla)'], ['buyer_name', 'Buyer Name'], ['relation', 'Relation (s/o d/o w/o)'], ['father_name', 'Father / Husband Name'],
+    ['cnic', 'CNIC'], ['phone', 'Phone'], ['registry_no', 'Registry No'], ['registry_date', 'Registry Date (DD-MM-YYYY)'], ['registry_office', 'Registry Office'], ['maliyat', 'Maliyat'],
+    ['mode', 'Registry By (Client / Company)'], ['fard_no', 'Fard No'], ['seller_intiqal_no', 'Seller Intiqal No'], ['buyer_intiqal_no', 'Buyer Intiqal No'], ['notes', 'Notes']],
+  plots: [['plot_no', 'Plot No'], ['size_marla', 'Size (Marla)'], ['facing', 'East / West'], ['category', 'Category (Residential / Commercial)'], ['notes', 'Notes'],
+    ['customer_name', 'Customer Name'], ['relation', 'Relation (s/o d/o w/o)'], ['father_name', 'Father / Husband Name'], ['cnic', 'CNIC'], ['phone', 'Phone'],
+    ['sold_on', 'Sold On (DD-MM-YYYY)'], ['payment_clear', 'Payment Clear (Yes / No)'], ['payment_date', 'Payment Clear Date (DD-MM-YYYY)']],
+  customers: [['name', 'Name'], ['relation', 'Relation (s/o d/o w/o)'], ['father_name', 'Father / Husband Name'], ['cnic', 'CNIC'], ['phone', 'Phone'], ['address', 'Address'], ['is_filer', 'Filer (Yes / No)']],
+  intiqals: [['intiqal_no', 'Intiqal No'], ['intiqal_date', 'Intiqal Date (DD-MM-YYYY)'], ['holder_name', 'In the name of'], ['holder_cnic', 'CNIC'], ['holder_is_filer', 'Filer (Yes / No)'],
+    ['holder_acquired_on', 'Acquired On (DD-MM-YYYY)'], ['khasra_nos', 'Khasra No(s)'], ['kanal', 'Kanal'], ['marla', 'Marla'], ['sqft', 'Sq ft']],
+  purchases: [['seller_name', 'Seller Name'], ['seller_father_name', 'Father Name'], ['seller_cnic', 'CNIC'], ['seller_phone', 'Phone'], ['mauza', 'Mauza'], ['khewat_no', 'Khewat No'],
+    ['khatooni_no', 'Khatooni No'], ['khasra_nos', 'Khasra No(s)'], ['kanal', 'Kanal'], ['marla', 'Marla'], ['sqft', 'Sq ft'], ['agreement_date', 'Agreement Date (DD-MM-YYYY)'],
+    ['payment_cleared', 'Payment Clear (Yes / No)'], ['intiqal_done', 'Intiqal Done (Yes / No)']],
+  parcels: [['type', 'Type (road / park / masjid / green_belt / graveyard / water_course / other)'], ['name', 'Name'], ['kanal', 'Kanal'], ['marla', 'Marla'], ['sqft', 'Sq ft'], ['width_ft', 'Width (ft)']],
+};
+async function downloadTemplate(kind) {
   try {
-    const X = await loadXLSX();
-    const ws = X.utils.aoa_to_sheet([OLD_COLS.map(c => c[1]), ['25.02', '9', 'Sheikh Muhammad Tanveer', 's/o', 'Sadiq', '35202-1234567-1', '0300-1234567', '1234', '15-03-2025', 'Sub Registrar Sharaqpur', '3600000', 'Client', '567', '19692', '', 'example row – delete it']]);
-    Object.keys(ws).forEach(k => { if (k[0] !== '!') ws[k].t = 's', ws[k].z = '@'; });
-    ws['!cols'] = OLD_COLS.map(c => ({ wch: c[1].length + 2 }));
-    const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, 'Old Registries'); X.writeFile(wb, 'Old_Registries_Template.xlsx');
+    const X = await loadXLSX(), cols = IMPORT_KINDS[kind];
+    const ws = X.utils.aoa_to_sheet([cols.map(c => c[1])]);
+    ws['!cols'] = cols.map(c => ({ wch: Math.min(40, c[1].length + 2) }));
+    const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, 'Data'); X.writeFile(wb, `Template_${kind}.xlsx`);
   } catch (e) { toast(e.message, true); }
 }
-async function importOld(input) {
+async function importExcel(input, kind) {
   const file = input.files[0]; input.value = ''; if (!file) return;
-  const out = document.getElementById('import-result');
+  const out = document.getElementById('import-result'), cols = IMPORT_KINDS[kind];
   try {
     const X = await loadXLSX(), wb = X.read(await file.arrayBuffer());
     const raw = X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: '' });
     const head = (raw[0] || []).map(h => String(h).trim().toLowerCase());
-    const idx = OLD_COLS.map(([k, label]) => head.findIndex(h => h === label.toLowerCase() || h.startsWith(label.toLowerCase().split(' (')[0])));
-    const rows = raw.slice(1).filter(r => r.some(v => String(v).trim())).map(r => Object.fromEntries(OLD_COLS.map(([k], i) => {
+    const idx = cols.map(([k, label]) => head.findIndex(h => h === label.toLowerCase() || h === label.toLowerCase().split(' (')[0]));
+    if (idx.every(i => i < 0)) return toast(t('x.wrong_template'), true);
+    const rows = raw.slice(1).filter(r => r.some(v => String(v).trim())).map(r => Object.fromEntries(cols.map(([k], i) => {
       let v = idx[i] >= 0 ? r[idx[i]] : '';
-      if (k === 'registry_date' && typeof v === 'number') v = X.SSF.format('yyyy-mm-dd', v);   // Excel date serial
+      if (/(_date|_on)$/.test(k) && typeof v === 'number') v = X.SSF.format('yyyy-mm-dd', v);   /* Excel date serial */
       return [k, String(v).trim()];
     })));
     if (!rows.length) return toast(t('nothing'), true);
-    if (!confirm(t('x.confirm', { n: rows.length }))) return;
+    if (!confirm(t('x.confirm', { n: rows.length, kind: t('x.kind_' + kind) }))) return;
     out.innerHTML = `<p class="text-slate-500">${t('x.working')}</p>`;
-    const res = await call('importRegistries', { project_id: S.projectId, rows });
+    const res = await call('importKind', { project_id: S.projectId, kind, rows });
     const good = res.filter(r => r.ok).length;
-    out.innerHTML = `<p class="font-medium mb-2">${t('x.done', { ok: good, bad: res.length - good })}</p><table class="t"><tr><th>Row</th><th>${t('plot')}</th><th></th></tr>${res.map(r =>
-      `<tr><td class="num">${r.row}</td><td class="num">${esc(r.plot)}</td><td class="${r.ok ? 'text-emerald-700' : 'text-red-700'}">${r.ok ? '✔ ' + esc(r.msg) : '✖ ' + esc(r.code ? t(r.code, r.params) : r.msg)}</td></tr>`).join('')}</table>`;
+    out.innerHTML = `<p class="font-medium mb-2">${t('x.done', { ok: good, bad: res.length - good })}</p><div class="scroll-table" style="max-height:320px"><table class="t"><tr><th>Row</th><th></th><th></th></tr>${res.map(r =>
+      `<tr><td class="num">${r.row}</td><td class="num">${esc(r.plot)}</td><td class="${r.ok ? 'text-emerald-700' : 'text-red-700'}">${r.ok ? '✔ ' + esc(r.msg) : '✖ ' + esc(r.code ? t(r.code, r.params) : r.msg)}</td></tr>`).join('')}</table></div>`;
     if (S.grid) S.grid._pid = null;
   } catch (e) { out.innerHTML = ''; toast(e.message, true); }
+}
+async function fullBackup() {
+  try {
+    toast(t('x.preparing'));
+    const [X, tabs] = await Promise.all([loadXLSX(), call('backup', {})]);
+    const wb = X.utils.book_new();
+    tabs.forEach(d => { const ws = X.utils.aoa_to_sheet([d.head, ...d.rows]); X.utils.book_append_sheet(wb, ws, d.name.slice(0, 31)); });
+    X.writeFile(wb, `LandManagement_Backup_${today()}.xlsx`);
+  } catch (e) { toast(e.message, true); }
 }
 
 // ---- fard jari: intiqal allocation helpers
@@ -1174,9 +1195,14 @@ VIEWS.land = d => {
 };
 
 VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>
-  ${S.user && S.user.role === 'admin' ? `<section class="card mb-6"><h2 class="font-semibold">${t('x.import_title')}</h2><p class="text-sm text-slate-500 mb-3">${t('x.import_help')}</p>
-    <div class="flex flex-wrap gap-2 items-center text-sm"><button class="inp" onclick="downloadTemplate()">⬇ ${t('x.template')}</button>
-      <label class="btn bg-p cursor-pointer">⬆ ${t('x.upload')}<input type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="importOld(this)"></label></div>
+  ${S.user && S.user.role === 'admin' ? `<section class="card mb-6"><h2 class="font-semibold">${t('x.data_title')}</h2><p class="text-sm text-slate-500 mb-3">${t('x.import_help')}</p>
+    <div class="flex flex-wrap gap-2 items-center text-sm">
+      <select id="imp-kind" class="inp" onchange="document.getElementById('import-result').innerHTML=''">${Object.keys(IMPORT_KINDS).map(k => `<option value="${k}">${t('x.kind_' + k)}</option>`).join('')}</select>
+      <button class="inp" onclick="downloadTemplate(document.getElementById('imp-kind').value)">⬇ ${t('x.template')}</button>
+      <label class="btn bg-p cursor-pointer">⬆ ${t('x.upload')}<input type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="importExcel(this, document.getElementById('imp-kind').value)"></label>
+      <span class="mx-2 text-slate-300">|</span>
+      <button class="btn bg-slate-700" onclick="fullBackup()">💾 ${t('x.backup')}</button></div>
+    <p class="text-xs text-slate-500 mt-2">${t('x.backup_help')}</p>
     <div id="import-result" class="mt-3 text-sm"></div></section>` : ''}
   <section class="card mb-6"><div class="flex flex-wrap justify-between items-start gap-2 mb-3">
       <div><h2 class="font-semibold">${t('s.rates')}</h2><p class="text-sm text-slate-500">${t('s.rates_help')}</p></div>

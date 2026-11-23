@@ -548,15 +548,19 @@ function openTheme() {
   const picker = (k, label) => `<label class="flex items-center justify-between gap-3 py-1"><span>${label}</span>
     <input type="color" value="${th[k]}" oninput="setTheme(Object.assign({}, S.theme, {${k}: this.value}))"></label>`;
   document.getElementById('modal').innerHTML = `<div class="fixed inset-0 z-50 bg-black/40 flex items-start justify-center p-3 sm:pt-10" onclick="if(event.target===this)closeTheme()">
-    <div id="theme-panel" class="card w-full max-w-md overflow-y-auto overscroll-contain" style="max-height:calc(100vh - 2.5rem)">
+    <div id="theme-panel" class="card w-full max-w-6xl overflow-y-auto overscroll-contain" style="max-height:calc(100vh - 2.5rem)">
       <div class="flex justify-between items-center mb-3"><h2 class="font-semibold text-lg">🎨 ${t('theme.title')}</h2><button class="text-2xl leading-none" onclick="closeTheme()">×</button></div>
+      <div class="grid gap-x-8 gap-y-2 md:grid-cols-2 lg:grid-cols-3">
+      <div>
       <div class="text-sm text-slate-500 mb-2">${t('theme.presets')}</div>
       <div class="flex flex-wrap gap-2 mb-4">${Object.keys(THEMES).map(k => `<button class="swatch" title="${k}" style="background:linear-gradient(135deg, ${THEMES[k].hdr} 50%, ${THEMES[k].p} 50%)" onclick="setTheme(Object.assign({}, THEMES.${k}, { sizes: (S.theme || {}).sizes }))"></button>`).join('')}</div>
       <div class="text-sm text-slate-500 mb-1">${t('theme.custom')}</div>
       <div class="text-sm divide-y">
         ${picker('hdr', t('theme.header'))}${picker('p', t('theme.primary'))}${picker('th', t('theme.table'))}${picker('bg', t('theme.background'))}
       </div>
-      <div class="text-sm text-slate-500 mt-4 mb-1">${t('theme.nav_style')}</div>
+      </div>
+      <div class="md:border-s md:ps-6">
+      <div class="text-sm text-slate-500 mb-1">${t('theme.nav_style')}</div>
       ${chips(NAV_STYLES.map(k => [k, t('theme.nav_' + k)]), document.documentElement.dataset.nav, 'setNavStyle')}
       <div class="text-sm text-slate-500 mt-3 mb-1">${t('theme.chip_style')}</div>
       ${chips(CHIP_STYLES.map(k => [k, t('theme.chip_' + k)]), document.documentElement.dataset.chip, 'setChipStyle')}
@@ -566,18 +570,22 @@ function openTheme() {
       ${chips(LEGEND_FORMATS.map(k => [k, k + ' · ' + t('theme.lg_' + k)]), legendFormat(), 'setLegendFormat')}` : ''}
       <div class="text-sm text-slate-500 mt-4 mb-1">${t('qc.format_setting')}</div>
       ${chips(Object.keys(QC_FORMATS).map(k => [k, t('qc.f_' + k)]), qcFormat(), 'setQcFormat')}
-      <div class="text-sm text-slate-500 mt-4 mb-1">${t('theme.sizes')}</div>
+      </div>
+      <div class="lg:border-s lg:ps-6">
+      <div class="text-sm text-slate-500 mb-1">${t('theme.sizes')}</div>
       <div class="text-sm divide-y">${Object.keys(SIZE_RANGE).map(k => { const [mn, mx, stp, u] = SIZE_RANGE[k], v = Object.assign({}, SIZES_DEFAULT, th.sizes || {})[k];
         return `<label class="flex items-center justify-between gap-3 py-1"><span class="w-40">${t('theme.sz_' + k)}</span>
           <input type="range" min="${mn}" max="${mx}" step="${stp}" value="${v}" class="flex-1" oninput="setSize('${k}', this.value)"><span id="sz-${k}" class="num w-12 text-end">${v}${u}</span></label>`; }).join('')}
         <div class="py-2"><button class="inp text-xs" onclick="setTheme(Object.assign({}, S.theme, { sizes: Object.assign({}, SIZES_DEFAULT) }))">${t('theme.sz_reset')}</button></div>
       </div>
-      <div class="flex flex-wrap gap-2 mt-4">
+      </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t">
         <button class="btn bg-p" onclick="closeTheme()">${t('theme.done')}</button>
         <button class="inp" onclick="try{localStorage.removeItem('lm_theme')}catch(e){};applyTheme(S.defaultTheme||THEMES.teal);openTheme()">${t('theme.reset')}</button>
         ${can('admin') ? `<button class="inp" onclick="call('saveTheme',{theme:S.theme}).then(()=>{S.defaultTheme=S.theme;toast(t('theme.saved_all'))}).catch(e=>toast(e.message,true))">${t('theme.save_all')}</button>` : ''}
+        <p class="text-xs text-slate-400 ms-auto">${t('theme.note')}</p>
       </div>
-      <p class="text-xs text-slate-400 mt-3">${t('theme.note')}</p>
     </div></div>`;
   if (keep) document.getElementById('theme-panel').scrollTop = keep;
 }

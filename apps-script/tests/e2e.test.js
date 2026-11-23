@@ -298,6 +298,14 @@ ok(api(lm, 'land', { project_id: pid }).intiqals.find(i => /Qamar-uz/.test(i.hol
 api(lm, 'deleteLand', { kind: 'tma', id: l5.tma[0].id });
 ok(api(lm, 'land', { project_id: pid }).tma.length === 0, 'TMA deleted');
 
+// intiqal detail (where the area went)
+{
+  const L = api(lm, 'land', { project_id: pid });
+  const j = L.intiqals.find(i => i.intiqal_no === '5000' && /Qamar-uz/.test(i.holder_name));
+  const det = api(acc, 'intiqalDetail', { id: j.id });
+  ok(det.cases.length === 1 && det.cases[0].plot_no === '23.11' && det.cases[0].done && det.cases[0].registry_no === 'J1' && j.registered === det.cases[0].area_sqft, 'intiqal detail lists the registry: ' + JSON.stringify(det.cases));
+}
+
 // history protected
 ok(!apiErr(admin, 'savePlot', { id: p2.id, size_marla: '5' }).ok === false, 'admin edit still fine');
 let threw = false; try { vm.runInContext("Db.update('PlotEvents','1',{notes:'x'})", ctx); } catch (e) { threw = true; } ok(threw, 'PlotEvents cannot be updated');

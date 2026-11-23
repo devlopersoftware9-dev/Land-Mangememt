@@ -210,6 +210,7 @@ var API = {
   customers: { fn: function (u, p) { return Views.customers(p.q); } },
   customer: { fn: function (u, p) { return Views.customer(p.id); } },
   land: { fn: function (u, p) { return Views.land(p.project_id); } },
+  intiqalDetail: { fn: function (u, p) { return Views.intiqalDetail(required(p.id, 'intiqal')); } },
   registryList: { fn: function (u, p) { return Views.registryList(p.project_id, p.status); } },
   registryCase: { fn: function (u, p) { return Views.registryCase(p.id); } },
   approvals: { fn: function (u, p) { return Views.approvals(p.project_id, p.status); } },

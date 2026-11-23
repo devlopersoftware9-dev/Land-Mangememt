@@ -62,6 +62,19 @@ var Views = (function () {
     });
   }
 
+  /** Where an intiqal's area went: registries (done / in process) and TMA transfers. */
+  function intiqalDetail(id) {
+    var i = Db.get('Intiqals', id), ms = num(Db.get('Projects', i.project_id).marla_sqft || 270);
+    var C = {}; Db.all('Customers').forEach(function (c) { C[c.id] = c; });
+    var rows = Db.where('CaseIntiqals', 'intiqal_id', id).map(function (ci) {
+      var c = Db.find('RegistryCases', ci.case_id); if (!c || c.status === 'cancelled') return null;
+      var p = Db.find('Plots', c.plot_id) || {}, cu = C[c.customer_id] || {};
+      return { case_id: c.id, reference: c.reference, plot_id: p.id, plot_no: p.plot_no, buyer: customerLabel(cu.id ? cu : null), area_sqft: num(ci.area_sqft),
+        status: c.status, done: Registry.REG_DONE.indexOf(c.status) >= 0, registry_no: c.registry_no, registry_date: c.registry_date, demand_date: c.demand_date, fard_no: c.fard_no };
+    }).filter(Boolean).sort(function (a, b) { return natural({ plot_no: a.plot_no }, { plot_no: b.plot_no }); });
+    return { intiqal: i, marla_sqft: ms, cases: rows, tma: Db.where('TmaTransfers', 'intiqal_id', id) };
+  }
+
   function bootstrap(u) {
     var unread = Db.where('Notifications', 'user_id', u.id).filter(function (n) { return !n.read_at; }).length;
     return {
@@ -245,6 +258,6 @@ var Views = (function () {
 
   return {
     bootstrap: bootstrap, dashboard: dashboard, plots: plots, plot: plot, customers: customers, customer: customer,
-    plotRows: plotRows, land: land, registryList: registryList, registryCase: registryCase, approvals: approvals, approval: approval,
+    plotRows: plotRows, land: land, intiqalDetail: intiqalDetail, registryList: registryList, registryCase: registryCase, approvals: approvals, approval: approval,
   };
 })();

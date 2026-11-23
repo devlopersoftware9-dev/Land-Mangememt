@@ -360,6 +360,11 @@ ok(pv1.grand_total === 213200 && pv2.grand_total === 213200 + 31000, 'settings c
     try { const html = ui.VIEWS.dashboard(screens.dashboard); ok(!/undefined|NaN|\[object Object\]/.test(html.replace(/=== undefined|!== undefined/g, '')) && /S\.gf=\{status:/.test(html), `dashboard tiles ${lang} ${f}`); }
     catch (e) { ok(false, `dashboard tiles ${lang} ${f}: ${e.message}`); }
   }
+  for (const lang of ['en', 'ur']) for (let f = 1; f <= 12; f++) {
+    ui.S.lang = lang; ui.S.theme = { tileFmt: 'E', legendFmt: String(f) };
+    try { const html = ui.VIEWS.dashboard(screens.dashboard); ok(!/undefined|NaN|\[object Object\]/.test(html.replace(/=== undefined|!== undefined/g, '')) && /S\.gf=\{status:/.test(html), `donut legend ${lang} ${f}`); }
+    catch (e) { ok(false, `donut legend ${lang} ${f}: ${e.message}`); }
+  }
   ui.S.theme = {};
   // case screen at every step type renders
   const c2 = api(admin, 'registryCase', { id: case2 });

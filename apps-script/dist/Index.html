@@ -66,6 +66,13 @@
 .seg span { display: inline-block; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 13px; background: #fff; }
 .seg input:checked + span { background: var(--p); border-color: var(--p); color: #fff; }
 .seg input:focus-visible + span { outline: 2px solid var(--p); outline-offset: 1px; }
+.hf { font-size: 9px; margin-inline-start: 4px; padding: 1px 4px; border-radius: 4px; border: 1px solid rgba(255,255,255,.5); color: inherit; opacity: .75; vertical-align: middle; cursor: pointer; }
+.hf:hover { opacity: 1; }
+.hf.on { background: #fff; color: var(--p); opacity: 1; }
+.hf-pop { position: absolute; z-index: 60; width: 250px; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.15); padding: 10px; font-size: 13px; color: #1e293b; }
+.hf-list { max-height: 260px; overflow: auto; border-top: 1px solid #e2e8f0; margin-top: 4px; padding-top: 4px; }
+.hf-row { display: flex; align-items: center; gap: 6px; padding: 3px 2px; cursor: pointer; }
+.hf-row:hover { background: #f1f5f9; }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen">
@@ -628,11 +635,53 @@ VIEWS.plots = d => {
     <div id="g-filters"></div>
     <div id="g-bulk"></div>
     <div class="card p-0 scroll-table"><table class="t">
-      <thead><tr><th class="w-8"><input type="checkbox" id="g-all" onclick="gSelectAll(this.checked)"></th><th>${t('plot')}</th><th>${t('p.size')}</th><th>${t('p.facing')}</th>
-        <th>${t('p.customer')}</th><th class="text-center">${t('g.sold')}</th><th class="text-center">${t('g.payment')}</th><th class="text-center">${t('g.fard')}</th>
-        <th class="text-center">${t('g.registry')}</th><th>${t('p.construction')}</th></tr></thead>
+      <thead><tr><th class="w-8"><input type="checkbox" id="g-all" onclick="gSelectAll(this.checked)"></th><th>${t('plot')} ${hfBtn('street')}</th><th>${t('p.size')} ${hfBtn('size')}</th><th>${t('p.facing')} ${hfBtn('facing')}</th>
+        <th>${t('p.customer')} ${hfBtn('customer')}</th><th class="text-center">${t('g.sold')}</th><th class="text-center">${t('g.payment')}</th><th class="text-center">${t('g.fard')}</th>
+        <th class="text-center">${t('g.registry')}</th><th>${t('p.construction')} ${hfBtn('construction')}</th></tr></thead>
       <tbody id="g-body"></tbody></table></div>`;
 };
+
+// ---- Excel-style column filters in the table header (Plot = street, Size, East/West, Customer, Construction)
+const HF = {
+  street: { key: r => r.street_id || '-', label: v => v === '-' ? L('category', 'commercial') : t('p.street') + ' ' + ((S.grid.streets.find(x => x.id === v) || {}).number || v) },
+  size: { key: r => r.size_marla || '', label: v => v ? v + ' M' : '—', sort: (a, b) => num(a) - num(b) },
+  facing: { key: r => r.facing || '', label: v => v ? t('p.' + v.toLowerCase()) : '—' },
+  customer: { text: true },
+  construction: { key: r => r.construction_status || '', label: v => L('construction', v) || '—' },
+};
+const hfOn = c => { const v = ((S.gf || {}).hf || {})[c]; return HF[c].text ? !!(v && v.trim()) : Array.isArray(v); };
+const gfActive = () => !!(S.gf.status || (S.gf.q || '').trim() || Object.keys(HF).some(hfOn));
+const hfBtn = c => `<button type="button" class="hf ${hfOn(c) ? 'on' : ''}" data-col="${c}" title="Filter" onclick="openHF(event,'${c}')">▼</button>`;
+function openHF(ev, c) {
+  ev.stopPropagation(); closeHF();
+  const f = S.gf = S.gf || {}; f.hf = f.hf || {};
+  const box = document.createElement('div'); box.id = 'hf-pop'; box.className = 'hf-pop'; box.onclick = e => e.stopPropagation();
+  if (HF[c].text) {
+    box.innerHTML = `<input type="search" class="inp w-full" placeholder="${t('p.search')}" value="${esc(f.hf[c] || '')}" oninput="S.gf.hf.${c}=this.value;gridRender()">
+      <div class="flex justify-end mt-2"><button class="inp text-xs" onclick="S.gf.hf.${c}='';closeHF();gridRender()">${t('g.clear_filters')}</button></div>`;
+  } else {
+    const rows = S.grid.rows, vals = [...new Set(rows.map(HF[c].key))].sort(HF[c].sort || ((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })));
+    const sel = f.hf[c] || vals;
+    box.innerHTML = `<input type="search" class="inp w-full mb-1" placeholder="${t('p.search')}" oninput="hfSearch(this)">
+      <label class="hf-row font-medium"><input type="checkbox" ${sel.length === vals.length ? 'checked' : ''} onchange="hfAll(this)"> (${t('all')})</label>
+      <div class="hf-list">${vals.map(v => `<label class="hf-row"><input type="checkbox" value="${esc(v)}" ${sel.includes(v) ? 'checked' : ''}> ${esc(HF[c].label(v))} <span class="text-slate-400 text-xs">${rows.filter(r => HF[c].key(r) === v).length}</span></label>`).join('')}</div>
+      <div class="flex justify-between gap-2 mt-2"><button class="inp text-xs" onclick="delete S.gf.hf.${c};closeHF();gridRender()">${t('g.clear_filters')}</button><button class="btn bg-p text-xs" onclick="hfApply('${c}')">OK</button></div>`;
+  }
+  document.body.appendChild(box);
+  const r = ev.target.closest('th').getBoundingClientRect();
+  box.style.top = (r.bottom + window.scrollY + 2) + 'px';
+  box.style.left = Math.max(8, Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - 260)) + 'px';
+  const first = box.querySelector('input'); if (first) first.focus();
+}
+function closeHF() { const p = document.getElementById('hf-pop'); if (p) p.remove(); }
+document.addEventListener('click', closeHF);
+function hfSearch(inp) { const q = inp.value.toLowerCase(); inp.parentNode.querySelectorAll('.hf-list .hf-row').forEach(l => { l.style.display = !q || l.textContent.toLowerCase().includes(q) ? '' : 'none'; }); }
+function hfAll(cb) { cb.closest('.hf-pop').querySelectorAll('.hf-list input').forEach(i => { if (i.closest('.hf-row').style.display !== 'none') i.checked = cb.checked; }); }
+function hfApply(c) {
+  const all = [...document.querySelectorAll('#hf-pop .hf-list input')], on = all.filter(i => i.checked).map(i => i.value);
+  if (on.length === all.length) delete S.gf.hf[c]; else S.gf.hf[c] = on;
+  closeHF(); gridRender();
+}
 
 function gridFilters() {
   const el = document.getElementById('g-filters'); if (!el || !S.grid) return;
@@ -643,10 +692,8 @@ function gridFilters() {
   el.innerHTML = `<div class="card mb-3 py-2">
     ${row(t('p.status'), chips([['', t('all'), rows.length], ...statuses.map(v => [v, L('plotStatus', v), cnt(r => r.sale_status === v)]),
       ...(cnt(r => r.pay_pending) ? [['pay_pending', '⚠ ' + t('g.pending'), cnt(r => r.pay_pending)]] : [])], f.status, 'gfStatus'))}
-    ${row(t('p.street'), chips([['', t('all')], ...S.grid.streets.map(x => [x.id, esc(x.number), cnt(r => r.street_id === x.id)]), ...(cnt(r => !r.street_id) ? [['-', L('category', 'commercial'), cnt(r => !r.street_id)]] : [])], f.street, 'gfStreet'))}
-    ${row(t('p.facing'), chips([['', t('all')], ['East', t('p.east'), cnt(r => r.facing === 'East')], ['West', t('p.west'), cnt(r => r.facing === 'West')]], f.facing, 'gfFacing'))}
-    ${row(t('p.size'), chips([['', t('all')], ...sizes.map(v => [v, esc(v) + ' M', cnt(r => r.size_marla === v)])], f.size, 'gfSize'))}
-    ${Object.keys(f).some(k => f[k]) ? `<button class="link text-sm" onclick="S.gf={q:''};document.querySelector('input[type=search]').value='';gridRender()">✕ ${t('g.clear_filters')}</button>` : ''}</div>`;
+    ${gfActive() ? `<button class="link text-sm" onclick="S.gf={q:''};document.querySelector('input[type=search]').value='';gridRender()">✕ ${t('g.clear_filters')}</button>` : ''}</div>`;
+  document.querySelectorAll('.hf').forEach(b => b.classList.toggle('on', hfOn(b.dataset.col)));
 }
 const regFilter = v => { S.filters = Object.assign({}, S.filters, { registry: { status: v } }); render(); };
 const apprFilter = v => { S.filters = Object.assign({}, S.filters, { approvals: { status: v } }); render(); };
@@ -658,8 +705,7 @@ function gridFiltered() {
   const f = S.gf || {}, q = (f.q || '').toLowerCase().trim();
   return (S.grid ? S.grid.rows : []).filter(r =>
     (!f.status || (f.status === 'pay_pending' ? r.pay_pending : r.sale_status === f.status)) &&
-    (!f.street || (f.street === '-' ? !r.street_id : r.street_id === f.street)) &&
-    (!f.facing || r.facing === f.facing) && (!f.size || r.size_marla === f.size) &&
+    Object.keys(HF).every(c => !hfOn(c) || (c === 'customer' ? (r.customer + ' ' + r.cnic + ' ' + r.phone).toLowerCase().includes(f.hf.customer.toLowerCase()) : f.hf[c].includes(HF[c].key(r)))) &&
     (!q || (r.plot_no + ' ' + r.customer + ' ' + r.cnic + ' ' + r.phone).toLowerCase().includes(q)));
 }
 

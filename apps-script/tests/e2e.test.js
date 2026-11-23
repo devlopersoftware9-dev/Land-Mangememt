@@ -210,6 +210,48 @@ ok(g3.sale_status === 'registry_in_process' && g3.pay_pending === false, 'paymen
 const cv3 = api(acc, 'registryCase', { id: case3 });
 ok(cv3.case.pending_amount === '500000', 'case keeps pending record');
 
+// partial registry: 5 M plot, fard jari for 3 M only -> 2 M pending -> second registry for the rest
+const p4 = plots.find(p => p.plot_no === '23.07');
+api(admin, 'savePlot', { id: p4.id, size_marla: '5' });
+api(acc, 'sell', { plot_id: p4.id, customer_id: c2, date: '2026-02-01' });
+api(acc, 'clearPayment', { plot_id: p4.id, date: '2026-03-01' });
+ok(apiErr(acc, 'createDemand', { plot_id: p4.id, mode: 'client_self', demand_date: '2026-11-22', maliyat: 1000000, area_marla: 6 }).code === 'err.area_more_than_pending', 'demand area > plot blocked');
+const case4 = api(acc, 'createDemand', { plot_id: p4.id, mode: 'client_self', demand_date: '2026-11-22', maliyat: 1000000 });
+vm.runInContext(`Db.update('RegistryCases', '${case4}', { status: 'fard_approved' })`, ctx);
+api(lm, 'saveIntiqal', { project_id: pid, intiqal_no: '2001', holder_name: 'Big Holder', kanal: 5 });
+const big = api(lm, 'land', { project_id: pid }).intiqals.find(i => i.intiqal_no === '2001');
+api(lm, 'registryStep', { case_id: case4, step: 'fard_jari', allocations: { [big.id]: 810 }, message: 'fard 3 M' });
+let cv4 = api(acc, 'registryCase', { id: case4 }).case;
+ok(Number(cv4.area_sqft) === 810 && Number(cv4.area_marla) === 3, 'partial fard jari saves 3 M: ' + cv4.area_marla);
+api(admin, 'registryStep', { case_id: case4, step: 'fard_received', fard_no: 'F1', date: '2026-11-23' });
+api(admin, 'registryStep', { case_id: case4, step: 'hand_over_fard', date: '2026-11-23' });
+api(admin, 'registryStep', { case_id: case4, step: 'client_registry', registry_no: 'R-9', registry_date: '2026-11-23' });
+let g4 = api(acc, 'plotGrid', { project_id: pid }).rows.find(r => r.id === p4.id);
+ok(g4.sale_status === 'registered' && g4.reg_m === 3 && g4.pend_m === 2, 'partly registered: ' + g4.reg_m + ' / pending ' + g4.pend_m);
+ok(api(acc, 'plot', { id: p4.id }).areas.pending === 540, 'plot view pending area');
+const case4b = api(acc, 'createDemand', { plot_id: p4.id, mode: 'client_self', demand_date: '2026-11-25', maliyat: 700000 });
+ok(Number(api(acc, 'registryCase', { id: case4b }).case.area_marla) === 2, 'second demand defaults to pending 2 M');
+ok(apiErr(acc, 'createDemand', { plot_id: p4.id, mode: 'client_self', demand_date: '2026-11-25', maliyat: 1 }).code === 'err.case_open', 'one open file per plot');
+api(admin, 'registryStep', { case_id: case4b, step: 'cancel', reason: 'later' });
+ok(api(acc, 'plot', { id: p4.id }).plot.sale_status === 'registered', 'cancel of 2nd part keeps plot registered');
+
+// old registries import + export
+const p5 = plots.find(p => p.plot_no === '23.08'), p6 = plots.find(p => p.plot_no === '23.09');
+api(admin, 'savePlot', { id: p5.id, size_marla: '5' }); api(admin, 'savePlot', { id: p6.id, size_marla: '10' });
+const imp = api(admin, 'importRegistries', { project_id: pid, rows: [
+  { plot_no: '23.08', buyer_name: 'Old Buyer', father_name: 'Old Father', cnic: '3520212345671', registry_no: 'OR-1', registry_date: '15-03-2025', maliyat: '2000000', mode: 'Client' },
+  { plot_no: '23.09', area_marla: '6', buyer_name: 'Part Buyer', registry_no: 'OR-2', registry_date: '2025-04-01', mode: 'Company', seller_intiqal_no: '9999' },
+  { plot_no: '99.99', buyer_name: 'X', registry_no: '1', registry_date: '01-01-2025' },
+  { plot_no: '23.08', buyer_name: 'Again', registry_no: '2', registry_date: '01-01-2025' },
+] });
+ok(imp[0].ok && imp[1].ok && !imp[2].ok && imp[2].code === 'err.not_found' && !imp[3].ok && imp[3].code === 'err.nothing_pending', 'import results: ' + JSON.stringify(imp));
+ok(/pending 4 M/.test(imp[1].msg) && /not found/.test(imp[1].msg), 'partial import msg: ' + imp[1].msg);
+const g56 = api(acc, 'plotGrid', { project_id: pid }).rows.filter(r => r.id === p5.id || r.id === p6.id);
+ok(g56.every(r => r.sale_status === 'registered') && g56.find(r => r.id === p6.id).pend_m === 4, 'imported plots registered');
+ok(apiErr(acc, 'importRegistries', { project_id: pid, rows: [] }).code === 'err.not_allowed', 'import admin only');
+const ex1 = api(acc, 'exportData', { project_id: pid, kind: 'plots' }), ex2 = api(acc, 'exportData', { project_id: pid, kind: 'registries' });
+ok(ex1.rows.length === 297 && ex1.rows[0].length === ex1.head.length && ex2.rows.some(r => r[0] === 'OLD-0001') && ex2.rows[0].length === ex2.head.length, 'export plots + registries');
+
 // history protected
 ok(!apiErr(admin, 'savePlot', { id: p2.id, size_marla: '5' }).ok === false, 'admin edit still fine');
 let threw = false; try { vm.runInContext("Db.update('PlotEvents','1',{notes:'x'})", ctx); } catch (e) { threw = true; } ok(threw, 'PlotEvents cannot be updated');

@@ -226,6 +226,8 @@ var API = {
   tickPurchase: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.tickPurchase(u, p); } },
   saveIntiqal: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveIntiqal(u, p); } },
   saveParcel: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveParcel(u, p); } },
+  exportData: { fn: function (u, p) { return DataIO.exportData(u, p); } },
+  importRegistries: { write: true, fn: function (u, p) { return DataIO.importRegistries(u, p); } },
   deleteLand: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.remove(u, p); } },
 
   // registry
@@ -796,7 +798,7 @@ var Plots = (function () {
 
   // ---- called by Registry
   function markRegistryStarted(u, plot, date, ref, pending) {
-    expect(plot, pending ? ['sold'] : ['payment_cleared'], 'registry');
+    expect(plot, pending ? ['sold'] : ['payment_cleared', 'registered'], 'registry');
     Db.update('Plots', plot.id, { sale_status: 'registry_in_process', payment_pending: !!pending });
     event(u, plot, 'registry_started', plot.current_customer_id, plot.current_customer_id, date, ref, pending ? 'Payment pending – proceeding with director approval' : '');
   }
@@ -807,7 +809,8 @@ var Plots = (function () {
   }
   function revertRegistry(u, plot, ref, reason) {
     if (plot.sale_status !== 'registry_in_process') return;
-    Db.update('Plots', plot.id, { sale_status: bool(plot.payment_pending) ? 'sold' : 'payment_cleared', payment_pending: false });
+    var back = Registry.plotAreas(plot).registered > 0 ? 'registered' : bool(plot.payment_pending) ? 'sold' : 'payment_cleared';
+    Db.update('Plots', plot.id, { sale_status: back, payment_pending: false });
     event(u, plot, 'note', '', '', today(), ref, 'Registry file cancelled: ' + reason);
   }
 
@@ -1013,12 +1016,32 @@ var Registry = (function () {
     return prefix + ('000' + (max + 1)).slice(-4);
   }
 
+  // ------------------------------------------------------------ plot area: registered / in process / pending
+  var REG_DONE = ['client_registry_recorded', 'registry_recorded', 'handed_over'];
+  function plotSqft(plot) {
+    var ms = num(Db.get('Projects', plot.project_id).marla_sqft || 270);
+    return { sqft: num(plot.area_sqft) || num(plot.size_marla) * ms, ms: ms };
+  }
+  /** Areas of one plot (sq ft): total, registered, in_process, pending. exceptCaseId is left out of the sums. */
+  function plotAreas(plot, exceptCaseId, cases) {
+    var p = plotSqft(plot), reg = 0, open = 0, openCase = null;
+    (cases || Db.where('RegistryCases', 'plot_id', plot.id)).forEach(function (c) {
+      if (c.status === 'cancelled' || c.id === exceptCaseId) return;
+      if (REG_DONE.indexOf(c.status) >= 0) reg += num(c.area_sqft); else { open += num(c.area_sqft); openCase = c; }
+    });
+    var r2 = function (v) { return Math.round(v * 100) / 100; };
+    return { total: r2(p.sqft), registered: r2(reg), in_process: r2(open), pending: r2(Math.max(0, p.sqft - reg - open)), marla_sqft: p.ms, open_case_id: openCase ? openCase.id : '' };
+  }
+
   // ------------------------------------------------------------ 1. demand
   function createDemand(u, p) {
     Auth.need(u, 'fard_demand');
     var plot = Db.get('Plots', required(p.plot_id, 'plot'));
     var pending = bool(p.payment_pending) && plot.sale_status === 'sold';
-    if (plot.sale_status !== 'payment_cleared' && !pending) fail('err.payment_not_cleared', { plot: plot.plot_no });
+    var areas = plotAreas(plot);
+    var partialNext = plot.sale_status === 'registered' && areas.pending > 0.5;   // next part of a partly registered plot
+    if (areas.open_case_id) fail('err.case_open', { plot: plot.plot_no });
+    if (plot.sale_status !== 'payment_cleared' && !pending && !partialNext) fail('err.payment_not_cleared', { plot: plot.plot_no });
     var pendingAmount = pending ? int(p.pending_amount) : 0;
     if (pending && pendingAmount <= 0) fail('err.pending_amount');
     if (ENUM.registryMode.indexOf(p.mode) < 0) fail('err.required', { field: 'mode' });
@@ -1027,12 +1050,18 @@ var Registry = (function () {
     var date = validDate(p.demand_date, 'date');
     var proj = Db.get('Projects', plot.project_id);
     var marlaSqft = num(proj.marla_sqft || 270);
-    var sqft = num(plot.area_sqft) || num(plot.size_marla) * marlaSqft;
-    if (sqft <= 0) fail('err.plot_size_missing', { plot: plot.plot_no });
+    var sqft = areas.pending;
+    if (areas.total <= 0) fail('err.plot_size_missing', { plot: plot.plot_no });
+    if (num(p.area_marla) > 0) {   // registry of part of the plot
+      var want = Math.round(num(p.area_marla) * marlaSqft * 100) / 100;
+      if (want > sqft + 0.5) fail('err.area_more_than_pending', { pending: Math.round(sqft / marlaSqft * 100) / 100 });
+      sqft = want;
+    }
+    if (sqft <= 0.5) fail('err.nothing_pending', { plot: plot.plot_no });
 
     var c = Db.insert('RegistryCases', {
       reference: nextRef('RegistryCases', 'REQ-'), plot_id: plot.id, customer_id: plot.current_customer_id, mode: p.mode,
-      status: 'demand', demand_date: date, area_sqft: sqft, area_marla: num(plot.size_marla) || Math.round(sqft / marlaSqft * 100) / 100,
+      status: 'demand', demand_date: date, area_sqft: sqft, area_marla: Math.round(sqft / marlaSqft * 100) / 100,
       maliyat: maliyat, expense_paid: false, notes: str(p.notes), created_by: u.id,
       payment_pending: pending, pending_amount: pending ? pendingAmount : '', pending_remarks: pending ? str(p.pending_remarks) : '',
     });
@@ -1130,10 +1159,16 @@ var Registry = (function () {
       total += take;
       if (holders.indexOf(i.holder_name) < 0) holders.push(i.holder_name);
     });
-    if (Math.abs(total - num(c.area_sqft)) > 0.5) fail('err.allocation_mismatch', { total: total, needed: num(c.area_sqft) });
-
+    // less than the plot needs = registry of part of the plot; the rest stays pending for a later file
+    if (total > num(c.area_sqft) + 0.5) fail('err.allocation_mismatch', { total: total, needed: num(c.area_sqft) });
+    var patch = { seller_name: holders.join(', '), fard_jari_at: nowIso(), fard_jari_by: u.id, fard_jari_message: message };
+    if (total < num(c.area_sqft) - 0.5) {
+      var ms = plotSqft(plot).ms;
+      patch.area_sqft = Math.round(total * 100) / 100; patch.area_marla = Math.round(total / ms * 100) / 100;
+      patch.notes = (c.notes ? c.notes + '\n' : '') + 'Partial registry: ' + patch.area_marla + ' M of ' + c.area_marla + ' M';
+    }
     ids.forEach(function (id) { Db.insert('CaseIntiqals', { case_id: c.id, intiqal_id: id, area_sqft: num(allocations[id]) }); });
-    Db.update('RegistryCases', c.id, { seller_name: holders.join(', '), fard_jari_at: nowIso(), fard_jari_by: u.id, fard_jari_message: message });
+    Db.update('RegistryCases', c.id, patch);
     move(u, c, 'fard_jari_issued');
     return true;
   }
@@ -1232,7 +1267,7 @@ var Registry = (function () {
   }
 
   return {
-    createDemand: createDemand, step: step, expensePreview: expensePreview,
+    createDemand: createDemand, step: step, plotAreas: plotAreas, REG_DONE: REG_DONE, expensePreview: expensePreview,
     onDirectorDecision: onDirectorDecision, onApprovalExpired: onApprovalExpired,
     verifyApproval: verifyApproval, resolveManually: resolveManually,
   };
@@ -1632,15 +1667,20 @@ var Views = (function () {
     Db.where('Streets', 'project_id', projectId).forEach(function (s) { streets[s.id] = s.number; });
     var customers = {};
     Db.all('Customers').forEach(function (c) { customers[c.id] = c; });
-    var openCase = {};
-    Db.all('RegistryCases').forEach(function (c) { if (ENUM.finalCase.indexOf(c.status) < 0) openCase[c.plot_id] = c; });
+    var openCase = {}, byPlot = {};
+    Db.all('RegistryCases').forEach(function (c) {
+      (byPlot[c.plot_id] = byPlot[c.plot_id] || []).push(c);
+      if (ENUM.finalCase.indexOf(c.status) < 0) openCase[c.plot_id] = c;
+    });
     return plotsOf(projectId).filter(function (x) { return !only || only[x.id]; }).sort(natural).map(function (x) {
       var c = customers[x.current_customer_id], k = openCase[x.id];
+      var ar = byPlot[x.id] ? Registry.plotAreas(x, null, byPlot[x.id]) : null;
       return {
         id: x.id, plot_no: x.plot_no, street: streets[x.street_id] || '', street_id: x.street_id, size_marla: x.size_marla,
         facing: x.facing || '', category: x.category, sale_status: x.sale_status, construction_status: x.construction_status,
         customer: c ? c.name : '', customer_id: x.current_customer_id || '', cnic: c ? c.cnic : '', phone: c ? c.phone : '',
-        sold_on: x.sold_on, pay_pending: bool(x.payment_pending), case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
+        sold_on: x.sold_on, pay_pending: bool(x.payment_pending),
+        reg_m: ar ? Math.round(ar.registered / ar.marla_sqft * 100) / 100 : 0, pend_m: ar && ar.registered > 0 ? Math.round(ar.pending / ar.marla_sqft * 100) / 100 : 0, case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
       };
     });
   }
@@ -1660,6 +1700,7 @@ var Views = (function () {
     return {
       plot: x, street: street ? street.number : '', customer: c, customer_label: customerLabel(c),
       ownerships: ownerships, events: events, cases: cases, active_case: active,
+      areas: Registry.plotAreas(x, null, cases),
       customers: Db.all('Customers').map(function (k) { return { id: k.id, label: customerLabel(k) + (k.cnic ? ' (' + k.cnic + ')' : '') }; }),
     };
   }
@@ -1717,7 +1758,7 @@ var Views = (function () {
     }).reverse();
     return {
       case: c, plot: plot, project: project, customer: cust, customer_label: customerLabel(cust),
-      allocations: alloc, intiqals: intiqalRows(project.id), purchases: Db.where('LandPurchases', 'project_id', project.id),
+      allocations: alloc, intiqals: intiqalRows(project.id), plot_areas: Registry.plotAreas(plot, id), purchases: Db.where('LandPurchases', 'project_id', project.id),
       approvals: Db.where('Approvals', 'case_id', id).map(function (a) { return Object.assign(strip(a), { verifier: nameOf('Users', a.verified_by) }); }).reverse(),
       expenses: expenses, rates: Db.all('Rates').filter(function (r) { return bool(r.is_active); }).sort(function (a, b) { return num(a.sort) - num(b.sort); }),
       marla_sqft: num(project.marla_sqft || 270),
@@ -2043,3 +2084,114 @@ function removeRows(table, test) {
   }
   Db.clearCache();
 }
+
+// ===================================================================== Excel export / old registry import
+var DataIO = (function () {
+  var yn = function (b) { return b ? 'Yes' : ''; };
+  var m2 = function (v, ms) { return Math.round(num(v) / ms * 100) / 100; };
+
+  function exportData(u, p) {
+    var pid = required(p.project_id, 'project'), proj = Db.get('Projects', pid), ms = num(proj.marla_sqft || 270);
+    if (p.kind === 'registries') {
+      var plots = {}; Db.where('Plots', 'project_id', pid).forEach(function (x) { plots[x.id] = x; });
+      var head = ['Ref', 'Plot No', 'Registry Area (Marla)', 'Registry By', 'Status', 'Buyer', 'CNIC', 'Demand Date', 'Maliyat', 'Payment Pending (Rs)',
+        'Seller (intiqal holder)', 'Intiqals used', 'Fard No', 'Registry No', 'Registry Date', 'Registry Office', 'Buyer Intiqal No', 'Handed Over', 'Notes'];
+      var rows = Db.all('RegistryCases').filter(function (c) { return plots[c.plot_id]; }).map(function (c) {
+        var cu = c.customer_id ? Db.find('Customers', c.customer_id) : null;
+        var ints = Db.where('CaseIntiqals', 'case_id', c.id).map(function (ci) { var i = Db.find('Intiqals', ci.intiqal_id); return (i ? i.intiqal_no : '?') + ' (' + m2(ci.area_sqft, ms) + ' M)'; }).join(', ');
+        return [c.reference, plots[c.plot_id].plot_no, num(c.area_marla), c.mode === 'company_managed' ? 'Company' : 'Client', c.status, cu ? cu.name : '', cu ? cu.cnic : '',
+          c.demand_date, int(c.maliyat), bool(c.payment_pending) ? int(c.pending_amount) : '', c.seller_name, ints, c.fard_no, c.registry_no, c.registry_date, c.registry_office,
+          c.buyer_intiqal_no, c.handed_over_on, c.notes];
+      });
+      return { name: 'Registries', head: head, rows: rows };
+    }
+    var head2 = ['Plot No', 'Street', 'Size (Marla)', 'East / West', 'Category', 'Status', 'Customer', 'Father / Husband', 'CNIC', 'Phone', 'Sold On',
+      'Payment Clear', 'Payment Pending', 'Registered (Marla)', 'Registry Pending (Marla)', 'Registry File', 'Construction'];
+    var custs = {}; Db.all('Customers').forEach(function (c) { custs[c.id] = c; });
+    var rows2 = Views.plotRows(pid).map(function (r) {
+      var c = custs[r.customer_id] || {};
+      var paid = ['payment_cleared', 'registry_in_process', 'registered'].indexOf(r.sale_status) >= 0 && !r.pay_pending;
+      var regM = r.sale_status === 'registered' && !r.reg_m ? num(r.size_marla) : r.reg_m;
+      return [r.plot_no, r.street, num(r.size_marla) || '', r.facing, r.category, r.sale_status, r.customer, c.father_name || '', r.cnic, r.phone, r.sold_on,
+        yn(paid), yn(r.pay_pending), regM || '', r.pend_m || '', r.case_status, r.construction_status];
+    });
+    return { name: 'Plots', head: head2, rows: rows2 };
+  }
+
+  /** dd-mm-yyyy, dd/mm/yyyy, yyyy-mm-dd -> yyyy-mm-dd */
+  function looseDate(v, field) {
+    var s = str(v).trim(), m;
+    if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s))) return m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2);
+    if ((m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/.exec(s))) return m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+    fail('err.date', { field: field });
+  }
+  function cnicOf(v) {
+    var d = str(v).replace(/\D/g, '');
+    if (!d) return '';
+    if (d.length !== 13) fail('err.cnic');
+    return d.slice(0, 5) + '-' + d.slice(5, 12) + '-' + d.slice(12);
+  }
+
+  function importOne(u, pid, ms, r) {
+    var no = required(r.plot_no, 'plot');
+    var plot = Db.where('Plots', 'project_id', pid).filter(function (x) { return x.plot_no === no; })[0];
+    if (!plot && /^\d+\.\d$/.test(no)) plot = Db.where('Plots', 'project_id', pid).filter(function (x) { return x.plot_no === no + '0'; })[0];   // Excel turned 21.10 into 21.1
+    if (!plot) fail('err.not_found', { table: 'Plots', id: no });
+    var date = looseDate(required(r.registry_date, 'registry_date'), 'registry_date');
+    var regNo = required(r.registry_no, 'registry_no');
+    var cnic = cnicOf(r.cnic), name = required(r.buyer_name, 'name');
+    var areas = Registry.plotAreas(plot);
+    if (areas.open_case_id) fail('err.case_open', { plot: no });
+    if (areas.total <= 0) fail('err.plot_size_missing', { plot: no });
+    var sqft = num(r.area_marla) > 0 ? Math.round(num(r.area_marla) * ms * 100) / 100 : areas.pending;
+    if (sqft > areas.pending + 0.5) fail('err.area_more_than_pending', { pending: m2(areas.pending, ms) });
+    if (sqft <= 0.5) fail('err.nothing_pending', { plot: no });
+    if (['available', 'sold', 'payment_cleared', 'registered'].indexOf(plot.sale_status) < 0) fail('err.case_open', { plot: no });
+
+    // buyer: by CNIC, else by name (+ father name), else new
+    var cust = cnic ? Db.all('Customers').filter(function (c) { return c.cnic === cnic; })[0] : null;
+    if (!cust) cust = Db.all('Customers').filter(function (c) {
+      return c.name.toLowerCase().trim() === name.toLowerCase().trim() && (!r.father_name || c.father_name.toLowerCase().trim() === str(r.father_name).toLowerCase().trim());
+    })[0];
+    if (['sold', 'payment_cleared'].indexOf(plot.sale_status) >= 0 && plot.current_customer_id && (!cust || cust.id !== plot.current_customer_id))
+      fail('err.plot_other_customer', { plot: no });
+    var custId = cust ? cust.id : Plots.saveCustomer(u, { name: name, relation: str(r.relation).toLowerCase().replace(/\s/g, ''), father_name: str(r.father_name), cnic: cnic, phone: str(r.phone) });
+
+    if (plot.sale_status === 'available') Plots.sell(u, { plot_id: plot.id, customer_id: custId, date: date, reference: 'Old record' });
+    plot = Db.get('Plots', plot.id);
+    if (plot.sale_status === 'sold') Plots.clearPayment(u, { plot_id: plot.id, date: date });
+
+    var company = /comp/i.test(str(r.mode));
+    var warn = '', alloc = null;
+    if (str(r.seller_intiqal_no)) {
+      var i = Db.where('Intiqals', 'project_id', pid).filter(function (x) { return x.intiqal_no === str(r.seller_intiqal_no).trim(); })[0];
+      if (!i) warn = 'intiqal ' + r.seller_intiqal_no + ' not found';
+      else if (Land.balance(i) + 0.5 < sqft) warn = 'intiqal ' + i.intiqal_no + ' balance too low';
+      else alloc = i;
+    }
+    var c = Db.insert('RegistryCases', {
+      reference: 'OLD-' + ('000' + (Db.all('RegistryCases').filter(function (k) { return /^OLD-/.test(k.reference); }).length + 1)).slice(-4),
+      plot_id: plot.id, customer_id: custId, mode: company ? 'company_managed' : 'client_self', status: company ? 'handed_over' : 'client_registry_recorded',
+      demand_date: date, area_sqft: sqft, area_marla: m2(sqft, ms), maliyat: int(r.maliyat), seller_name: alloc ? alloc.holder_name : '',
+      fard_no: str(r.fard_no), registry_no: regNo, registry_date: date, registry_office: str(r.registry_office), buyer_intiqal_no: str(r.buyer_intiqal_no),
+      registry_recorded_on: date, handed_over_on: company ? date : '', expense_paid: company, notes: 'Imported old registry' + (r.notes ? ': ' + str(r.notes) : ''), created_by: u.id,
+    });
+    if (alloc) Db.insert('CaseIntiqals', { case_id: c.id, intiqal_id: alloc.id, area_sqft: sqft });
+    Plots.markRegistryStarted(u, Db.get('Plots', plot.id), date, c.reference);
+    Plots.markRegistered(u, Db.get('Plots', plot.id), date, regNo);
+    audit(u, 'registry.imported', 'RegistryCases', c.id, r);
+    var left = Registry.plotAreas(Db.get('Plots', plot.id)).pending;
+    return c.reference + ' · ' + m2(sqft, ms) + ' M' + (left > 0.5 ? ' (pending ' + m2(left, ms) + ' M)' : '') + (warn ? ' · ⚠ ' + warn : '');
+  }
+
+  function importRegistries(u, p) {
+    Auth.require(u, 'admin');
+    var pid = required(p.project_id, 'project'), ms = num(Db.get('Projects', pid).marla_sqft || 270);
+    return (p.rows || []).map(function (r, i) {
+      try { return { row: i + 2, plot: str(r.plot_no), ok: true, msg: importOne(u, pid, ms, r) }; }
+      catch (e) { Db.clearCache(); return { row: i + 2, plot: str(r.plot_no), ok: false, code: e.code || 'err.unknown', params: e.params || {}, msg: e.code ? '' : String(e.message || e) }; }
+    });
+  }
+
+  return { exportData: exportData, importRegistries: importRegistries };
+})();

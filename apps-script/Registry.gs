@@ -29,12 +29,32 @@ var Registry = (function () {
     return prefix + ('000' + (max + 1)).slice(-4);
   }
 
+  // ------------------------------------------------------------ plot area: registered / in process / pending
+  var REG_DONE = ['client_registry_recorded', 'registry_recorded', 'handed_over'];
+  function plotSqft(plot) {
+    var ms = num(Db.get('Projects', plot.project_id).marla_sqft || 270);
+    return { sqft: num(plot.area_sqft) || num(plot.size_marla) * ms, ms: ms };
+  }
+  /** Areas of one plot (sq ft): total, registered, in_process, pending. exceptCaseId is left out of the sums. */
+  function plotAreas(plot, exceptCaseId, cases) {
+    var p = plotSqft(plot), reg = 0, open = 0, openCase = null;
+    (cases || Db.where('RegistryCases', 'plot_id', plot.id)).forEach(function (c) {
+      if (c.status === 'cancelled' || c.id === exceptCaseId) return;
+      if (REG_DONE.indexOf(c.status) >= 0) reg += num(c.area_sqft); else { open += num(c.area_sqft); openCase = c; }
+    });
+    var r2 = function (v) { return Math.round(v * 100) / 100; };
+    return { total: r2(p.sqft), registered: r2(reg), in_process: r2(open), pending: r2(Math.max(0, p.sqft - reg - open)), marla_sqft: p.ms, open_case_id: openCase ? openCase.id : '' };
+  }
+
   // ------------------------------------------------------------ 1. demand
   function createDemand(u, p) {
     Auth.need(u, 'fard_demand');
     var plot = Db.get('Plots', required(p.plot_id, 'plot'));
     var pending = bool(p.payment_pending) && plot.sale_status === 'sold';
-    if (plot.sale_status !== 'payment_cleared' && !pending) fail('err.payment_not_cleared', { plot: plot.plot_no });
+    var areas = plotAreas(plot);
+    var partialNext = plot.sale_status === 'registered' && areas.pending > 0.5;   // next part of a partly registered plot
+    if (areas.open_case_id) fail('err.case_open', { plot: plot.plot_no });
+    if (plot.sale_status !== 'payment_cleared' && !pending && !partialNext) fail('err.payment_not_cleared', { plot: plot.plot_no });
     var pendingAmount = pending ? int(p.pending_amount) : 0;
     if (pending && pendingAmount <= 0) fail('err.pending_amount');
     if (ENUM.registryMode.indexOf(p.mode) < 0) fail('err.required', { field: 'mode' });
@@ -43,12 +63,18 @@ var Registry = (function () {
     var date = validDate(p.demand_date, 'date');
     var proj = Db.get('Projects', plot.project_id);
     var marlaSqft = num(proj.marla_sqft || 270);
-    var sqft = num(plot.area_sqft) || num(plot.size_marla) * marlaSqft;
-    if (sqft <= 0) fail('err.plot_size_missing', { plot: plot.plot_no });
+    var sqft = areas.pending;
+    if (areas.total <= 0) fail('err.plot_size_missing', { plot: plot.plot_no });
+    if (num(p.area_marla) > 0) {   // registry of part of the plot
+      var want = Math.round(num(p.area_marla) * marlaSqft * 100) / 100;
+      if (want > sqft + 0.5) fail('err.area_more_than_pending', { pending: Math.round(sqft / marlaSqft * 100) / 100 });
+      sqft = want;
+    }
+    if (sqft <= 0.5) fail('err.nothing_pending', { plot: plot.plot_no });
 
     var c = Db.insert('RegistryCases', {
       reference: nextRef('RegistryCases', 'REQ-'), plot_id: plot.id, customer_id: plot.current_customer_id, mode: p.mode,
-      status: 'demand', demand_date: date, area_sqft: sqft, area_marla: num(plot.size_marla) || Math.round(sqft / marlaSqft * 100) / 100,
+      status: 'demand', demand_date: date, area_sqft: sqft, area_marla: Math.round(sqft / marlaSqft * 100) / 100,
       maliyat: maliyat, expense_paid: false, notes: str(p.notes), created_by: u.id,
       payment_pending: pending, pending_amount: pending ? pendingAmount : '', pending_remarks: pending ? str(p.pending_remarks) : '',
     });
@@ -146,10 +172,16 @@ var Registry = (function () {
       total += take;
       if (holders.indexOf(i.holder_name) < 0) holders.push(i.holder_name);
     });
-    if (Math.abs(total - num(c.area_sqft)) > 0.5) fail('err.allocation_mismatch', { total: total, needed: num(c.area_sqft) });
-
+    // less than the plot needs = registry of part of the plot; the rest stays pending for a later file
+    if (total > num(c.area_sqft) + 0.5) fail('err.allocation_mismatch', { total: total, needed: num(c.area_sqft) });
+    var patch = { seller_name: holders.join(', '), fard_jari_at: nowIso(), fard_jari_by: u.id, fard_jari_message: message };
+    if (total < num(c.area_sqft) - 0.5) {
+      var ms = plotSqft(plot).ms;
+      patch.area_sqft = Math.round(total * 100) / 100; patch.area_marla = Math.round(total / ms * 100) / 100;
+      patch.notes = (c.notes ? c.notes + '\n' : '') + 'Partial registry: ' + patch.area_marla + ' M of ' + c.area_marla + ' M';
+    }
     ids.forEach(function (id) { Db.insert('CaseIntiqals', { case_id: c.id, intiqal_id: id, area_sqft: num(allocations[id]) }); });
-    Db.update('RegistryCases', c.id, { seller_name: holders.join(', '), fard_jari_at: nowIso(), fard_jari_by: u.id, fard_jari_message: message });
+    Db.update('RegistryCases', c.id, patch);
     move(u, c, 'fard_jari_issued');
     return true;
   }
@@ -248,7 +280,7 @@ var Registry = (function () {
   }
 
   return {
-    createDemand: createDemand, step: step, expensePreview: expensePreview,
+    createDemand: createDemand, step: step, plotAreas: plotAreas, REG_DONE: REG_DONE, expensePreview: expensePreview,
     onDirectorDecision: onDirectorDecision, onApprovalExpired: onApprovalExpired,
     verifyApproval: verifyApproval, resolveManually: resolveManually,
   };

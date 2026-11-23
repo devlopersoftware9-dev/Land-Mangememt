@@ -121,15 +121,20 @@ var Views = (function () {
     Db.where('Streets', 'project_id', projectId).forEach(function (s) { streets[s.id] = s.number; });
     var customers = {};
     Db.all('Customers').forEach(function (c) { customers[c.id] = c; });
-    var openCase = {};
-    Db.all('RegistryCases').forEach(function (c) { if (ENUM.finalCase.indexOf(c.status) < 0) openCase[c.plot_id] = c; });
+    var openCase = {}, byPlot = {};
+    Db.all('RegistryCases').forEach(function (c) {
+      (byPlot[c.plot_id] = byPlot[c.plot_id] || []).push(c);
+      if (ENUM.finalCase.indexOf(c.status) < 0) openCase[c.plot_id] = c;
+    });
     return plotsOf(projectId).filter(function (x) { return !only || only[x.id]; }).sort(natural).map(function (x) {
       var c = customers[x.current_customer_id], k = openCase[x.id];
+      var ar = byPlot[x.id] ? Registry.plotAreas(x, null, byPlot[x.id]) : null;
       return {
         id: x.id, plot_no: x.plot_no, street: streets[x.street_id] || '', street_id: x.street_id, size_marla: x.size_marla,
         facing: x.facing || '', category: x.category, sale_status: x.sale_status, construction_status: x.construction_status,
         customer: c ? c.name : '', customer_id: x.current_customer_id || '', cnic: c ? c.cnic : '', phone: c ? c.phone : '',
-        sold_on: x.sold_on, pay_pending: bool(x.payment_pending), case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
+        sold_on: x.sold_on, pay_pending: bool(x.payment_pending),
+        reg_m: ar ? Math.round(ar.registered / ar.marla_sqft * 100) / 100 : 0, pend_m: ar && ar.registered > 0 ? Math.round(ar.pending / ar.marla_sqft * 100) / 100 : 0, case_id: k ? k.id : '', case_status: k ? k.status : '', has_notes: !!x.notes,
       };
     });
   }
@@ -149,6 +154,7 @@ var Views = (function () {
     return {
       plot: x, street: street ? street.number : '', customer: c, customer_label: customerLabel(c),
       ownerships: ownerships, events: events, cases: cases, active_case: active,
+      areas: Registry.plotAreas(x, null, cases),
       customers: Db.all('Customers').map(function (k) { return { id: k.id, label: customerLabel(k) + (k.cnic ? ' (' + k.cnic + ')' : '') }; }),
     };
   }
@@ -206,7 +212,7 @@ var Views = (function () {
     }).reverse();
     return {
       case: c, plot: plot, project: project, customer: cust, customer_label: customerLabel(cust),
-      allocations: alloc, intiqals: intiqalRows(project.id), purchases: Db.where('LandPurchases', 'project_id', project.id),
+      allocations: alloc, intiqals: intiqalRows(project.id), plot_areas: Registry.plotAreas(plot, id), purchases: Db.where('LandPurchases', 'project_id', project.id),
       approvals: Db.where('Approvals', 'case_id', id).map(function (a) { return Object.assign(strip(a), { verifier: nameOf('Users', a.verified_by) }); }).reverse(),
       expenses: expenses, rates: Db.all('Rates').filter(function (r) { return bool(r.is_active); }).sort(function (a, b) { return num(a.sort) - num(b.sort); }),
       marla_sqft: num(project.marla_sqft || 270),

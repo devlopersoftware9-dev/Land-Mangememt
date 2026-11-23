@@ -69,6 +69,7 @@ en: {
     land: 'Land purchase, intiqals, parcels', send_approval: 'Send Fard approval email', verify_approval: 'Check & Verify director reply', fard_jari: 'Select intiqal + Fard Jari',
     fard_received: 'Fard received', hand_over_fard: 'Hand over fard (Raasta A)', client_registry: 'Record client registry (Raasta A)', expense: 'Registry expense sheet + email',
     expense_paid: 'Expense Paid tick', registry_done: 'Registry done', record_in_office: 'Record registry in office', hand_over: 'Hand over registry', cancel_case: 'Cancel registry file' },
+  x: { excel: 'Excel', preparing: 'Preparing Excel…', import_title: 'Import old registries (Excel)', import_help: 'Registries done before this system: download the template, fill one row per registry, then upload. Plot is marked sold, payment clear and registered automatically; partial registries are allowed.', template: 'Download template', upload: 'Upload filled Excel', confirm: 'Import {n} registries?', working: 'Importing… please wait', done: '{ok} imported, {bad} with errors' },
   g: { pending: 'Payment pending', pending_title: 'Payment not cleared yet', pending_help: 'Proceed with registry on director approval. The pending amount will be shown in the fard approval email.', pending_tick: 'Payment is pending – proceed with director approval', pending_amount: 'Pending amount (Rs.)', pending_remarks: 'Remarks (e.g. balance by 30 Dec)', pending_click: 'Payment pending – click when full payment is received', pending_plot: 'Registry is in process with director approval, but payment is still pending. Tick Payment Clear when the full payment is received.', pending_case: 'Payment pending: Rs. {amount}/- – registry proceeding with director approval.', pending_cleared: 'Payment of Rs. {amount}/- was pending at demand – now cleared.', sold: 'Sold', payment: 'Payment Clear', fard: 'Fard Demand', registry: 'Registry', clear_filters: 'Clear filters', selected: '{n} selected',
     sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
     sell_title: 'Sell plot {plots}', pay_title: 'Payment Clear: {plots}', demand_title: 'Fard demand – Plot {plot}', sold_menu: 'Plot {plot} – {name}',
@@ -102,7 +103,7 @@ en: {
     intiqals: 'From intiqal(s)', fard: 'Fard', fard_no: 'Fard no', registry_no: 'Registry no', registry_date: 'Registry date', office: 'Sub-registrar office',
     copy_url: 'Link to scanned copy (Drive)', next: 'Next step', send_fard_help: 'An email with plot, area and maliyat goes to the director for Fard approval.',
     send_fard: 'Send Fard approval email', waiting: 'Waiting for the director to answer by email.', replied: 'Director has replied. Check and verify to move forward.',
-    jari_help: 'Select intiqal(s). Total must be {area} ({sqft} sq ft). 2-3 intiqals can be combined.', take: 'Take (sq ft)', no_intiqal: 'No intiqal entered yet. Add the intiqal first (button below or Land page), then select it here.', auto_fill: 'Auto fill', intiqal_no_area: 'Area not entered – click Edit and add kanal/marla', add_intiqal_here: 'Add intiqal', alloc_total: 'Selected', jari_msg: 'Fard jari message for registry officer',
+    jari_help: 'Select intiqal(s). Full area: {area} ({sqft} sq ft). Less is allowed for a partial registry – the rest stays pending. 2-3 intiqals can be combined.', take: 'Take (sq ft)', partial_note: 'Partial registry: {now} M now, {pending} M stays pending for a later registry.', reg_area: 'Registry area (Marla)', reg_area_help: 'less than plot = partial registry', partial_title: 'Part of the plot is registered, the rest is pending', pending_m: '{m} M pending', area_summary: 'Registry area', area_total: 'Plot area', area_registered: 'Registered', area_in_process: 'In process', area_pending: 'Pending', case_partial: 'Plot {plot} M · this registry {now} M · already registered {done} M · will remain pending {pending} M', no_intiqal: 'No intiqal entered yet. Add the intiqal first (button below or Land page), then select it here.', auto_fill: 'Auto fill', intiqal_no_area: 'Area not entered – click Edit and add kanal/marla', add_intiqal_here: 'Add intiqal', alloc_total: 'Selected', jari_msg: 'Fard jari message for registry officer',
     jari_default: 'Please get fard issued for Plot {plot} ({area}) in favour of {customer}.', issue_jari: 'Issue "Fard Jari" message', waiting_role: 'Waiting for {role}.',
     fard_received: 'Fard received', hand_fard: 'Fard handed over to client', seller_exp_opt: 'Seller expense approval (e.g. 236-C) – optional',
     client_reg_help: 'Client got the registry done himself. Record its details.', record_client: 'Record client registry',
@@ -142,7 +143,7 @@ en: {
     payer: { buyer: 'Buyer', seller: 'Seller' },
     result: { approved: 'Approved', rejected: 'Rejected', unclear: 'Unclear', unknown_sender: 'Unknown sender', unmatched: 'Not matched', not_authenticated: 'Not verified', already_decided: 'Already answered', duplicate: 'Duplicate' },
   },
-  err: { area_required: 'Enter the area (kanal / marla / sq ft).', pending_amount: 'Enter the pending payment amount.', in_use: 'This record is used elsewhere (intiqal / fard jari), so it cannot be deleted.', area_below_issued: 'Area cannot be less than the area already issued ({issued} marla).', required: '{field} is required.', date: '{field}: enter a valid date.', login: 'Email or password is wrong.', session: 'Please log in again.',
+  err: { case_open: 'Plot {plot} already has an open registry file.', area_more_than_pending: 'Area is more than the pending area ({pending} Marla).', nothing_pending: 'Plot {plot} has no pending area left for registry.', plot_other_customer: 'Plot {plot} is sold to another customer in the system.', area_required: 'Enter the area (kanal / marla / sq ft).', pending_amount: 'Enter the pending payment amount.', in_use: 'This record is used elsewhere (intiqal / fard jari), so it cannot be deleted.', area_below_issued: 'Area cannot be less than the area already issued ({issued} marla).', required: '{field} is required.', date: '{field}: enter a valid date.', login: 'Email or password is wrong.', session: 'Please log in again.',
     not_allowed: 'Your role is not allowed to do this.', not_found: 'Record not found.', busy: 'System is busy, try again.', server: 'Error: {msg}',
     plot_status: 'Plot {plot} is "{status}", so this is not possible.', same_customer: 'Plot is already with this customer.',
     payment_not_cleared: 'Payment of plot {plot} is not cleared yet.', maliyat: 'Registry maliyat is required.', plot_size_missing: 'Enter the size of plot {plot} first.',
@@ -159,6 +160,7 @@ ur: {
     land: 'زمین، انتقالات، رقبے', send_approval: 'فرد منظوری کی ای میل', verify_approval: 'ڈائریکٹر کے جواب کی تصدیق', fard_jari: 'انتقال منتخب + فرد جاری',
     fard_received: 'فرد وصول', hand_over_fard: 'فرد حوالے (راستہ A)', client_registry: 'کلائنٹ کی رجسٹری درج (راستہ A)', expense: 'رجسٹری اخراجات + ای میل',
     expense_paid: 'اخراجات ادا ٹک', registry_done: 'رجسٹری ہو گئی', record_in_office: 'رجسٹری دفتر میں درج', hand_over: 'رجسٹری حوالے', cancel_case: 'رجسٹری فائل منسوخ' },
+  x: { excel: 'ایکسل', preparing: 'ایکسل تیار ہو رہا ہے…', import_title: 'پرانی رجسٹریاں درج کریں (ایکسل)', import_help: 'اس سسٹم سے پہلے کی رجسٹریاں: ٹیمپلیٹ ڈاؤن لوڈ کریں، ہر رجسٹری کی ایک لائن بھریں، پھر اپ لوڈ کریں۔ پلاٹ خود بخود فروخت، پیمنٹ کلیئر اور رجسٹرڈ ہو جائے گا؛ جزوی رجسٹری بھی ہو سکتی ہے۔', template: 'ٹیمپلیٹ ڈاؤن لوڈ', upload: 'بھری ہوئی ایکسل اپ لوڈ', confirm: '{n} رجسٹریاں درج کریں؟', working: 'درج ہو رہی ہیں… انتظار کریں', done: '{ok} درج ہوئیں، {bad} میں غلطی' },
   g: { pending: 'پیمنٹ باقی', pending_title: 'پیمنٹ ابھی کلیئر نہیں', pending_help: 'ڈائریکٹر کی منظوری سے رجسٹری آگے چلائیں۔ باقی رقم فرد منظوری کی ای میل میں دکھائی جائے گی۔', pending_tick: 'پیمنٹ باقی ہے – ڈائریکٹر کی منظوری سے آگے چلائیں', pending_amount: 'باقی رقم (روپے)', pending_remarks: 'ریمارکس (مثلاً 30 دسمبر تک بقایا)', pending_click: 'پیمنٹ باقی – پوری پیمنٹ آنے پر کلک کریں', pending_plot: 'ڈائریکٹر کی منظوری سے رجسٹری جاری ہے، مگر پیمنٹ ابھی باقی ہے۔ پوری پیمنٹ آنے پر پیمنٹ کلیئر پر ٹک کریں۔', pending_case: 'پیمنٹ باقی: {amount} روپے – ڈائریکٹر کی منظوری سے رجسٹری جاری ہے۔', pending_cleared: 'ڈیمانڈ کے وقت {amount} روپے باقی تھے – اب کلیئر ہو گئے۔', sold: 'فروخت', payment: 'پیمنٹ کلیئر', fard: 'فرد ڈیمانڈ', registry: 'رجسٹری', clear_filters: 'فلٹر ہٹائیں', selected: '{n} منتخب',
     sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
     sell_title: 'پلاٹ {plots} فروخت کریں', pay_title: 'پیمنٹ کلیئر: {plots}', demand_title: 'فرد ڈیمانڈ – پلاٹ {plot}', sold_menu: 'پلاٹ {plot} – {name}',
@@ -192,7 +194,7 @@ ur: {
     intiqals: 'انتقال نمبر', fard: 'فرد', fard_no: 'فرد نمبر', registry_no: 'رجسٹری نمبر', registry_date: 'رجسٹری کی تاریخ', office: 'سب رجسٹرار آفس',
     copy_url: 'اسکین کاپی کا لنک (ڈرائیو)', next: 'اگلا مرحلہ', send_fard_help: 'پلاٹ، رقبہ اور مالیت کے ساتھ ڈائریکٹر کو فرد منظوری کی ای میل جائے گی۔',
     send_fard: 'فرد منظوری کی ای میل بھیجیں', waiting: 'ڈائریکٹر کے ای میل جواب کا انتظار ہے۔', replied: 'ڈائریکٹر نے جواب دے دیا ہے۔ آگے بڑھنے کے لیے چیک کر کے تصدیق کریں۔',
-    jari_help: 'انتقال منتخب کریں۔ کل رقبہ {area} ({sqft} مربع فٹ) ہونا چاہیے۔ 2-3 انتقال ملائے جا سکتے ہیں۔', take: 'لینا ہے (مربع فٹ)', no_intiqal: 'ابھی کوئی انتقال درج نہیں۔ پہلے انتقال درج کریں (نیچے بٹن یا زمین والا صفحہ)، پھر یہاں منتخب کریں۔', auto_fill: 'خودکار بھریں', intiqal_no_area: 'رقبہ درج نہیں – ترمیم پر کلک کر کے کنال/مرلہ لکھیں', add_intiqal_here: 'انتقال درج کریں', alloc_total: 'منتخب', jari_msg: 'رجسٹری آفیسر کے لیے فرد جاری کا پیغام',
+    jari_help: 'انتقال منتخب کریں۔ پورا رقبہ {area} ({sqft} مربع فٹ)۔ کم بھی دے سکتے ہیں (جزوی رجسٹری) – باقی رقبہ بعد کے لیے رہے گا۔ 2-3 انتقال ملائے جا سکتے ہیں۔', take: 'لینا ہے (مربع فٹ)', partial_note: 'جزوی رجسٹری: ابھی {now} مرلہ، {pending} مرلہ بعد کی رجسٹری کے لیے باقی رہے گا۔', reg_area: 'رجسٹری کا رقبہ (مرلہ)', reg_area_help: 'پلاٹ سے کم = جزوی رجسٹری', partial_title: 'پلاٹ کا کچھ حصہ رجسٹرڈ ہے، باقی رہتا ہے', pending_m: '{m} مرلہ باقی', area_summary: 'رجسٹری کا رقبہ', area_total: 'پلاٹ کا رقبہ', area_registered: 'رجسٹرڈ', area_in_process: 'جاری', area_pending: 'باقی', case_partial: 'پلاٹ {plot} مرلہ · یہ رجسٹری {now} مرلہ · پہلے رجسٹرڈ {done} مرلہ · باقی رہے گا {pending} مرلہ', no_intiqal: 'ابھی کوئی انتقال درج نہیں۔ پہلے انتقال درج کریں (نیچے بٹن یا زمین والا صفحہ)، پھر یہاں منتخب کریں۔', auto_fill: 'خودکار بھریں', intiqal_no_area: 'رقبہ درج نہیں – ترمیم پر کلک کر کے کنال/مرلہ لکھیں', add_intiqal_here: 'انتقال درج کریں', alloc_total: 'منتخب', jari_msg: 'رجسٹری آفیسر کے لیے فرد جاری کا پیغام',
     jari_default: 'پلاٹ {plot} ({area}) کی فرد {customer} کے حق میں جاری کروائیں۔', issue_jari: '"فرد جاری" کا پیغام جاری کریں', waiting_role: '{role} کا انتظار ہے۔',
     fard_received: 'فرد وصول ہو گئی', hand_fard: 'فرد کلائنٹ کے حوالے کر دی', seller_exp_opt: 'فروخت کنندہ کے اخراجات کی منظوری (مثلاً 236-C) – اختیاری',
     client_reg_help: 'کلائنٹ نے رجسٹری خود کروائی۔ تفصیل درج کریں۔', record_client: 'کلائنٹ کی رجسٹری درج کریں',
@@ -232,7 +234,7 @@ ur: {
     payer: { buyer: 'خریدار', seller: 'فروخت کنندہ' },
     result: { approved: 'منظور', rejected: 'نامنظور', unclear: 'غیر واضح', unknown_sender: 'نامعلوم بھیجنے والا', unmatched: 'میچ نہیں ہوا', not_authenticated: 'تصدیق نہیں ہوئی', already_decided: 'پہلے ہی جواب دیا جا چکا', duplicate: 'دوہری' },
   },
-  err: { area_required: 'رقبہ درج کریں (کنال / مرلہ / مربع فٹ)۔', pending_amount: 'باقی پیمنٹ کی رقم درج کریں۔', in_use: 'یہ ریکارڈ کہیں اور استعمال ہو رہا ہے (انتقال / فرد جاری)، اس لیے حذف نہیں ہو سکتا۔', area_below_issued: 'رقبہ جاری شدہ رقبے ({issued} مرلہ) سے کم نہیں ہو سکتا۔', required: '{field} ضروری ہے۔', date: '{field}: درست تاریخ درج کریں۔', login: 'ای میل یا پاس ورڈ غلط ہے۔', session: 'دوبارہ لاگ اِن کریں۔',
+  err: { case_open: 'پلاٹ {plot} کی رجسٹری فائل پہلے سے جاری ہے۔', area_more_than_pending: 'رقبہ باقی رقبے ({pending} مرلہ) سے زیادہ ہے۔', nothing_pending: 'پلاٹ {plot} کا رجسٹری کے لیے کوئی رقبہ باقی نہیں۔', plot_other_customer: 'سسٹم میں پلاٹ {plot} کسی اور کسٹمر کو فروخت شدہ ہے۔', area_required: 'رقبہ درج کریں (کنال / مرلہ / مربع فٹ)۔', pending_amount: 'باقی پیمنٹ کی رقم درج کریں۔', in_use: 'یہ ریکارڈ کہیں اور استعمال ہو رہا ہے (انتقال / فرد جاری)، اس لیے حذف نہیں ہو سکتا۔', area_below_issued: 'رقبہ جاری شدہ رقبے ({issued} مرلہ) سے کم نہیں ہو سکتا۔', required: '{field} ضروری ہے۔', date: '{field}: درست تاریخ درج کریں۔', login: 'ای میل یا پاس ورڈ غلط ہے۔', session: 'دوبارہ لاگ اِن کریں۔',
     not_allowed: 'آپ کے رول کو اس کی اجازت نہیں۔', not_found: 'ریکارڈ نہیں ملا۔', busy: 'سسٹم مصروف ہے، دوبارہ کوشش کریں۔', server: 'خرابی: {msg}',
     plot_status: 'پلاٹ {plot} اس وقت "{status}" ہے، یہ ممکن نہیں۔', same_customer: 'پلاٹ پہلے ہی اسی کسٹمر کے پاس ہے۔',
     payment_not_cleared: 'پلاٹ {plot} کی پیمنٹ ابھی کلیئر نہیں ہوئی۔', maliyat: 'رجسٹری مالیت ضروری ہے۔', plot_size_missing: 'پہلے پلاٹ {plot} کا سائز درج کریں۔',
@@ -582,7 +584,7 @@ VIEWS.plots = d => {
   const f = S.gf = S.gf || {};
   const sel = (name, inner) => `<select class="inp" onchange="gf('${name}', this.value)">${inner}</select>`;
   return `<div class="flex flex-wrap items-end justify-between gap-3 mb-3">
-      <h1 class="text-xl font-semibold">${t('nav.plots')} <span id="g-count" class="text-slate-400 num text-base"></span></h1>
+      <h1 class="text-xl font-semibold">${t('nav.plots')} <span id="g-count" class="text-slate-400 num text-base"></span> <button class="inp text-sm font-normal ms-2" onclick="exportXlsx('plots')">⬇ ${t('x.excel')}</button></h1>
       <div class="flex flex-wrap gap-2 text-sm">
         <input type="search" value="${esc(f.q || '')}" placeholder="${t('p.search')}" class="inp w-56" oninput="gf('q', this.value)">
         ${sel('status', `<option value="">${t('p.status')}: ${t('all')}</option>${(S.enums.plotStatus || []).map(v => `<option value="${v}" ${v === f.status ? 'selected' : ''}>${L('plotStatus', v)}</option>`).join('')}<option value="pay_pending" ${f.status === 'pay_pending' ? 'selected' : ''}>⚠ ${t('g.pending')}</option>`)}
@@ -621,7 +623,7 @@ function gridRender() {
     const sold = HAS_SOLD.includes(r.sale_status), paid = HAS_PAID.includes(r.sale_status) && !r.pay_pending;
     const fard = r.case_id
       ? `<a class="chip cursor-pointer" style="background:#a855f71f;color:#7e22ce;border:1px solid #a855f755" onclick="go('#/case/${r.case_id}')">${esc(L('caseStatus', r.case_status))}</a>`
-      : r.sale_status === 'registered' ? '' : box(false, allow('fard_demand') && ['payment_cleared', 'sold'].includes(r.sale_status), `demandModal('${r.id}')`, ['payment_cleared', 'sold'].includes(r.sale_status) ? t('g.fard') : t('g.need_sold'));
+      : r.sale_status === 'registered' ? (r.pend_m > 0 ? box(false, allow('fard_demand'), `demandModal('${r.id}')`, t('g.fard')) : '') : box(false, allow('fard_demand') && ['payment_cleared', 'sold'].includes(r.sale_status), `demandModal('${r.id}')`, ['payment_cleared', 'sold'].includes(r.sale_status) ? t('g.fard') : t('g.need_sold'));
     return `<tr class="${G.sel.has(r.id) ? 'sel' : ''}">
       <td><input type="checkbox" ${G.sel.has(r.id) ? 'checked' : ''} onclick="gToggle('${r.id}', this.checked)"></td>
       <td><a class="link num font-medium" onclick="go('#/plot/${r.id}')">${esc(r.plot_no)}</a>${r.has_notes ? ' <span title="notes">📝</span>' : ''}
@@ -632,7 +634,7 @@ function gridRender() {
       <td class="text-center">${box(sold, r.sale_status !== 'blocked' && r.sale_status !== 'registry_in_process' && (sold ? (allow('cancel_sale') || allow('repurchase') || allow('transfer')) : allow('sell')), sold ? `soldMenu('${r.id}')` : `sellModal(['${r.id}'])`)}</td>
       <td class="text-center">${r.pay_pending ? pendChip(r.id) : box(paid, allow('payment_clear') && r.sale_status === 'sold', `payModal(['${r.id}'])`, sold ? '' : t('g.need_sold'))}</td>
       <td class="text-center">${fard}</td>
-      <td class="text-center">${r.sale_status === 'registered' ? '<span class="text-lg" style="color:#2563eb">✔</span>' : ''}</td>
+      <td class="text-center">${r.sale_status === 'registered' ? (r.pend_m > 0 ? `<span class="chip" style="background:#f59e0b22;color:#b45309;border:1px solid #f59e0b88" title="${t('r.partial_title')}">✔ ${r.reg_m} M · ${t('r.pending_m', { m: r.pend_m })}</span>` : '<span class="text-lg" style="color:#2563eb">✔</span>') : r.reg_m > 0 ? `<span class="text-xs text-slate-500">✔ ${r.reg_m} M</span>` : ''}</td>
       <td class="text-slate-500">${L('construction', r.construction_status)}</td></tr>`;
   }).join('') || `<tr><td colspan="10" class="text-slate-500 text-center py-6">${t('nothing')}</td></tr>`;
   const all = document.getElementById('g-all');
@@ -725,13 +727,65 @@ function pendChip(id) {
   return `<span class="chip ${can ? 'cursor-pointer' : ''}" style="background:#f59e0b22;color:#b45309;border:1px solid #f59e0b88" title="${t('g.pending_click')}" ${can ? `onclick="payModal(['${id}'])"` : ''}>⚠ ${t('g.pending')}</span>`;
 }
 
+// ---- Excel (SheetJS is loaded only when needed)
+function loadXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  return new Promise((ok, bad) => { const s = document.createElement('script'); s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js'; s.onload = () => ok(window.XLSX); s.onerror = () => bad(new Error('Excel library could not load')); document.head.appendChild(s); });
+}
+async function exportXlsx(kind) {
+  try {
+    toast(t('x.preparing'));
+    const [X, d] = await Promise.all([loadXLSX(), call('exportData', { project_id: S.projectId, kind })]);
+    const ws = X.utils.aoa_to_sheet([d.head, ...d.rows]);
+    ws['!cols'] = d.head.map(h => ({ wch: Math.max(10, h.length + 2) }));
+    const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, d.name);
+    X.writeFile(wb, `${(S.project && S.project.code) || 'RG2'}_${d.name}_${today()}.xlsx`);
+  } catch (e) { toast(e.message, true); }
+}
+const OLD_COLS = [['plot_no', 'Plot No'], ['area_marla', 'Registry Area (Marla)'], ['buyer_name', 'Buyer Name'], ['relation', 'Relation (s/o d/o w/o)'], ['father_name', 'Father / Husband Name'],
+  ['cnic', 'CNIC'], ['phone', 'Phone'], ['registry_no', 'Registry No'], ['registry_date', 'Registry Date (DD-MM-YYYY)'], ['registry_office', 'Registry Office'], ['maliyat', 'Maliyat'],
+  ['mode', 'Registry By (Client / Company)'], ['fard_no', 'Fard No'], ['seller_intiqal_no', 'Seller Intiqal No'], ['buyer_intiqal_no', 'Buyer Intiqal No'], ['notes', 'Notes']];
+async function downloadTemplate() {
+  try {
+    const X = await loadXLSX();
+    const ws = X.utils.aoa_to_sheet([OLD_COLS.map(c => c[1]), ['25.02', '9', 'Sheikh Muhammad Tanveer', 's/o', 'Sadiq', '35202-1234567-1', '0300-1234567', '1234', '15-03-2025', 'Sub Registrar Sharaqpur', '3600000', 'Client', '567', '19692', '', 'example row – delete it']]);
+    Object.keys(ws).forEach(k => { if (k[0] !== '!') ws[k].t = 's', ws[k].z = '@'; });
+    ws['!cols'] = OLD_COLS.map(c => ({ wch: c[1].length + 2 }));
+    const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, 'Old Registries'); X.writeFile(wb, 'Old_Registries_Template.xlsx');
+  } catch (e) { toast(e.message, true); }
+}
+async function importOld(input) {
+  const file = input.files[0]; input.value = ''; if (!file) return;
+  const out = document.getElementById('import-result');
+  try {
+    const X = await loadXLSX(), wb = X.read(await file.arrayBuffer());
+    const raw = X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: '' });
+    const head = (raw[0] || []).map(h => String(h).trim().toLowerCase());
+    const idx = OLD_COLS.map(([k, label]) => head.findIndex(h => h === label.toLowerCase() || h.startsWith(label.toLowerCase().split(' (')[0])));
+    const rows = raw.slice(1).filter(r => r.some(v => String(v).trim())).map(r => Object.fromEntries(OLD_COLS.map(([k], i) => {
+      let v = idx[i] >= 0 ? r[idx[i]] : '';
+      if (k === 'registry_date' && typeof v === 'number') v = X.SSF.format('yyyy-mm-dd', v);   // Excel date serial
+      return [k, String(v).trim()];
+    })));
+    if (!rows.length) return toast(t('nothing'), true);
+    if (!confirm(t('x.confirm', { n: rows.length }))) return;
+    out.innerHTML = `<p class="text-slate-500">${t('x.working')}</p>`;
+    const res = await call('importRegistries', { project_id: S.projectId, rows });
+    const good = res.filter(r => r.ok).length;
+    out.innerHTML = `<p class="font-medium mb-2">${t('x.done', { ok: good, bad: res.length - good })}</p><table class="t"><tr><th>Row</th><th>${t('plot')}</th><th></th></tr>${res.map(r =>
+      `<tr><td class="num">${r.row}</td><td class="num">${esc(r.plot)}</td><td class="${r.ok ? 'text-emerald-700' : 'text-red-700'}">${r.ok ? '✔ ' + esc(r.msg) : '✖ ' + esc(r.code ? t(r.code, r.params) : r.msg)}</td></tr>`).join('')}</table>`;
+    if (S.grid) S.grid._pid = null;
+  } catch (e) { out.innerHTML = ''; toast(e.message, true); }
+}
+
 // ---- fard jari: intiqal allocation helpers
 function allocTotal(need) {
   const tot = [...document.querySelectorAll('input.alloc')].reduce((s, el) => s + num(el.value), 0);
   const el = document.getElementById('alloc-total'); if (!el) return;
-  const ok = Math.abs(tot - need) < 0.5;
-  el.innerHTML = `${t('r.alloc_total')}: <b>${fmt(Math.round(tot * 100) / 100)}</b> / ${fmt(need)} sq ft ${ok ? '✅' : '⚠'}`;
-  el.style.color = ok ? '#047857' : '#b45309';
+  const ok = Math.abs(tot - need) < 0.5, ms = num(S.data.marla_sqft) || 270, mm = v => Math.round(v / ms * 100) / 100;
+  el.innerHTML = `${t('r.alloc_total')}: <b>${fmt(Math.round(tot * 100) / 100)}</b> / ${fmt(need)} sq ft ${ok ? '✅' : tot > need ? '⚠' : ''}`
+    + (tot > 0.5 && tot < need - 0.5 ? `<div class="text-amber-700">ℹ ${t('r.partial_note', { now: mm(tot), pending: mm(need - tot) })}</div>` : '');
+  el.style.color = ok ? '#047857' : tot > need ? '#b91c1c' : '#b45309';
 }
 function allocAuto(need) {
   let left = num(need);
@@ -755,6 +809,7 @@ function demandModal(id) {
     <label>${t('r.mode')}<br><select name="mode" class="inp w-full">${opts('registryMode')}</select></label>
     <div class="flex gap-2"><label class="flex-1">${t('r.demand_date')}<br>${dateInp('demand_date')}</label>
       <label class="flex-1">${t('r.maliyat')}<br><input name="maliyat" type="text" inputmode="numeric" required class="inp w-full num money"></label></div>
+    <label class="block">${t('r.reg_area')}<br><input name="area_marla" type="number" step="0.01" min="0.01" value="${r.pend_m || r.size_marla || ''}" class="inp w-40 num"> <span class="text-slate-500 text-xs">${t('r.reg_area_help')}</span></label>
     ${r.sale_status === 'sold' ? pendingFields() : ''}
     <button type="submit" class="btn bg-purple-700 w-full">${t('r.create')}</button></form>`);
 }
@@ -792,9 +847,15 @@ VIEWS.plot = d => {
       if (allow('cancel_sale')) actions += box(t('p.cancel'), dateInp() + `<textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'cancelSale', null, t('are_you_sure'), 'bg-red-600');
     }
     if (['sold', 'payment_cleared', 'registered'].includes(s) && allow('repurchase')) actions += box(t('p.repurchase'), `<p class="text-slate-500">${t('p.repurchase_help')}</p>${dateInp()}<input name="reference" placeholder="${t('p.reference')}" class="inp w-full"><textarea name="notes" placeholder="${t('notes')}" class="inp w-full"></textarea>`, 'repurchase', null, t('are_you_sure'), 'bg-slate-800');
-    if ((s === 'payment_cleared' || s === 'sold') && allow('fard_demand')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
+    const ar = d.areas || {}, mm = v => Math.round(num(v) / (num(ar.marla_sqft) || 270) * 100) / 100;
+    if (ar.registered > 0) actions += `<div class="border rounded p-3 text-sm space-y-1"><div class="font-medium">${t('r.area_summary')}</div>
+      <div>${t('r.area_total')}: <b class="num">${mm(ar.total)} M</b></div><div class="text-blue-700">${t('r.area_registered')}: <b class="num">${mm(ar.registered)} M</b></div>
+      ${ar.in_process > 0 ? `<div class="text-purple-700">${t('r.area_in_process')}: <b class="num">${mm(ar.in_process)} M</b></div>` : ''}
+      <div class="${ar.pending > 0.5 ? 'text-amber-700' : 'text-emerald-700'}">${t('r.area_pending')}: <b class="num">${mm(ar.pending)} M</b></div></div>`;
+    if ((s === 'payment_cleared' || s === 'sold' || (s === 'registered' && ar.pending > 0.5 && !ar.open_case_id)) && allow('fard_demand')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
       <div class="font-medium">${t('r.new_demand')}</div><select name="mode" class="inp w-full">${opts('registryMode')}</select>${dateInp('demand_date')}
-      <input name="maliyat" type="text" inputmode="numeric" required placeholder="${t('r.maliyat')}" class="inp w-full num money">${s === 'sold' ? pendingFields() : ''}<button class="btn bg-purple-700">${t('r.create')}</button></form>`;
+      <input name="maliyat" type="text" inputmode="numeric" required placeholder="${t('r.maliyat')}" class="inp w-full num money">
+      <label class="block">${t('r.reg_area')} <input name="area_marla" type="number" step="0.01" min="0.01" value="${mm(ar.pending || ar.total) || p.size_marla || ''}" class="inp w-28 num"></label>${s === 'sold' ? pendingFields() : ''}<button class="btn bg-purple-700">${t('r.create')}</button></form>`;
     if (allow('construction')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'construction',{plot_id:'${p.id}'})">
       <div class="font-medium">${t('p.construction')}</div><select name="status" class="inp w-full">${opts('construction', p.construction_status)}</select>${dateInp()}<button class="btn bg-slate-600">${t('save')}</button></form>`;
   }
@@ -836,7 +897,7 @@ VIEWS.plot = d => {
 
 VIEWS.registry = d => {
   const f = (S.filters || {}).registry || {};
-  return `<h1 class="text-xl font-semibold mb-4">${t('nav.registry')}</h1>
+  return `<h1 class="text-xl font-semibold mb-4">${t('nav.registry')} <button class="inp text-sm font-normal ms-2" onclick="exportXlsx('registries')">⬇ ${t('x.excel')}</button></h1>
   <section class="card mb-6"><h2 class="font-semibold mb-2">${t('r.pending')} <span class="num text-slate-500">(${d.pending.length})</span></h2>
     <div class="flex flex-wrap gap-2 text-sm">${d.pending.map(p => `<a class="border rounded px-2 py-1 cursor-pointer hover:bg-orange-50" onclick="go('#/plot/${p.id}')"><span class="num font-medium">${esc(p.plot_no)}</span> · ${esc(p.customer)}</a>`).join('') || `<span class="text-slate-500">${t('nothing')}</span>`}</div></section>
   <select class="inp mb-3 text-sm" onchange="S.filters={registry:{status:this.value}};load()"><option value="">${t('r.open')}</option>
@@ -931,6 +992,8 @@ VIEWS.case = d => {
     <span class="chip bg-purple-100 text-purple-800">${L('caseStatus', st)}</span><span class="chip bg-slate-200">${L('registryMode', c.mode)}</span></div>
   ${isTrue(c.payment_pending) ? `<div class="rounded border ${isTrue(d.plot.payment_pending) ? 'border-amber-400 bg-amber-50 text-amber-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800'} p-3 mb-4 text-sm">
     ${isTrue(d.plot.payment_pending) ? '⚠ ' + t('g.pending_case', { amount: fmt(c.pending_amount) }) : '✔ ' + t('g.pending_cleared', { amount: fmt(c.pending_amount) })}${c.pending_remarks ? ` <span class="opacity-75">— ${esc(c.pending_remarks)}</span>` : ''}</div>` : ''}
+  ${(() => { const a = d.plot_areas || {}, mm = v => Math.round(num(v) / (num(a.marla_sqft) || 270) * 100) / 100;
+      return a.total && (a.registered > 0 || Math.abs(num(c.area_sqft) - a.total) > 0.5) ? `<div class="rounded border border-sky-300 bg-sky-50 text-sky-900 p-3 mb-4 text-sm">ℹ ${t('r.case_partial', { plot: mm(a.total), now: c.area_marla, done: mm(a.registered), pending: Math.max(0, Math.round((mm(a.total) - mm(a.registered) - num(c.area_marla) - mm(a.in_process)) * 100) / 100) })}</div>` : ''; })()}
   <ol class="flex flex-wrap gap-1 mb-6 text-xs">${steps.map((s, i) => `<li class="px-2 py-1 rounded ${pos >= 0 && i < pos ? 'bg-emerald-100 text-emerald-800' : i === pos ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500'}">${L('caseStatus', s)}</li>`).join('')}</ol>
   <div class="grid md:grid-cols-3 gap-6">
     <section class="card text-sm space-y-1"><h2 class="font-semibold mb-2">${t('r.ref')}</h2>
@@ -1097,6 +1160,10 @@ VIEWS.land = d => {
 };
 
 VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>
+  ${S.user && S.user.role === 'admin' ? `<section class="card mb-6"><h2 class="font-semibold">${t('x.import_title')}</h2><p class="text-sm text-slate-500 mb-3">${t('x.import_help')}</p>
+    <div class="flex flex-wrap gap-2 items-center text-sm"><button class="inp" onclick="downloadTemplate()">⬇ ${t('x.template')}</button>
+      <label class="btn bg-p cursor-pointer">⬆ ${t('x.upload')}<input type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="importOld(this)"></label></div>
+    <div id="import-result" class="mt-3 text-sm"></div></section>` : ''}
   <section class="card mb-6"><div class="flex flex-wrap justify-between items-start gap-2 mb-3">
       <div><h2 class="font-semibold">${t('s.rates')}</h2><p class="text-sm text-slate-500">${t('s.rates_help')}</p></div>
       <div id="rates-btns"></div></div>

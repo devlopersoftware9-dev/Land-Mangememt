@@ -98,7 +98,7 @@ var Plots = (function () {
 
   // ---- called by Registry
   function markRegistryStarted(u, plot, date, ref, pending) {
-    expect(plot, pending ? ['sold'] : ['payment_cleared'], 'registry');
+    expect(plot, pending ? ['sold'] : ['payment_cleared', 'registered'], 'registry');
     Db.update('Plots', plot.id, { sale_status: 'registry_in_process', payment_pending: !!pending });
     event(u, plot, 'registry_started', plot.current_customer_id, plot.current_customer_id, date, ref, pending ? 'Payment pending – proceeding with director approval' : '');
   }
@@ -109,7 +109,8 @@ var Plots = (function () {
   }
   function revertRegistry(u, plot, ref, reason) {
     if (plot.sale_status !== 'registry_in_process') return;
-    Db.update('Plots', plot.id, { sale_status: bool(plot.payment_pending) ? 'sold' : 'payment_cleared', payment_pending: false });
+    var back = Registry.plotAreas(plot).registered > 0 ? 'registered' : bool(plot.payment_pending) ? 'sold' : 'payment_cleared';
+    Db.update('Plots', plot.id, { sale_status: back, payment_pending: false });
     event(u, plot, 'note', '', '', today(), ref, 'Registry file cancelled: ' + reason);
   }
 

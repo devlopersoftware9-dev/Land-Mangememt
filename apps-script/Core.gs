@@ -223,6 +223,8 @@ var API = {
   tickPurchase: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.tickPurchase(u, p); } },
   saveIntiqal: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveIntiqal(u, p); } },
   saveParcel: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveParcel(u, p); } },
+  exportData: { fn: function (u, p) { return DataIO.exportData(u, p); } },
+  importRegistries: { write: true, fn: function (u, p) { return DataIO.importRegistries(u, p); } },
   deleteLand: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.remove(u, p); } },
 
   // registry

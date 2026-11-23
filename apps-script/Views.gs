@@ -183,6 +183,7 @@ var Views = (function () {
       purchases: Db.where('LandPurchases', 'project_id', projectId),
       intiqals: intiqalRows(projectId),
       parcels: Db.where('Parcels', 'project_id', projectId),
+      tma: Db.where('TmaTransfers', 'project_id', projectId),
       area: areaSummary(projectId),
       marla_sqft: num(Db.get('Projects', projectId).marla_sqft || 270),
     };

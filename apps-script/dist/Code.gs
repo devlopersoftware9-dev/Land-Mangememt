@@ -239,6 +239,7 @@ var API = {
   importRegistries: { write: true, fn: function (u, p) { return DataIO.importRegistries(u, p); } },
   importKind: { write: true, fn: function (u, p) { return DataIO.importKind(u, p); } },
   backup: { fn: function (u) { return DataIO.backup(u); } },
+  saveTma: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveTma(u, p); } },
   deleteLand: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.remove(u, p); } },
 
   // registry
@@ -294,6 +295,7 @@ var SCHEMA = {
   Parcels: ['id', 'project_id', 'type', 'name', 'area_sqft', 'width_ft', 'notes'],
   RegistryCases: ['id', 'reference', 'plot_id', 'customer_id', 'mode', 'status', 'demand_date', 'area_marla', 'area_sqft', 'maliyat', 'seller_name', 'fard_jari_at', 'fard_jari_by', 'fard_jari_message', 'fard_no', 'fard_received_on', 'fard_handed_over_on', 'registry_no', 'registry_date', 'registry_office', 'buyer_intiqal_no', 'registry_recorded_on', 'registry_copy_url', 'handed_over_on', 'expense_paid', 'expense_paid_at', 'expense_paid_by', 'notes', 'created_by', 'created_at', 'updated_at', 'payment_pending', 'pending_amount', 'pending_remarks'],
   CaseIntiqals: ['id', 'case_id', 'intiqal_id', 'area_sqft'],
+  TmaTransfers: ['id', 'project_id', 'intiqal_id', 'area_sqft', 'registry_no', 'registry_date', 'tma_intiqal_no', 'notes', 'created_by', 'created_at'],
   Approvals: ['id', 'reference', 'case_id', 'expense_id', 'type', 'status', 'to_email', 'cc', 'subject', 'sent_at', 'sent_by', 'approve_token_hash', 'reject_token_hash', 'tokens_expire_at', 'decision', 'decision_channel', 'decided_at', 'decided_from_email', 'director_remarks', 'verified_by', 'verified_at', 'verify_remarks', 'created_at'],
   InboundEmails: ['id', 'message_id', 'from_email', 'subject', 'body_text', 'auth_results', 'received_at', 'approval_id', 'result', 'processed_at'],
   Expenses: ['id', 'case_id', 'kind', 'maliyat', 'area_marla', 'buyer_is_filer', 'seller_is_filer', 'land_value', 'buyer_total', 'seller_total', 'grand_total', 'seller_name', 'buyer_name', 'created_by', 'created_at'],
@@ -906,7 +908,8 @@ var Land = (function () {
   function saveIntiqal(u, p) {
     var pid = required(p.project_id, 'project');
     var no = required(p.intiqal_no, 'intiqal_no');
-    if (Db.where('Intiqals', 'project_id', pid).some(function (i) { return i.intiqal_no === no && i.id !== String(p.id || ''); })) fail('err.duplicate', { field: 'intiqal_no' });
+    var holderKey = str(p.holder_name).toLowerCase();   // one intiqal no can be in the names of 2-3 holders (joint)
+    if (Db.where('Intiqals', 'project_id', pid).some(function (i) { return i.intiqal_no === no && i.holder_name.toLowerCase() === holderKey && i.id !== String(p.id || ''); })) fail('err.duplicate', { field: 'intiqal_no' });
     var data = {
       project_id: pid, land_purchase_id: str(p.land_purchase_id), intiqal_no: no, intiqal_date: str(p.intiqal_date),
       holder_name: required(p.holder_name, 'holder'), holder_cnic: str(p.holder_cnic), holder_is_filer: bool(p.holder_is_filer),
@@ -936,10 +939,10 @@ var Land = (function () {
 
   /** Delete a wrong entry. Blocked when other records depend on it (intiqal used for a fard, purchase linked to an intiqal). */
   function remove(u, p) {
-    var table = { purchase: 'LandPurchases', intiqal: 'Intiqals', parcel: 'Parcels' }[p.kind];
+    var table = { purchase: 'LandPurchases', intiqal: 'Intiqals', parcel: 'Parcels', tma: 'TmaTransfers' }[p.kind];
     if (!table) fail('err.unknown_action');
     var rec = Db.get(table, p.id);
-    if (table === 'Intiqals' && Db.where('CaseIntiqals', 'intiqal_id', rec.id).length) fail('err.in_use');
+    if (table === 'Intiqals' && (Db.where('CaseIntiqals', 'intiqal_id', rec.id).length || Db.where('TmaTransfers', 'intiqal_id', rec.id).length)) fail('err.in_use');
     if (table === 'LandPurchases' && Db.where('Intiqals', 'land_purchase_id', rec.id).length) fail('err.in_use');
     var sh = SpreadsheetApp.getActive().getSheetByName(table);
     sh.deleteRow(rec._row);
@@ -955,12 +958,29 @@ var Land = (function () {
       var c = Db.find('RegistryCases', ci.case_id);
       if (c && c.status !== 'cancelled') total += num(ci.area_sqft);
     });
+    Db.where('TmaTransfers', 'intiqal_id', intiqalId).forEach(function (t) { total += num(t.area_sqft); });
     return total;
   }
 
   function balance(intiqal) { return num(intiqal.area_sqft) - issued(intiqal.id); }
 
-  return { savePurchase: savePurchase, tickPurchase: tickPurchase, saveIntiqal: saveIntiqal, saveParcel: saveParcel, remove: remove, issued: issued, balance: balance };
+  /** Land transferred to TMA (roads / parks): taken out of an intiqal's balance. */
+  function saveTma(u, p) {
+    var i = Db.get('Intiqals', required(p.intiqal_id, 'intiqal'));
+    var area = sqft(i.project_id, p);
+    if (area <= 0) fail('err.area_required');
+    var old = p.id ? Db.get('TmaTransfers', p.id) : null;
+    var bal = balance(i) + (old && old.intiqal_id === i.id ? num(old.area_sqft) : 0);
+    if (area > bal + 0.5) fail('err.intiqal_low', { no: i.intiqal_no, balance: Math.round(bal * 100) / 100 });
+    var data = { project_id: i.project_id, intiqal_id: i.id, area_sqft: Math.round(area * 100) / 100, registry_no: str(p.registry_no),
+      registry_date: p.registry_date ? validDate(p.registry_date, 'date') : '', tma_intiqal_no: str(p.tma_intiqal_no), notes: str(p.notes) };
+    if (old) { Db.update('TmaTransfers', old.id, data); audit(u, 'land.tma.edited', 'TmaTransfers', old.id, data); return true; }
+    var rec = Db.insert('TmaTransfers', Object.assign(data, { created_by: u.id }));
+    audit(u, 'land.tma', 'TmaTransfers', rec.id, data);
+    return true;
+  }
+
+  return { savePurchase: savePurchase, tickPurchase: tickPurchase, saveIntiqal: saveIntiqal, saveParcel: saveParcel, saveTma: saveTma, remove: remove, issued: issued, balance: balance };
 })();
 
 /** Settings: rates and approval emails. */
@@ -1740,6 +1760,7 @@ var Views = (function () {
       purchases: Db.where('LandPurchases', 'project_id', projectId),
       intiqals: intiqalRows(projectId),
       parcels: Db.where('Parcels', 'project_id', projectId),
+      tma: Db.where('TmaTransfers', 'project_id', projectId),
       area: areaSummary(projectId),
       marla_sqft: num(Db.get('Projects', projectId).marla_sqft || 270),
     };
@@ -2178,7 +2199,10 @@ var DataIO = (function () {
     var company = /comp/i.test(str(r.mode));
     var warn = '', alloc = null;
     if (str(r.seller_intiqal_no)) {
-      var i = Db.where('Intiqals', 'project_id', pid).filter(function (x) { return x.intiqal_no === str(r.seller_intiqal_no).trim(); })[0];
+      // joint intiqal: prefer the holder named in "seller", else the first with enough balance
+      var cands = Db.where('Intiqals', 'project_id', pid).filter(function (x) { return x.intiqal_no === str(r.seller_intiqal_no).trim(); });
+      var sk = str(r.seller_name).toLowerCase().split(/\s+/)[0];
+      var i = (sk && cands.filter(function (x) { return x.holder_name.toLowerCase().indexOf(sk) >= 0; })[0]) || cands.filter(function (x) { return Land.balance(x) + 0.5 >= sqft; })[0] || cands[0];
       if (!i) warn = 'intiqal ' + r.seller_intiqal_no + ' not found';
       else if (Land.balance(i) + 0.5 < sqft) warn = 'intiqal ' + i.intiqal_no + ' balance too low';
       else alloc = i;
@@ -2232,7 +2256,7 @@ var DataIO = (function () {
     }
     if (kind === 'intiqals') {
       var no = required(r.intiqal_no, 'intiqal_no');
-      var i = one(Db.where('Intiqals', 'project_id', pid), function (x) { return x.intiqal_no === no; });
+      var i = one(Db.where('Intiqals', 'project_id', pid), function (x) { return x.intiqal_no === no && (!r.holder_name || x.holder_name.toLowerCase() === str(r.holder_name).toLowerCase()); });
       Land.saveIntiqal(u, { id: i ? i.id : '', project_id: pid, intiqal_no: no, intiqal_date: r.intiqal_date ? looseDate(r.intiqal_date, 'date') : (i ? i.intiqal_date : ''),
         holder_name: r.holder_name || (i && i.holder_name), holder_cnic: r.holder_cnic ? cnicOf(r.holder_cnic) : (i ? i.holder_cnic : ''),
         holder_is_filer: r.holder_is_filer !== '' ? yes(r.holder_is_filer) : (i ? bool(i.holder_is_filer) : true), holder_acquired_on: r.holder_acquired_on ? looseDate(r.holder_acquired_on, 'date') : (i ? i.holder_acquired_on : ''),

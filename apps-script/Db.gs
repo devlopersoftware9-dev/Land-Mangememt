@@ -17,6 +17,7 @@ var SCHEMA = {
   Parcels: ['id', 'project_id', 'type', 'name', 'area_sqft', 'width_ft', 'notes'],
   RegistryCases: ['id', 'reference', 'plot_id', 'customer_id', 'mode', 'status', 'demand_date', 'area_marla', 'area_sqft', 'maliyat', 'seller_name', 'fard_jari_at', 'fard_jari_by', 'fard_jari_message', 'fard_no', 'fard_received_on', 'fard_handed_over_on', 'registry_no', 'registry_date', 'registry_office', 'buyer_intiqal_no', 'registry_recorded_on', 'registry_copy_url', 'handed_over_on', 'expense_paid', 'expense_paid_at', 'expense_paid_by', 'notes', 'created_by', 'created_at', 'updated_at', 'payment_pending', 'pending_amount', 'pending_remarks'],
   CaseIntiqals: ['id', 'case_id', 'intiqal_id', 'area_sqft'],
+  TmaTransfers: ['id', 'project_id', 'intiqal_id', 'area_sqft', 'registry_no', 'registry_date', 'tma_intiqal_no', 'notes', 'created_by', 'created_at'],
   Approvals: ['id', 'reference', 'case_id', 'expense_id', 'type', 'status', 'to_email', 'cc', 'subject', 'sent_at', 'sent_by', 'approve_token_hash', 'reject_token_hash', 'tokens_expire_at', 'decision', 'decision_channel', 'decided_at', 'decided_from_email', 'director_remarks', 'verified_by', 'verified_at', 'verify_remarks', 'created_at'],
   InboundEmails: ['id', 'message_id', 'from_email', 'subject', 'body_text', 'auth_results', 'received_at', 'approval_id', 'result', 'processed_at'],
   Expenses: ['id', 'case_id', 'kind', 'maliyat', 'area_marla', 'buyer_is_filer', 'seller_is_filer', 'land_value', 'buyer_total', 'seller_total', 'grand_total', 'seller_name', 'buyer_name', 'created_by', 'created_at'],

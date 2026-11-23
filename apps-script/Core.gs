@@ -236,6 +236,7 @@ var API = {
   importRegistries: { write: true, fn: function (u, p) { return DataIO.importRegistries(u, p); } },
   importKind: { write: true, fn: function (u, p) { return DataIO.importKind(u, p); } },
   backup: { fn: function (u) { return DataIO.backup(u); } },
+  saveTma: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.saveTma(u, p); } },
   deleteLand: { write: true, fn: function (u, p) { Auth.need(u, 'land'); return Land.remove(u, p); } },
 
   // registry

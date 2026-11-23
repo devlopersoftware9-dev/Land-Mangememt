@@ -217,7 +217,10 @@ var DataIO = (function () {
     var company = /comp/i.test(str(r.mode));
     var warn = '', alloc = null;
     if (str(r.seller_intiqal_no)) {
-      var i = Db.where('Intiqals', 'project_id', pid).filter(function (x) { return x.intiqal_no === str(r.seller_intiqal_no).trim(); })[0];
+      // joint intiqal: prefer the holder named in "seller", else the first with enough balance
+      var cands = Db.where('Intiqals', 'project_id', pid).filter(function (x) { return x.intiqal_no === str(r.seller_intiqal_no).trim(); });
+      var sk = str(r.seller_name).toLowerCase().split(/\s+/)[0];
+      var i = (sk && cands.filter(function (x) { return x.holder_name.toLowerCase().indexOf(sk) >= 0; })[0]) || cands.filter(function (x) { return Land.balance(x) + 0.5 >= sqft; })[0] || cands[0];
       if (!i) warn = 'intiqal ' + r.seller_intiqal_no + ' not found';
       else if (Land.balance(i) + 0.5 < sqft) warn = 'intiqal ' + i.intiqal_no + ' balance too low';
       else alloc = i;
@@ -271,7 +274,7 @@ var DataIO = (function () {
     }
     if (kind === 'intiqals') {
       var no = required(r.intiqal_no, 'intiqal_no');
-      var i = one(Db.where('Intiqals', 'project_id', pid), function (x) { return x.intiqal_no === no; });
+      var i = one(Db.where('Intiqals', 'project_id', pid), function (x) { return x.intiqal_no === no && (!r.holder_name || x.holder_name.toLowerCase() === str(r.holder_name).toLowerCase()); });
       Land.saveIntiqal(u, { id: i ? i.id : '', project_id: pid, intiqal_no: no, intiqal_date: r.intiqal_date ? looseDate(r.intiqal_date, 'date') : (i ? i.intiqal_date : ''),
         holder_name: r.holder_name || (i && i.holder_name), holder_cnic: r.holder_cnic ? cnicOf(r.holder_cnic) : (i ? i.holder_cnic : ''),
         holder_is_filer: r.holder_is_filer !== '' ? yes(r.holder_is_filer) : (i ? bool(i.holder_is_filer) : true), holder_acquired_on: r.holder_acquired_on ? looseDate(r.holder_acquired_on, 'date') : (i ? i.holder_acquired_on : ''),

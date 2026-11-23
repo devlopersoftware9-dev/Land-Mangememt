@@ -279,6 +279,25 @@ ok(apiErr(acc, 'backup', {}).code === 'err.not_allowed', 'backup admin only');
 vm.runInContext('refreshRegisters()', ctx);
 ok(sheets['Plot Register'] && sheets['Plot Register'].rows.length >= 298 && sheets['Registry Register'].rows[0][0] === 'Ref', 'register tabs written');
 
+// joint intiqal (same number, two holders) + TMA transfer
+api(lm, 'saveIntiqal', { project_id: pid, intiqal_no: '5000', holder_name: 'Irfan Baig', kanal: 10 });
+api(lm, 'saveIntiqal', { project_id: pid, intiqal_no: '5000', holder_name: 'Qamar-uz-Zaman', kanal: 10 });
+ok(apiErr(lm, 'saveIntiqal', { project_id: pid, intiqal_no: '5000', holder_name: 'Irfan Baig', kanal: 1 }).code === 'err.duplicate', 'same no + same holder blocked');
+let j5 = api(lm, 'land', { project_id: pid }).intiqals.filter(i => i.intiqal_no === '5000');
+ok(j5.length === 2, 'joint intiqal stored twice');
+const irf = j5.find(i => /Irfan/.test(i.holder_name));
+ok(apiErr(lm, 'saveTma', { intiqal_id: irf.id, kanal: 11 }).code === 'err.intiqal_low', 'TMA more than balance blocked');
+api(lm, 'saveTma', { intiqal_id: irf.id, marla: 63.5, registry_no: '581', registry_date: '2025-02-18', tma_intiqal_no: '18796' });
+let l5 = api(lm, 'land', { project_id: pid });
+ok(l5.tma.length === 1 && l5.intiqals.find(i => i.id === irf.id).balance === (200 - 63.5) * 270, 'TMA reduces balance');
+ok(apiErr(lm, 'deleteLand', { kind: 'intiqal', id: irf.id }).code === 'err.in_use', 'intiqal with TMA cannot be deleted');
+api(admin, 'savePlot', { id: plots.find(p => p.plot_no === '23.11').id, size_marla: '5' });
+const r5 = api(admin, 'importRegistries', { project_id: pid, rows: [{ plot_no: '23.11', buyer_name: 'Joint Buyer', registry_no: 'J1', registry_date: '2025-05-05', seller_intiqal_no: '5000', seller_name: 'Qamar' }] });
+ok(r5[0].ok && !/not found|low/.test(r5[0].msg), 'registry from joint intiqal: ' + JSON.stringify(r5));
+ok(api(lm, 'land', { project_id: pid }).intiqals.find(i => /Qamar-uz/.test(i.holder_name) && i.intiqal_no === '5000').issued > 0, 'issued from the named holder');
+api(lm, 'deleteLand', { kind: 'tma', id: l5.tma[0].id });
+ok(api(lm, 'land', { project_id: pid }).tma.length === 0, 'TMA deleted');
+
 // history protected
 ok(!apiErr(admin, 'savePlot', { id: p2.id, size_marla: '5' }).ok === false, 'admin edit still fine');
 let threw = false; try { vm.runInContext("Db.update('PlotEvents','1',{notes:'x'})", ctx); } catch (e) { threw = true; } ok(threw, 'PlotEvents cannot be updated');

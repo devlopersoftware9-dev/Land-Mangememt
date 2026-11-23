@@ -107,7 +107,7 @@ en: {
   c: { search: 'Name, CNIC, phone', new: 'New customer', name: 'Name', name_ur: 'Name in Urdu', father: 'Father / husband name', cnic: 'CNIC',
     phone: 'Phone', address: 'Address', nominee: 'Nominee', nominee_cnic: 'Nominee CNIC', nominee_rel: 'Nominee relation', plots: 'Plots',
     current: 'Current plots', history: 'All plots ever held', filer: 'Filer' },
-  land: { edit_purchase: 'Edit land purchase', edit_intiqal: 'Edit intiqal', edit_parcel: 'Edit road / park', confirm_delete: 'Delete this record? This cannot be undone.', purchases: 'Land purchase', add_purchase: '+ Add land purchase', seller: 'Seller', mauza: 'Mauza', khewat: 'Khewat no', khatooni: 'Khatooni no',
+  land: { tma: 'Transferred to TMA (roads / parks)', tma_help: 'Land registered in the name of TMA. The area is taken out of the selected intiqal balance.', add_tma: '+ Add TMA transfer', edit_tma: 'Edit TMA transfer', tma_from: '— from intiqal —', tma_reg: 'Registry no', tma_intiqal: 'TMA intiqal no', total: 'Total', edit_purchase: 'Edit land purchase', edit_intiqal: 'Edit intiqal', edit_parcel: 'Edit road / park', confirm_delete: 'Delete this record? This cannot be undone.', purchases: 'Land purchase', add_purchase: '+ Add land purchase', seller: 'Seller', mauza: 'Mauza', khewat: 'Khewat no', khatooni: 'Khatooni no',
     khasra: 'Khasra no(s)', area: 'Area', payment_clear: 'Payment Clear', intiqal_done: 'Intiqal Done', intiqals: 'Intiqals', add_intiqal: '+ Add intiqal',
     intiqal_no: 'Intiqal no', holder: 'In the name of', acquired: 'Acquired on (for 236-C)', issued: 'Fard issued', balance: 'Balance',
     parcels: 'Roads, parks, masjid, green belt, graveyard …', add_parcel: '+ Add non-saleable area', type: 'Type', width: 'Width (ft)', link_purchase: '— linked purchase —' },
@@ -198,7 +198,7 @@ ur: {
   c: { search: 'نام، شناختی کارڈ، فون', new: 'نیا کسٹمر', name: 'نام', name_ur: 'نام اردو میں', father: 'والد / شوہر کا نام', cnic: 'شناختی کارڈ',
     phone: 'فون', address: 'پتہ', nominee: 'نامزد شخص', nominee_cnic: 'نامزد کا شناختی کارڈ', nominee_rel: 'نامزد سے رشتہ', plots: 'پلاٹس',
     current: 'موجودہ پلاٹس', history: 'اب تک کے تمام پلاٹس', filer: 'فائلر' },
-  land: { edit_purchase: 'زمین کی خریداری میں ترمیم', edit_intiqal: 'انتقال میں ترمیم', edit_parcel: 'سڑک / پارک میں ترمیم', confirm_delete: 'یہ ریکارڈ حذف کریں؟ یہ واپس نہیں ہو گا۔', purchases: 'زمین کی خریداری', add_purchase: '+ زمین کی خریداری درج کریں', seller: 'فروخت کنندہ', mauza: 'موضع', khewat: 'کھیوٹ نمبر', khatooni: 'کھتونی نمبر',
+  land: { tma: 'ٹی ایم اے کے نام (سڑکیں / پارک)', tma_help: 'جو زمین ٹی ایم اے کے نام رجسٹر ہوئی۔ رقبہ منتخب انتقال کے بیلنس سے کم ہو جاتا ہے۔', add_tma: '+ ٹی ایم اے ٹرانسفر درج کریں', edit_tma: 'ٹی ایم اے ٹرانسفر میں ترمیم', tma_from: '— کس انتقال سے —', tma_reg: 'رجسٹری نمبر', tma_intiqal: 'ٹی ایم اے انتقال نمبر', total: 'کل', edit_purchase: 'زمین کی خریداری میں ترمیم', edit_intiqal: 'انتقال میں ترمیم', edit_parcel: 'سڑک / پارک میں ترمیم', confirm_delete: 'یہ ریکارڈ حذف کریں؟ یہ واپس نہیں ہو گا۔', purchases: 'زمین کی خریداری', add_purchase: '+ زمین کی خریداری درج کریں', seller: 'فروخت کنندہ', mauza: 'موضع', khewat: 'کھیوٹ نمبر', khatooni: 'کھتونی نمبر',
     khasra: 'خسرہ نمبر', area: 'رقبہ', payment_clear: 'پیمنٹ کلیئر', intiqal_done: 'انتقال ہو گیا', intiqals: 'انتقالات', add_intiqal: '+ انتقال درج کریں',
     intiqal_no: 'انتقال نمبر', holder: 'کس کے نام', acquired: 'حاصل کرنے کی تاریخ (236-C)', issued: 'فرد جاری', balance: 'بقایا',
     parcels: 'سڑکیں، پارک، مسجد، گرین بیلٹ، قبرستان …', add_parcel: '+ ناقابلِ فروخت رقبہ درج کریں', type: 'قسم', width: 'چوڑائی (فٹ)', link_purchase: '— متعلقہ خریداری —' },
@@ -759,7 +759,7 @@ async function exportXlsx(kind) {
 const IMPORT_KINDS = {
   registries: [['plot_no', 'Plot No'], ['area_marla', 'Registry Area (Marla)'], ['buyer_name', 'Buyer Name'], ['relation', 'Relation (s/o d/o w/o)'], ['father_name', 'Father / Husband Name'],
     ['cnic', 'CNIC'], ['phone', 'Phone'], ['registry_no', 'Registry No'], ['registry_date', 'Registry Date (DD-MM-YYYY)'], ['registry_office', 'Registry Office'], ['maliyat', 'Maliyat'],
-    ['mode', 'Registry By (Client / Company)'], ['fard_no', 'Fard No'], ['seller_intiqal_no', 'Seller Intiqal No'], ['buyer_intiqal_no', 'Buyer Intiqal No'], ['notes', 'Notes']],
+    ['mode', 'Registry By (Client / Company)'], ['fard_no', 'Fard No'], ['seller_intiqal_no', 'Seller Intiqal No'], ['seller_name', 'Seller (intiqal holder)'], ['buyer_intiqal_no', 'Buyer Intiqal No'], ['notes', 'Notes']],
   plots: [['plot_no', 'Plot No'], ['size_marla', 'Size (Marla)'], ['facing', 'East / West'], ['category', 'Category (Residential / Commercial)'], ['notes', 'Notes'],
     ['customer_name', 'Customer Name'], ['relation', 'Relation (s/o d/o w/o)'], ['father_name', 'Father / Husband Name'], ['cnic', 'CNIC'], ['phone', 'Phone'],
     ['sold_on', 'Sold On (DD-MM-YYYY)'], ['payment_clear', 'Payment Clear (Yes / No)'], ['payment_date', 'Payment Clear Date (DD-MM-YYYY)']],
@@ -1122,7 +1122,7 @@ function areaInputs() {
   return `<div class="flex gap-1"><input type="number" step="0.01" min="0" name="kanal" placeholder="${t('area.kanal')}" class="inp w-20 num"><input type="number" step="0.01" min="0" name="marla" placeholder="${t('area.marla')}" class="inp w-20 num"><input type="number" step="0.01" min="0" name="sqft" placeholder="${t('area.sqft')}" class="inp w-24 num"></div>`;
 }
 
-const LAND_KIND = { purchase: ['purchases', 'savePurchase', 'land.edit_purchase'], intiqal: ['intiqals', 'saveIntiqal', 'land.edit_intiqal'], parcel: ['parcels', 'saveParcel', 'land.edit_parcel'] };
+const LAND_KIND = { purchase: ['purchases', 'savePurchase', 'land.edit_purchase'], intiqal: ['intiqals', 'saveIntiqal', 'land.edit_intiqal'], parcel: ['parcels', 'saveParcel', 'land.edit_parcel'], tma: ['tma', 'saveTma', 'land.edit_tma'] };
 function landFields(kind, d) {
   if (kind === 'purchase') return `<input name="seller_name" required placeholder="${t('land.seller')}" class="inp"><input name="seller_father_name" placeholder="${t('c.father')}" class="inp"><input name="seller_cnic" placeholder="00000-0000000-0" class="inp num"><input name="seller_phone" placeholder="${t('c.phone')}" class="inp num">
       <input name="mauza" placeholder="${t('land.mauza')}" class="inp"><input name="khewat_no" placeholder="${t('land.khewat')}" class="inp num"><input name="khatooni_no" placeholder="${t('land.khatooni')}" class="inp num"><input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">
@@ -1132,6 +1132,8 @@ function landFields(kind, d) {
       <label>${t('land.acquired')} <input type="date" name="holder_acquired_on" class="inp"></label>
       <select name="land_purchase_id" class="inp"><option value="">${t('land.link_purchase')}</option>${d.purchases.map(p => `<option value="${p.id}">${esc(p.seller_name)} – ${esc(p.khasra_nos)}</option>`).join('')}</select>
       <input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">${areaInputs()}`;
+  if (kind === 'tma') return `<select name="intiqal_id" required class="inp col-span-2"><option value="">${t('land.tma_from')}</option>${(d.intiqals || []).map(i => `<option value="${i.id}">${esc(i.intiqal_no)} – ${esc(i.holder_name)} (${t('land.balance')}: ${area(Math.max(0, i.balance), d.marla_sqft)})</option>`).join('')}</select>
+      ${areaInputs()}<input name="registry_no" placeholder="${t('land.tma_reg')}" class="inp num"><input type="date" name="registry_date" class="inp"><input name="tma_intiqal_no" placeholder="${t('land.tma_intiqal')}" class="inp num"><input name="notes" placeholder="${t('notes')}" class="inp">`;
   return `<select name="type" class="inp">${opts('parcelType')}</select><input name="name" required placeholder="${t('c.name')}" class="inp">${areaInputs()}<input name="width_ft" type="number" step="0.01" placeholder="${t('land.width')}" class="inp num">`;
 }
 function landEditBtn(kind, id) {
@@ -1191,7 +1193,12 @@ VIEWS.land = d => {
     ${addForm('intiqal', 'land.add_intiqal')}</section>
   <section class="card"><h2 class="font-semibold mb-3">${t('land.parcels')}</h2><table class="t"><tr><th>${t('land.type')}</th><th>${t('c.name')}</th><th>${t('land.area')}</th><th>${t('land.width')}</th>${th}</tr>
     ${d.parcels.map(p => `<tr><td>${L('parcelType', p.type)}</td><td>${esc(p.name)}</td><td class="num">${area(p.area_sqft, ms)}</td><td class="num">${esc(p.width_ft)}</td>${edit ? `<td>${landEditBtn('parcel', p.id)}</td>` : ''}</tr>`).join('') || `<tr><td colspan="${cols(4)}" class="text-slate-500">${t('nothing')}</td></tr>`}</table>
-    ${addForm('parcel', 'land.add_parcel')}</section>`;
+    ${addForm('parcel', 'land.add_parcel')}</section>
+  <section class="card mt-6"><h2 class="font-semibold mb-1">${t('land.tma')}</h2><p class="text-sm text-slate-500 mb-3">${t('land.tma_help')}</p><table class="t">
+    <tr><th>${t('land.tma_reg')}</th><th>${t('date')}</th><th>${t('land.intiqal_no')} / ${t('land.holder')}</th><th>${t('land.area')}</th><th>${t('land.tma_intiqal')}</th>${th}</tr>
+    ${(d.tma || []).map(x => { const i = d.intiqals.find(q => q.id === x.intiqal_id) || {}; return `<tr><td class="num">${esc(x.registry_no)}</td><td class="num">${dmy(x.registry_date)}</td><td><span class="num">${esc(i.intiqal_no)}</span> – ${esc(i.holder_name)}</td><td class="num">${area(x.area_sqft, ms)}</td><td class="num">${esc(x.tma_intiqal_no)}</td>${edit ? `<td>${landEditBtn('tma', x.id)}</td>` : ''}</tr>`; }).join('') || `<tr><td colspan="${cols(5)}" class="text-slate-500">${t('nothing')}</td></tr>`}
+    ${(d.tma || []).length ? `<tr class="font-semibold"><td colspan="3">${t('land.total')}</td><td class="num">${area(d.tma.reduce((s, x) => s + num(x.area_sqft), 0), ms)}</td><td></td>${edit ? '<td></td>' : ''}</tr>` : ''}</table>
+    ${addForm('tma', 'land.add_tma')}</section>`;
 };
 
 VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>

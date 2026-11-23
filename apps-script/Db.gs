@@ -34,7 +34,12 @@ var Db = (function () {
   var cache = {};
 
   function sheet(table) {
-    var sh = SpreadsheetApp.getActive().getSheetByName(table);
+    var ss = SpreadsheetApp.getActive(), sh = ss.getSheetByName(table);
+    if (!sh && SCHEMA[table]) {   // a table added in a newer version: create its tab on first use
+      sh = ss.insertSheet(table);
+      sh.getRange(1, 1, 1, SCHEMA[table].length).setValues([SCHEMA[table]]).setFontWeight('bold');
+      sh.setFrozenRows(1);
+    }
     if (!sh) fail('err.setup_missing', { table: table });
     return sh;
   }

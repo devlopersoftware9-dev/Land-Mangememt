@@ -272,6 +272,13 @@ const pv1 = api(admin, 'expensePreview', { kind: 'registry_expense', maliyat: 31
 const pv2 = api(admin, 'expensePreview', { kind: 'registry_expense', maliyat: 3100000, area_marla: 6.25, buyer_is_filer: true, seller_is_filer: true, rates: [{ id: tma.id, rate: '2', fixed_amount: '0' }] });
 ok(pv1.grand_total === 213200 && pv2.grand_total === 213200 + 31000, 'settings calculator uses unsaved edits: ' + pv2.grand_total);
 
+// Apps Script strips "//..." from served pages even inside strings: page JS must never contain a double slash in code
+{
+  const page = fs.readFileSync(path.join(dir, 'Index.html'), 'utf8').split('<body')[1];
+  const bad = page.split('\n').filter(l => { const i = l.indexOf('//'); return i >= 0 && /['"`]/.test(l.slice(0, i)) && /['"`]/.test(l.slice(i)); }).filter(l => !/^\s*\/\//.test(l) && /['"`][^'"`]*\/\//.test(l));
+  ok(!bad.length, 'no // inside strings in Index.html: ' + bad.map(l => l.trim().slice(0, 80)).join(' | '));
+}
+
 // ---------------- render every screen with real data (EN + UR)
 {
   const ui = { document: { documentElement: {}, getElementById: () => ({ innerHTML: '' }), querySelectorAll: () => [], addEventListener() {} },

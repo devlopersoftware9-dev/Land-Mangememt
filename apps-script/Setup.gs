@@ -26,6 +26,8 @@ function onOpen() {
     .addItem('Reset admin password', 'resetAdminPassword')
     .addItem('Check inbox now', 'pollApprovalInbox')
     .addItem('Refresh Plot / Registry register tabs', 'refreshRegisters')
+    .addItem('Email full backup now', 'sendScheduledBackup')
+    .addItem('Install daily backup e-mails', 'installBackupTriggers')
     .addToUi();
 }
 
@@ -146,6 +148,7 @@ function installTriggers() {
   ScriptApp.newTrigger('pollApprovalInbox').timeBased().everyMinutes(5).create();
   ScriptApp.newTrigger('expireApprovalLinks').timeBased().everyHours(1).create();
   ScriptApp.newTrigger('refreshRegisters').timeBased().everyMinutes(10).create();
+  AutoBackup.install();
   refreshRegisters();
 }
 

@@ -272,7 +272,7 @@ var Land = (function () {
 
 /** Settings: rates and approval emails. */
 var Settings = (function () {
-  var KEYS = ['director_email', 'approval_cc', 'sender_name', 'sender_department', 'link_valid_days', 'web_app_url', 'require_authenticated_reply'];
+  var KEYS = ['director_email', 'approval_cc', 'sender_name', 'sender_department', 'link_valid_days', 'web_app_url', 'require_authenticated_reply', 'backup_emails', 'backup_times', 'backup_on'];
 
   function get() {
     var out = {};
@@ -283,6 +283,7 @@ var Settings = (function () {
   function save(u, p) {
     KEYS.forEach(function (k) { if (p.hasOwnProperty(k)) Db.setSetting(k, str(p[k])); });
     audit(u, 'settings.saved', 'Settings', '', p);
+    if (['backup_emails', 'backup_times', 'backup_on'].some(function (k) { return p.hasOwnProperty(k); })) AutoBackup.install();
     return true;
   }
 

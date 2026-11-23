@@ -40,16 +40,26 @@ const ctx = {
     computeDigest: (a, s) => Array.from(crypto.createHash('sha256').update(s, 'utf8').digest()).map(b => b > 127 ? b - 256 : b),
     DigestAlgorithm: { SHA_256: 1 }, Charset: { UTF_8: 1 },
     getUuid: () => crypto.randomUUID(), sleep() {},
+    newBlob: (data, type, name) => ({ data: typeof data === 'string' ? Buffer.from(data, 'utf8') : Buffer.from(data), type, name, getBytes() { return this.data; }, getName() { return this.name; } }),
+    zip: (blobs, name) => {
+      const d = fs.mkdtempSync(path.join(require('os').tmpdir(), 'xz-'));
+      blobs.forEach(b => { const f = path.join(d, b.name); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, b.data); });
+      require('child_process').execSync('zip -qrX out.zip ' + blobs.map(b => JSON.stringify(b.name)).join(' '), { cwd: d });
+      return { data: fs.readFileSync(path.join(d, 'out.zip')), name, getBytes() { return this.data; }, getName() { return this.name; } };
+    },
   },
   CacheService: { getScriptCache: () => ({ put: (k, v) => cache[k] = v, get: k => cache[k] || null, remove: k => delete cache[k] }) },
   LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }) },
   GmailApp: { sendEmail: (to, subject, body, opts) => sent.push({ to, subject, body, opts }) },
-  ScriptApp: { getService: () => ({ getUrl: () => 'https://script.google.com/macros/s/X/exec' }) },
-  Session: { getEffectiveUser: () => ({ getEmail: () => 'office@gmail.com' }) },
+  ScriptApp: { getService: () => ({ getUrl: () => 'https://script.google.com/macros/s/X/exec' }),
+    _t: [], getProjectTriggers() { return this._t; }, deleteTrigger(t) { this._t = this._t.filter(x => x !== t); },
+    newTrigger(h) { const self = this, spec = { h }; const b = { timeBased: () => b, atHour: x => (spec.hour = x, b), nearMinute: () => b, everyDays: () => b, inTimezone: () => b,
+      everyMinutes: () => b, everyHours: () => b, create: () => { const t = { getHandlerFunction: () => h, spec }; self._t.push(t); return t; } }; return b; } },
+  Session: { getEffectiveUser: () => ({ getEmail: () => 'office@gmail.com' }), getScriptTimeZone: () => 'Asia/Karachi' },
   HtmlService: {},
 };
 vm.createContext(ctx);
-for (const f of ['Core.gs', 'Db.gs', 'Auth.gs', 'Expense.gs', 'Parser.gs', 'Plots.gs', 'Registry.gs', 'Approval.gs', 'Views.gs', 'Setup.gs', 'Import.gs']) {
+for (const f of ['Core.gs', 'Db.gs', 'Auth.gs', 'Expense.gs', 'Parser.gs', 'Plots.gs', 'Registry.gs', 'Approval.gs', 'Views.gs', 'Setup.gs', 'Import.gs', 'AutoBackup.gs']) {
   vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), ctx, { filename: f });
 }
 
@@ -331,6 +341,26 @@ ok(pv1.grand_total === 213200 && pv2.grand_total === 213200 + 31000, 'settings c
   const page = fs.readFileSync(path.join(dir, 'Index.html'), 'utf8').split('<body')[1];
   const bad = page.split('\n').filter(l => { const i = l.indexOf('//'); return i >= 0 && /['"`]/.test(l.slice(0, i)) && /['"`]/.test(l.slice(i)); }).filter(l => !/^\s*\/\//.test(l) && /['"`][^'"`]*\/\//.test(l));
   ok(!bad.length, 'no // inside strings in Index.html: ' + bad.map(l => l.trim().slice(0, 80)).join(' | '));
+}
+
+// ---------------- automatic e-mail backup (xlsx built by hand, twice a day)
+{
+  ok(api(admin, 'backupStatus', {}).hours.join(',') === '9,18', 'backup: default times 9 & 18');
+  api(admin, 'saveSettings', { backup_on: 'TRUE', backup_emails: 'boss@x.com, office@y.com', backup_times: '10,20' });
+  const trg = ctx.ScriptApp._t.filter(t => t.getHandlerFunction() === 'sendScheduledBackup');
+  ok(trg.length === 2 && trg.map(t => t.spec.hour).join(',') === '10,20', 'backup: two daily triggers at 10 & 20');
+  const n0 = sent.length, r = api(admin, 'emailBackupNow', {}), m = sent[n0];
+  ok(m && m.to === 'boss@x.com,office@y.com' && m.opts.attachments.length === 1 && /\.xlsx$/.test(m.opts.attachments[0].getName()), 'backup: e-mailed with .xlsx to both');
+  const f = path.join(require('os').tmpdir(), 'bk-test.xlsx'); fs.writeFileSync(f, m.opts.attachments[0].getBytes());
+  const py = `import openpyxl,sys\nwb=openpyxl.load_workbook(sys.argv[1])\nu=wb['Users']\nh=[c.value for c in u[1]]\nprint(len(wb.sheetnames), wb.sheetnames[0], 'password_hash' in h, 'salt' in h, wb['Plots'].max_row, wb['Summary']['A1'].value)`;
+  const out = require('child_process').execFileSync('python3', ['-c', py, f]).toString().trim().split(' ');
+  ok(out[1] === 'Summary' && out[2] === 'False' && out[3] === 'False' && +out[4] > 1, 'backup: real Excel file opens, no passwords, plots inside (' + out.join(' ') + ')');
+  ok(JSON.parse(ctx.setting('backup_last', '{}')).rows === r.rows, 'backup: last result stored');
+  api(admin, 'saveSettings', { backup_on: 'FALSE' });
+  ok(ctx.ScriptApp._t.filter(t => t.getHandlerFunction() === 'sendScheduledBackup').length === 0, 'backup: switched off removes triggers');
+  api(admin, 'saveSettings', { backup_on: 'TRUE', backup_times: '9,18', backup_emails: '' });
+  let denied = false; try { api(acc, 'emailBackupNow', {}); } catch (e) { denied = true; }
+  ok(denied, 'backup: only admin can send');
 }
 
 // ---------------- render every screen with real data (EN + UR)

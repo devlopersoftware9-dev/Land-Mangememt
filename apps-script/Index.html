@@ -81,6 +81,10 @@
 .card.tile { padding: var(--tile-pad, 16px); }
 .tile-num { font-size: var(--tile-num, 24px); line-height: 1.2; }
 .tile-lbl { font-size: var(--tile-lbl, 14px); }
+.qc-step { display: inline-block; border-radius: 999px; padding: 3px 10px; background: #f1f5f9; color: #334155; }
+.qc-step.yes { background: #dcfce7; color: #166534; }
+.qc-step.warn { background: #fef3c7; color: #92400e; }
+.qc-step.no { background: #fee2e2; color: #991b1b; }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen">
@@ -111,6 +115,7 @@ en: {
     land: 'Land purchase, intiqals, parcels', send_approval: 'Send Fard approval email', verify_approval: 'Check & Verify director reply', fard_jari: 'Select intiqal + Fard Jari',
     fard_received: 'Fard received', hand_over_fard: 'Hand over fard (Raasta A)', client_registry: 'Record client registry (Raasta A)', expense: 'Registry expense sheet + email',
     expense_paid: 'Expense Paid tick', registry_done: 'Registry done', record_in_office: 'Record registry in office', hand_over: 'Hand over registry', cancel_case: 'Cancel registry file' },
+  qc: { ph: 'Plot no / CNIC / name', title: 'Status check', none: 'Nothing found. Write the plot no (e.g. 21.10), CNIC, phone or name.', no_customer: 'Not sold – with the company', sold: 'Sold', unsold: 'Not sold (available)', paid: 'Payment clear', unpaid: 'Payment not clear', reg_process: 'Registry in process', registered: 'Registered', not_registered: 'Registry not done', open_plot: 'Open plot', open_file: 'Open registry file' },
   x: { excel: 'Excel', preparing: 'Preparing Excel…', data_title: 'Excel import / backup', import_help: 'Choose what to import, download its template, fill one row per record and upload. Existing records are matched (plot no, CNIC, intiqal no, name) and updated; new ones are added. Each row shows its result.', template: 'Download template', upload: 'Upload filled Excel', confirm: 'Import {n} rows into {kind}?', wrong_template: 'Column headings do not match the template.', backup: 'Full backup (Excel)', backup_help: 'Downloads every table (plots, customers, registries, land, history…) in one Excel file. Keep it safe; passwords are not included.', kind_registries: 'Old registries', kind_plots: 'Plots (details + old sales)', kind_customers: 'Customers', kind_intiqals: 'Intiqals', kind_purchases: 'Land purchases', kind_parcels: 'Roads / parks / masjid…', working: 'Importing… please wait', done: '{ok} imported, {bad} with errors' },
   g: { pending: 'Payment pending', pending_title: 'Payment not cleared yet', pending_help: 'Proceed with registry on director approval. The pending amount will be shown in the fard approval email.', pending_tick: 'Payment is pending – proceed with director approval', pending_amount: 'Pending amount (Rs.)', pending_remarks: 'Remarks (e.g. balance by 30 Dec)', pending_click: 'Payment pending – click when full payment is received', pending_plot: 'Registry is in process with director approval, but payment is still pending. Tick Payment Clear when the full payment is received.', pending_case: 'Payment pending: Rs. {amount}/- – registry proceeding with director approval.', pending_cleared: 'Payment of Rs. {amount}/- was pending at demand – now cleared.', sold: 'Sold', payment: 'Payment Clear', fard: 'Fard Demand', registry: 'Registry', clear_filters: 'Clear filters', selected: '{n} selected',
     sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
@@ -202,6 +207,7 @@ ur: {
     land: 'زمین، انتقالات، رقبے', send_approval: 'فرد منظوری کی ای میل', verify_approval: 'ڈائریکٹر کے جواب کی تصدیق', fard_jari: 'انتقال منتخب + فرد جاری',
     fard_received: 'فرد وصول', hand_over_fard: 'فرد حوالے (راستہ A)', client_registry: 'کلائنٹ کی رجسٹری درج (راستہ A)', expense: 'رجسٹری اخراجات + ای میل',
     expense_paid: 'اخراجات ادا ٹک', registry_done: 'رجسٹری ہو گئی', record_in_office: 'رجسٹری دفتر میں درج', hand_over: 'رجسٹری حوالے', cancel_case: 'رجسٹری فائل منسوخ' },
+  qc: { ph: 'پلاٹ نمبر / شناختی کارڈ / نام', title: 'اسٹیٹس چیک', none: 'کچھ نہیں ملا۔ پلاٹ نمبر (مثلاً 21.10)، شناختی کارڈ، فون یا نام لکھیں۔', no_customer: 'فروخت نہیں ہوا – کمپنی کے پاس', sold: 'فروخت ہو چکا', unsold: 'فروخت نہیں ہوا (دستیاب)', paid: 'پیمنٹ کلیئر', unpaid: 'پیمنٹ کلیئر نہیں', reg_process: 'رجسٹری جاری', registered: 'رجسٹری ہو چکی', not_registered: 'رجسٹری نہیں ہوئی', open_plot: 'پلاٹ کھولیں', open_file: 'رجسٹری فائل کھولیں' },
   x: { excel: 'ایکسل', preparing: 'ایکسل تیار ہو رہا ہے…', data_title: 'ایکسل امپورٹ / بیک اپ', import_help: 'منتخب کریں کیا درج کرنا ہے، اس کا ٹیمپلیٹ ڈاؤن لوڈ کریں، ہر ریکارڈ کی ایک لائن بھریں اور اپ لوڈ کریں۔ پہلے سے موجود ریکارڈ (پلاٹ نمبر، شناختی کارڈ، انتقال نمبر، نام) اپڈیٹ ہوں گے، نئے شامل ہوں گے۔', template: 'ٹیمپلیٹ ڈاؤن لوڈ', upload: 'بھری ہوئی ایکسل اپ لوڈ', confirm: '{n} لائنیں {kind} میں درج کریں؟', wrong_template: 'کالم کے نام ٹیمپلیٹ سے نہیں ملتے۔', backup: 'مکمل بیک اپ (ایکسل)', backup_help: 'تمام ڈیٹا (پلاٹس، کسٹمرز، رجسٹریاں، زمین، ہسٹری…) ایک ایکسل فائل میں۔ پاس ورڈ شامل نہیں۔', kind_registries: 'پرانی رجسٹریاں', kind_plots: 'پلاٹس (تفصیل + پرانی سیل)', kind_customers: 'کسٹمرز', kind_intiqals: 'انتقالات', kind_purchases: 'زمین کی خریداری', kind_parcels: 'سڑکیں / پارک / مسجد…', working: 'درج ہو رہی ہیں… انتظار کریں', done: '{ok} درج ہوئیں، {bad} میں غلطی' },
   g: { pending: 'پیمنٹ باقی', pending_title: 'پیمنٹ ابھی کلیئر نہیں', pending_help: 'ڈائریکٹر کی منظوری سے رجسٹری آگے چلائیں۔ باقی رقم فرد منظوری کی ای میل میں دکھائی جائے گی۔', pending_tick: 'پیمنٹ باقی ہے – ڈائریکٹر کی منظوری سے آگے چلائیں', pending_amount: 'باقی رقم (روپے)', pending_remarks: 'ریمارکس (مثلاً 30 دسمبر تک بقایا)', pending_click: 'پیمنٹ باقی – پوری پیمنٹ آنے پر کلک کریں', pending_plot: 'ڈائریکٹر کی منظوری سے رجسٹری جاری ہے، مگر پیمنٹ ابھی باقی ہے۔ پوری پیمنٹ آنے پر پیمنٹ کلیئر پر ٹک کریں۔', pending_case: 'پیمنٹ باقی: {amount} روپے – ڈائریکٹر کی منظوری سے رجسٹری جاری ہے۔', pending_cleared: 'ڈیمانڈ کے وقت {amount} روپے باقی تھے – اب کلیئر ہو گئے۔', sold: 'فروخت', payment: 'پیمنٹ کلیئر', fard: 'فرد ڈیمانڈ', registry: 'رجسٹری', clear_filters: 'فلٹر ہٹائیں', selected: '{n} منتخب',
     sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
@@ -415,6 +421,7 @@ function header() {
       ${S.projects.length > 1 ? chips(S.projects.map(p => [p.id, esc(p.code)]), S.projectId, 'switchProject', 'mb-0')
         : `<span class="text-sm opacity-80">${esc(((S.projects[0] || {}).code || '') + ' – ' + ((S.projects[0] || {}).name || ''))}</span>`}
       <div class="ms-auto flex items-center gap-2 text-sm">
+        <form class="qc" onsubmit="event.preventDefault();quickCheck(this.q.value)"><input name="q" type="search" placeholder="🔍 ${t('qc.ph')}" class="inp text-slate-800 w-56" title="${t('qc.ph')}"></form>
         <button class="inp" onclick="openTheme()" title="${t('theme.title')}">🎨 ${t('theme.title')}</button>
         <button class="inp" onclick="setLang('${S.lang === 'ur' ? 'en' : 'ur'}')">${S.lang === 'ur' ? 'English' : 'اردو'}</button>
         <span class="opacity-80 hidden md:inline">👤 ${esc(S.user.name)}</span>
@@ -514,6 +521,42 @@ const ROUTES = [
   [/^#\/approvals$/, 'approvals'], [/^#\/approval\/(\d+)$/, 'approval'], [/^#\/customers$/, 'customers'], [/^#\/customer\/(\d+)$/, 'customer'],
   [/^#\/land$/, 'land'], [/^#\/settings$/, 'settings'],
 ];
+
+// ---- Quick check: plot no or CNIC / name / phone -> full status of the plot(s)
+async function quickCheck(q) {
+  q = String(q || '').trim(); if (!q) return;
+  modal(t('qc.title'), `<p class="text-slate-500 text-sm">${t('loading')}</p>`);
+  try {
+    const pid = S.projectId;
+    if (!S.grid || S.grid._pid !== pid) { const g = await call('plotGrid', { project_id: pid }); g._pid = pid; S.grid = g; }
+    const rows = S.grid.rows, ql = q.toLowerCase(), digits = q.replace(/\D/g, '');
+    let hit = rows.filter(r => r.plot_no.toLowerCase() === ql || (/^\d+\.\d$/.test(ql) && r.plot_no === ql + '0'));
+    if (!hit.length && digits.length >= 7) hit = rows.filter(r => (r.cnic || '').replace(/\D/g, '').includes(digits) || (r.phone || '').replace(/\D/g, '').includes(digits));
+    if (!hit.length) hit = rows.filter(r => (r.customer || '').toLowerCase().includes(ql) || r.plot_no.toLowerCase().startsWith(ql));
+    hit = hit.slice(0, 20);
+    const ok = (yes, label) => `<span class="qc-step ${yes === true ? 'yes' : yes === 'warn' ? 'warn' : 'no'}">${yes === true ? '✔' : yes === 'warn' ? '⚠' : '✖'} ${label}</span>`;
+    const card = r => {
+      const sold = ['sold', 'payment_cleared', 'registry_in_process', 'registered'].includes(r.sale_status);
+      const paid = ['payment_cleared', 'registry_in_process', 'registered'].includes(r.sale_status) && !r.pay_pending;
+      const reg = r.sale_status === 'registered';
+      return `<div class="border rounded-lg p-3 mb-3" style="border-inline-start:5px solid ${COLORS[r.sale_status] || '#94a3b8'}">
+        <div class="flex flex-wrap justify-between items-center gap-2"><div class="text-lg font-semibold">${t('plot')} <span class="num">${esc(r.plot_no)}</span>
+          <span class="chip ms-1" style="background:${COLORS[r.sale_status]}22;color:#1e293b">${L('plotStatus', r.sale_status)}</span></div>
+          <div class="text-sm text-slate-500">${r.size_marla ? esc(r.size_marla) + ' M' : ''}${r.facing ? ' · ' + t('p.' + r.facing.toLowerCase()) : ''}${r.street ? ' · ' + t('p.street') + ' ' + esc(r.street) : ''}</div></div>
+        <div class="text-sm mt-1">${r.customer ? `👤 <b>${esc(r.customer)}</b> <span class="num text-slate-500">${esc(r.cnic || '')} ${esc(r.phone || '')}</span>` : `<span class="text-slate-500">${t('qc.no_customer')}</span>`}</div>
+        <div class="flex flex-wrap gap-2 mt-2 text-sm">
+          ${ok(sold, sold ? t('qc.sold') + (r.sold_on ? ' ' + dmy(r.sold_on) : '') : t('qc.unsold'))}
+          ${sold ? ok(paid ? true : r.pay_pending ? 'warn' : false, paid ? t('qc.paid') : r.pay_pending ? t('g.pending') : t('qc.unpaid')) : ''}
+          ${r.case_id ? ok('warn', t('qc.reg_process') + ': ' + L('caseStatus', r.case_status)) : ''}
+          ${sold ? ok(reg ? (r.pend_m > 0 ? 'warn' : true) : false, reg ? t('qc.registered') + (r.reg_m ? ' ' + r.reg_m + ' M' : '') + (r.pend_m > 0 ? ' · ' + t('r.pending_m', { m: r.pend_m }) : '') : t('qc.not_registered')) : ''}
+          <span class="qc-step">🏗 ${L('construction', r.construction_status)}</span></div>
+        <div class="flex gap-2 mt-3"><button class="btn bg-p text-sm" onclick="closeModal();go('#/plot/${r.id}')">${t('qc.open_plot')}</button>
+          ${r.case_id ? `<button class="inp text-sm" onclick="closeModal();go('#/case/${r.case_id}')">${t('qc.open_file')}</button>` : ''}</div></div>`;
+    };
+    modal(t('qc.title') + ': ' + esc(q), hit.length ? `<div style="max-height:70vh;overflow:auto">${hit.map(card).join('')}</div>` : `<p class="text-slate-500">${t('qc.none')}</p>`);
+    const box = document.querySelector('#modal .card'); if (box) box.style.maxWidth = '680px';
+  } catch (e) { closeModal(); toast(e.message, true); }
+}
 
 function refreshGrid(pid) {
   call('plotGrid', { project_id: pid }).then(g => { g._pid = pid; S.grid = g; if (S.view === 'plots') gridRender(); }).catch(() => {});

@@ -151,6 +151,15 @@ function withLock(fn, rethrowAppError) {
 }
 
 /** Include another HTML file (used by templates). */
+/** Diagnostics: the browser sends the script it received; we report where it differs from Index.html. */
+function debugClientScript(text) {
+  var src = HtmlService.createHtmlOutputFromFile('Index').getContent();
+  var start = src.lastIndexOf('<script>') + 8, orig = src.slice(start, src.indexOf('</script>', start));
+  text = String(text || '');
+  for (var i = 0; i < Math.max(orig.length, text.length); i++) if (orig[i] !== text[i])
+    return { at: i, line: orig.slice(0, i).split('\n').length, expected: orig.slice(i - 60, i + 60), got: text.slice(i - 60, i + 60), lens: [orig.length, text.length] };
+  return { same: true, lens: [orig.length, text.length] };
+}
 function include(name) { return HtmlService.createHtmlOutputFromFile(name).getContent(); }
 
 /** Action table. write:true runs under the script lock. */

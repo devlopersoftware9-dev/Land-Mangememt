@@ -52,6 +52,20 @@
   .swatch { width: 2.2rem; height: 2.2rem; border-radius: .5rem; border: 2px solid #fff; box-shadow: 0 0 0 1px #cbd5e1; cursor: pointer; }
   .swatch:hover { transform: scale(1.08); }
   input[type=color] { width: 3rem; height: 2rem; border: 1px solid #cbd5e1; border-radius: .375rem; padding: 0; background: #fff; cursor: pointer; }
+.chipbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.fchip { border: 1px solid #cbd5e1; background: #fff; border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.fchip:hover { border-color: var(--p); }
+.fchip.on { background: var(--p); border-color: var(--p); color: #fff; }
+.fchip .cnt { display: inline-block; min-width: 18px; padding: 0 5px; margin-inline-start: 4px; border-radius: 999px; background: #f1f5f9; color: #475569; font-size: 11px; }
+.fchip.on .cnt { background: rgba(255,255,255,.25); color: #fff; }
+.chiplbl { font-size: 11px; color: #64748b; margin: 2px 4px 0 0; align-self: center; min-width: 70px; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.seg label { cursor: pointer; }
+.seg + .seg { margin-inline-start: 12px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: inline-block; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 13px; background: #fff; }
+.seg input:checked + span { background: var(--p); border-color: var(--p); color: #fff; }
+.seg input:focus-visible + span { outline: 2px solid var(--p); outline-offset: 1px; }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen">
@@ -305,6 +319,16 @@ function areaBig(sqft, marla) {
   return `${area(sqft, marla)}<div class="text-xs font-normal text-slate-500 num">${fmt(marlaOf(sqft, marla))} ${t('area.marla')}</div>`;
 }
 function statusChip(s) { const c = COLORS[s] || '#94a3b8'; return `<span class="chip" style="background:${c}1f;color:${c};border:1px solid ${c}55"><span class="dot" style="background:${c}"></span>${esc(L('plotStatus', s))}</span>`; }
+/** Filter boxes (no dropdowns): items = [[value, label, count?]]; click calls fn(value). */
+function chips(items, active, fn, cls) {
+  return `<div class="chipbar ${cls || ''}">${items.map(([v, label, n]) => `<button type="button" class="fchip ${String(v) === String(active || '') ? 'on' : ''}" onclick="${fn}('${esc(v)}')">${label}${n !== undefined ? ` <span class="cnt">${n}</span>` : ''}</button>`).join('')}</div>`;
+}
+/** Form choice as boxes instead of a dropdown (radio buttons). */
+function seg(name, values, selected, labelFn, required) {
+  const sel = selected !== undefined && selected !== null && selected !== '' ? selected : (required ? values[0] : '');
+  return `<div class="seg">${values.map(v => `<label><input type="radio" name="${name}" value="${esc(v)}" ${String(v) === String(sel) ? 'checked' : ''}><span>${esc(labelFn ? labelFn(v) : v)}</span></label>`).join('')}</div>`;
+}
+function segEnum(name, group, selected, required) { return seg(name, S.enums[group] || [], selected, v => L(group, v), required !== false); }
 function opts(group, selected, withEmpty) {
   return (withEmpty ? `<option value="">${esc(withEmpty)}</option>` : '') +
     (S.enums[group] || []).map(v => `<option value="${v}" ${v === selected ? 'selected' : ''}>${esc(L(group, v))}</option>`).join('');
@@ -373,7 +397,7 @@ function header() {
   return `<header class="topbar"><div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-3">
       <a class="flex items-center gap-2 font-semibold text-lg cursor-pointer" onclick="go('#/')">
         <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/20">🏘️</span>${t('app')}</a>
-      ${S.projects.length > 1 ? `<select class="inp text-sm" onchange="switchProject(this.value)">${S.projects.map(p => `<option value="${p.id}" ${p.id === S.projectId ? 'selected' : ''}>${esc(p.code)} – ${esc(S.lang === 'ur' && p.name_ur ? p.name_ur : p.name)}</option>`).join('')}</select>`
+      ${S.projects.length > 1 ? chips(S.projects.map(p => [p.id, esc(p.code)]), S.projectId, 'switchProject', 'mb-0')
         : `<span class="text-sm opacity-80">${esc(((S.projects[0] || {}).code || '') + ' – ' + ((S.projects[0] || {}).name || ''))}</span>`}
       <div class="ms-auto flex items-center gap-2 text-sm">
         <button class="inp" onclick="openTheme()" title="${t('theme.title')}">🎨 ${t('theme.title')}</button>
@@ -473,9 +497,9 @@ async function load(keepScroll) {
     dashboard: () => call('dashboard', { project_id: pid }),
     plots: () => (S.grid && S.grid._pid === pid) ? (refreshGrid(pid), Promise.resolve(S.grid)) : call('plotGrid', { project_id: pid }).then(g => { g._pid = pid; return S.grid = g; }),
     plot: () => call('plot', { id: arg }),
-    registry: () => call('registryList', { project_id: pid, status: (f.registry || {}).status }),
+    registry: () => call('registryList', { project_id: pid, status: 'all' }),
     case: () => call('registryCase', { id: arg }),
-    approvals: () => call('approvals', { project_id: pid, status: (f.approvals || {}).status }),
+    approvals: () => call('approvals', { project_id: pid }),
     approval: () => call('approval', { id: arg }),
     customers: () => call('customers', { q: (f.customers || {}).q }),
     customer: () => call('customer', { id: arg }),
@@ -596,17 +620,12 @@ const HAS_PAID = ['payment_cleared', 'registry_in_process', 'registered'];
 
 VIEWS.plots = d => {
   const f = S.gf = S.gf || {};
-  const sel = (name, inner) => `<select class="inp" onchange="gf('${name}', this.value)">${inner}</select>`;
   return `<div class="flex flex-wrap items-end justify-between gap-3 mb-3">
       <h1 class="text-xl font-semibold">${t('nav.plots')} <span id="g-count" class="text-slate-400 num text-base"></span> <button class="inp text-sm font-normal ms-2" onclick="exportXlsx('plots')">⬇ ${t('x.excel')}</button></h1>
       <div class="flex flex-wrap gap-2 text-sm">
         <input type="search" value="${esc(f.q || '')}" placeholder="${t('p.search')}" class="inp w-56" oninput="gf('q', this.value)">
-        ${sel('status', `<option value="">${t('p.status')}: ${t('all')}</option>${(S.enums.plotStatus || []).map(v => `<option value="${v}" ${v === f.status ? 'selected' : ''}>${L('plotStatus', v)}</option>`).join('')}<option value="pay_pending" ${f.status === 'pay_pending' ? 'selected' : ''}>⚠ ${t('g.pending')}</option>`)}
-        ${sel('street', `<option value="">${t('p.street')}: ${t('all')}</option>${d.streets.map(x => `<option value="${x.id}" ${x.id === f.street ? 'selected' : ''}>${t('p.street')} ${esc(x.number)}</option>`).join('')}<option value="-" ${f.street === '-' ? 'selected' : ''}>${L('category', 'commercial')}</option>`)}
-        ${sel('facing', `<option value="">${t('p.facing')}: ${t('all')}</option><option value="East" ${f.facing === 'East' ? 'selected' : ''}>${t('p.east')}</option><option value="West" ${f.facing === 'West' ? 'selected' : ''}>${t('p.west')}</option>`)}
-        ${sel('size', `<option value="">${t('p.size')}: ${t('all')}</option>${[...new Set(d.rows.map(r => r.size_marla).filter(Boolean))].sort((a, b) => num(a) - num(b)).map(v => `<option value="${esc(v)}" ${v === f.size ? 'selected' : ''}>${esc(v)} M</option>`).join('')}`)}
-        ${Object.keys(f).some(k => f[k]) ? `<button class="inp" onclick="S.gf={};render()">✕ ${t('g.clear_filters')}</button>` : ''}
       </div></div>
+    <div id="g-filters"></div>
     <div id="g-bulk"></div>
     <div class="card p-0 scroll-table"><table class="t">
       <thead><tr><th class="w-8"><input type="checkbox" id="g-all" onclick="gSelectAll(this.checked)"></th><th>${t('plot')}</th><th>${t('p.size')}</th><th>${t('p.facing')}</th>
@@ -615,6 +634,24 @@ VIEWS.plots = d => {
       <tbody id="g-body"></tbody></table></div>`;
 };
 
+function gridFilters() {
+  const el = document.getElementById('g-filters'); if (!el || !S.grid) return;
+  const f = S.gf || {}, rows = S.grid.rows, cnt = test => rows.filter(test).length;
+  const row = (label, html) => `<div class="flex flex-wrap items-start gap-1"><span class="chiplbl">${label}</span>${html}</div>`;
+  const statuses = (S.enums.plotStatus || []).filter(v => cnt(r => r.sale_status === v));
+  const sizes = [...new Set(rows.map(r => r.size_marla).filter(Boolean))].sort((a, b) => num(a) - num(b));
+  el.innerHTML = `<div class="card mb-3 py-2">
+    ${row(t('p.status'), chips([['', t('all'), rows.length], ...statuses.map(v => [v, L('plotStatus', v), cnt(r => r.sale_status === v)]),
+      ...(cnt(r => r.pay_pending) ? [['pay_pending', '⚠ ' + t('g.pending'), cnt(r => r.pay_pending)]] : [])], f.status, 'gfStatus'))}
+    ${row(t('p.street'), chips([['', t('all')], ...S.grid.streets.map(x => [x.id, esc(x.number), cnt(r => r.street_id === x.id)]), ...(cnt(r => !r.street_id) ? [['-', L('category', 'commercial'), cnt(r => !r.street_id)]] : [])], f.street, 'gfStreet'))}
+    ${row(t('p.facing'), chips([['', t('all')], ['East', t('p.east'), cnt(r => r.facing === 'East')], ['West', t('p.west'), cnt(r => r.facing === 'West')]], f.facing, 'gfFacing'))}
+    ${row(t('p.size'), chips([['', t('all')], ...sizes.map(v => [v, esc(v) + ' M', cnt(r => r.size_marla === v)])], f.size, 'gfSize'))}
+    ${Object.keys(f).some(k => f[k]) ? `<button class="link text-sm" onclick="S.gf={q:''};document.querySelector('input[type=search]').value='';gridRender()">✕ ${t('g.clear_filters')}</button>` : ''}</div>`;
+}
+const regFilter = v => { S.filters = Object.assign({}, S.filters, { registry: { status: v } }); render(); };
+const apprFilter = v => { S.filters = Object.assign({}, S.filters, { approvals: { status: v } }); render(); };
+const impKind = v => { S.impKind = v; render(); };
+const gfStatus = v => gf('status', v), gfStreet = v => gf('street', v), gfFacing = v => gf('facing', v), gfSize = v => gf('size', v);
 function gf(k, v) { S.gf[k] = v; clearTimeout(gf._t); gf._t = setTimeout(gridRender, k === 'q' ? 150 : 0); }
 
 function gridFiltered() {
@@ -630,6 +667,7 @@ function gridRender() {
   const body = document.getElementById('g-body');
   if (!body || !S.grid) return;
   const rows = gridFiltered();
+  gridFilters();
   document.getElementById('g-count').textContent = `(${rows.length}${rows.length !== S.grid.rows.length ? ' / ' + S.grid.rows.length : ''})`;
   const box = (checked, enabled, onclick, title) =>
     `<input type="checkbox" class="w-5 h-5 cursor-pointer accent-[var(--p)]" ${checked ? 'checked' : ''} ${enabled ? '' : 'disabled'} title="${esc(title || '')}" onclick="event.preventDefault();${enabled ? onclick : ''}">`;
@@ -709,11 +747,12 @@ function sellModal(ids) {
       <a class="link text-xs" onclick="document.getElementById('cust-list').value='';document.getElementById('nc').classList.toggle('hidden')">＋ ${t('c.new')}</a></div>
     <div id="nc" class="hidden grid grid-cols-2 gap-2 border rounded p-2">
       <input name="nc_name" placeholder="${t('c.name')}" class="inp col-span-2">
-      <select name="nc_relation" class="inp"><option>s/o</option><option>d/o</option><option>w/o</option></select><input name="nc_father" placeholder="${t('c.father')}" class="inp">
+      ${seg('nc_relation', ['s/o', 'd/o', 'w/o'], 's/o')}<input name="nc_father" placeholder="${t('c.father')}" class="inp">
       <input name="nc_cnic" placeholder="00000-0000000-0" class="inp num"><input name="nc_phone" placeholder="${t('c.phone')}" class="inp num"></div>
     <div class="flex gap-2"><label class="flex-1">${t('date')}<br>${dateInp()}</label><label class="flex-1">${t('p.file_no')}<br><input name="reference" class="inp w-full"></label></div>
     <button type="submit" class="btn bg-p w-full">${t('save')}</button></form>`);
 }
+function filterCustIn(inp) { const q = inp.value.toLowerCase(); Array.from(inp.nextElementSibling.options).forEach(o => { o.hidden = q && !o.text.toLowerCase().includes(q); }); }
 function filterCust(q) {
   q = q.toLowerCase(); const sel = document.getElementById('cust-list');
   Array.from(sel.options).forEach(o => { o.hidden = q && !o.text.toLowerCase().includes(q); });
@@ -841,7 +880,7 @@ function demandModal(id) {
   const r = S.grid.rows.find(x => x.id === id);
   modal(t('g.demand_title', { plot: r.plot_no }), `<form class="space-y-3 text-sm" onsubmit='return gridAction(event, "demand", ["${id}"])'>
     <div class="text-slate-500">${esc(r.customer)} · ${esc(r.size_marla)} M</div>
-    <label>${t('r.mode')}<br><select name="mode" class="inp w-full">${opts('registryMode')}</select></label>
+    <div>${t('r.mode')}<br>${segEnum('mode', 'registryMode')}</div>
     <div class="flex gap-2"><label class="flex-1">${t('r.demand_date')}<br>${dateInp('demand_date')}</label>
       <label class="flex-1">${t('r.maliyat')}<br><input name="maliyat" type="text" inputmode="numeric" required class="inp w-full num money"></label></div>
     <label class="block">${t('r.reg_area')}<br><input name="area_marla" type="number" step="0.01" min="0.01" value="${r.pend_m || r.size_marla || ''}" class="inp w-40 num"> <span class="text-slate-500 text-xs">${t('r.reg_area_help')}</span></label>
@@ -864,7 +903,8 @@ function soldMenu(id) {
 
 function dateInp(name, v) { return `<input type="date" name="${name || 'date'}" value="${v || today()}" required class="inp">`; }
 function customerSelect(list) {
-  return `<select name="customer_id" required class="inp w-full"><option value="">${t('p.choose')}</option>${list.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select>
+  return `<input type="search" placeholder="${t('g.search_customer')}" class="inp w-full mb-1" oninput="filterCustIn(this)">
+    <select name="customer_id" size="6" required class="inp w-full">${list.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('')}</select>
     <a class="link text-xs" onclick="go('#/customers')">${t('p.new_customer')}</a>`;
 }
 
@@ -888,17 +928,17 @@ VIEWS.plot = d => {
       ${ar.in_process > 0 ? `<div class="text-purple-700">${t('r.area_in_process')}: <b class="num">${mm(ar.in_process)} M</b></div>` : ''}
       <div class="${ar.pending > 0.5 ? 'text-amber-700' : 'text-emerald-700'}">${t('r.area_pending')}: <b class="num">${mm(ar.pending)} M</b></div></div>`;
     if ((s === 'payment_cleared' || s === 'sold' || (s === 'registered' && ar.pending > 0.5 && !ar.open_case_id)) && allow('fard_demand')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'createDemand',{plot_id:'${p.id}'},{goTo:id=>'#/case/'+id})">
-      <div class="font-medium">${t('r.new_demand')}</div><select name="mode" class="inp w-full">${opts('registryMode')}</select>${dateInp('demand_date')}
+      <div class="font-medium">${t('r.new_demand')}</div>${segEnum('mode', 'registryMode')}${dateInp('demand_date')}
       <input name="maliyat" type="text" inputmode="numeric" required placeholder="${t('r.maliyat')}" class="inp w-full num money">
       <label class="block">${t('r.reg_area')} <input name="area_marla" type="number" step="0.01" min="0.01" value="${mm(ar.pending || ar.total) || p.size_marla || ''}" class="inp w-28 num"></label>${s === 'sold' ? pendingFields() : ''}<button class="btn bg-purple-700">${t('r.create')}</button></form>`;
     if (allow('construction')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'construction',{plot_id:'${p.id}'})">
-      <div class="font-medium">${t('p.construction')}</div><select name="status" class="inp w-full">${opts('construction', p.construction_status)}</select>${dateInp()}<button class="btn bg-slate-600">${t('save')}</button></form>`;
+      <div class="font-medium">${t('p.construction')}</div>${segEnum('status', 'construction', p.construction_status)}${dateInp()}<button class="btn bg-slate-600">${t('save')}</button></form>`;
   }
   if (allow('edit_plot')) actions += `<form class="border rounded p-3 space-y-2" onsubmit="return submitForm(event,'savePlot',{id:'${p.id}'})">
       <div class="font-medium">${t('p.edit')}</div>
       <div class="flex gap-2"><input name="size_marla" value="${esc(p.size_marla)}" placeholder="${t('area.marla')}" class="inp w-24 num"><input name="width_ft" value="${esc(p.width_ft)}" placeholder="W ft" class="inp w-20 num"><input name="depth_ft" value="${esc(p.depth_ft)}" placeholder="D ft" class="inp w-20 num"></div>
-      <select name="category" class="inp">${opts('category', p.category)}</select>
-      <select name="facing" class="inp"><option value="">${t('p.facing')}: —</option>${['East', 'West'].map(f => `<option value="${f}" ${p.facing === f ? 'selected' : ''}>${t('p.' + f.toLowerCase())}</option>`).join('')}</select>
+      ${segEnum('category', 'category', p.category)}
+      ${seg('facing', ['', 'East', 'West'], p.facing || '', v => v ? t('p.' + v.toLowerCase()) : '—')}
       <label class="flex gap-2"><input type="hidden" name="is_corner" value="FALSE"><input type="checkbox" name="is_corner" value="TRUE" ${isTrue(p.is_corner) ? 'checked' : ''}> ${t('p.corner')}</label>
       <label class="flex gap-2"><input type="hidden" name="is_park_facing" value="FALSE"><input type="checkbox" name="is_park_facing" value="TRUE" ${isTrue(p.is_park_facing) ? 'checked' : ''}> ${t('p.park_facing')}</label>
       <button class="btn bg-slate-600">${t('save')}</button></form>`;
@@ -935,10 +975,10 @@ VIEWS.registry = d => {
   return `<h1 class="text-xl font-semibold mb-4">${t('nav.registry')} <button class="inp text-sm font-normal ms-2" onclick="exportXlsx('registries')">⬇ ${t('x.excel')}</button></h1>
   <section class="card mb-6"><h2 class="font-semibold mb-2">${t('r.pending')} <span class="num text-slate-500">(${d.pending.length})</span></h2>
     <div class="flex flex-wrap gap-2 text-sm">${d.pending.map(p => `<a class="border rounded px-2 py-1 cursor-pointer hover:bg-orange-50" onclick="go('#/plot/${p.id}')"><span class="num font-medium">${esc(p.plot_no)}</span> · ${esc(p.customer)}</a>`).join('') || `<span class="text-slate-500">${t('nothing')}</span>`}</div></section>
-  <select class="inp mb-3 text-sm" onchange="S.filters={registry:{status:this.value}};load()"><option value="">${t('r.open')}</option>
-    ${Object.keys(t('enum.caseStatus')).map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${L('caseStatus', s)}</option>`).join('')}</select>
+  ${(() => { const all = d.cases, open = all.filter(c => !['client_registry_recorded', 'handed_over', 'cancelled'].includes(c.status));
+    return chips([['', t('r.open'), open.length], ...Object.keys(t('enum.caseStatus')).filter(st => all.some(c => c.status === st)).map(st => [st, L('caseStatus', st), all.filter(c => c.status === st).length]), ['all', t('all'), all.length]], f.status, 'regFilter'); })()}
   <div class="card p-0 scroll-table"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('p.customer')}</th><th>${t('r.mode')}</th><th>${t('r.step')}</th><th>${t('r.with')}</th><th>${t('r.demand_date')}</th></tr>
-    ${d.cases.map(c => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/case/${c.id}')">${esc(c.reference)}</a></td><td class="num">${esc(c.plot_no)}</td><td>${esc(c.customer_name)}</td>
+    ${d.cases.filter(c => f.status === 'all' ? true : f.status ? c.status === f.status : !['client_registry_recorded', 'handed_over', 'cancelled'].includes(c.status)).map(c => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/case/${c.id}')">${esc(c.reference)}</a></td><td class="num">${esc(c.plot_no)}</td><td>${esc(c.customer_name)}</td>
       <td>${L('registryMode', c.mode)}</td><td>${L('caseStatus', c.status)}</td><td class="text-slate-500">${c.actor ? L('roles', c.actor) : '—'}</td><td class="num">${dmy(c.demand_date)}</td></tr>`).join('') || `<tr><td colspan="7" class="text-slate-500">${t('nothing')}</td></tr>`}
   </table></div>`;
 };
@@ -1055,10 +1095,9 @@ VIEWS.case = d => {
 VIEWS.approvals = d => {
   const f = (S.filters || {}).approvals || {};
   return `<h1 class="text-xl font-semibold mb-4">${t('nav.approvals')}</h1>
-  <select class="inp mb-3 text-sm" onchange="S.filters={approvals:{status:this.value}};load()"><option value="">${t('all')}</option>
-    ${Object.keys(t('enum.approvalStatus')).map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${L('approvalStatus', s)}</option>`).join('')}</select>
+  ${chips([['', t('all'), d.length], ...Object.keys(t('enum.approvalStatus')).filter(st => d.some(a => a.status === st)).map(st => [st, L('approvalStatus', st), d.filter(a => a.status === st).length])], f.status, 'apprFilter')}
   <div class="card p-0 scroll-table"><table class="t"><tr><th>${t('r.ref')}</th><th>${t('plot')}</th><th>${t('a.type')}</th><th>${t('a.sent')}</th><th>${t('p.status')}</th><th>${t('a.verified')}</th></tr>
-    ${d.map(a => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/approval/${a.id}')">${esc(a.reference)}</a></td><td class="num">${esc(a.plot_no)}</td><td>${L('approvalType', a.type)}</td>
+    ${d.filter(a => !f.status || a.status === f.status).map(a => `<tr class="hover:bg-slate-50"><td><a class="link num" onclick="go('#/approval/${a.id}')">${esc(a.reference)}</a></td><td class="num">${esc(a.plot_no)}</td><td>${L('approvalType', a.type)}</td>
       <td class="num">${esc(a.sent_at).slice(0, 16)}</td><td>${L('approvalStatus', a.status)}</td><td>${esc(a.verifier)}</td></tr>`).join('') || `<tr><td colspan="6" class="text-slate-500">${t('nothing')}</td></tr>`}</table></div>`;
 };
 
@@ -1073,7 +1112,7 @@ VIEWS.approval = d => {
   if (['needs_review', 'sent'].includes(a.status) && allow('verify_approval')) {
     actions += `<details class="border-t pt-3" ${a.status === 'needs_review' ? 'open' : ''}><summary class="cursor-pointer">${t('a.resolve')}</summary>
       <form class="space-y-2 mt-2" onsubmit="return submitForm(event,'resolveApproval',{id:'${a.id}'})"><p class="text-slate-500">${t('a.resolve_help')}</p>
-      <select name="decision" class="inp"><option value="approved">${t('a.approved')}</option><option value="rejected">${t('a.rejected')}</option></select>
+      ${seg('decision', ['approved', 'rejected'], 'approved', v => t('a.' + v))}
       <textarea name="remarks" required class="inp w-full" placeholder="${t('a.how_confirmed')}"></textarea><button class="btn bg-amber-600">${t('save')}</button></form></details>`;
   }
   return `<div class="flex flex-wrap items-center gap-3 mb-4"><h1 class="text-xl font-semibold"><span class="num">${esc(a.reference)}</span> · ${L('approvalType', a.type)}</h1>
@@ -1104,7 +1143,7 @@ VIEWS.customers = d => {
   ${allow('customers') ? `<section class="card"><h2 class="font-semibold mb-3">${t('c.new')}</h2>
     <form class="grid md:grid-cols-3 gap-3 text-sm" onsubmit="return submitForm(event,'saveCustomer',{})">
       <input name="name" required placeholder="${t('c.name')}" class="inp"><input name="name_ur" dir="rtl" placeholder="${t('c.name_ur')}" class="inp">
-      <div class="flex gap-1"><select name="relation" class="inp"><option>s/o</option><option>d/o</option><option>w/o</option></select><input name="father_name" placeholder="${t('c.father')}" class="inp flex-1"></div>
+      <div class="flex gap-1">${seg('relation', ['s/o', 'd/o', 'w/o'], 's/o')}<input name="father_name" placeholder="${t('c.father')}" class="inp flex-1"></div>
       <input name="cnic" placeholder="00000-0000000-0" pattern="\\d{5}-\\d{7}-\\d" class="inp num"><input name="phone" placeholder="${t('c.phone')}" class="inp num"><input name="email" type="email" placeholder="${t('email')}" class="inp num">
       <input name="address" placeholder="${t('c.address')}" class="inp md:col-span-2"><label class="flex gap-2 items-center"><input type="checkbox" name="is_filer" value="TRUE"> ${t('c.filer')}</label>
       <input name="nominee_name" placeholder="${t('c.nominee')}" class="inp"><input name="nominee_cnic" placeholder="${t('c.nominee_cnic')}" class="inp num"><input name="nominee_relation" placeholder="${t('c.nominee_rel')}" class="inp">
@@ -1130,11 +1169,11 @@ function landFields(kind, d) {
   if (kind === 'intiqal') return `<input name="intiqal_no" required placeholder="${t('land.intiqal_no')}" class="inp num"><input type="date" name="intiqal_date" class="inp"><input name="holder_name" required placeholder="${t('land.holder')}" class="inp"><input name="holder_cnic" placeholder="00000-0000000-0" class="inp num">
       <label class="flex gap-2 items-center"><input type="hidden" name="holder_is_filer" value="FALSE"><input type="checkbox" name="holder_is_filer" value="TRUE" checked> ${t('r.filer')}</label>
       <label>${t('land.acquired')} <input type="date" name="holder_acquired_on" class="inp"></label>
-      <select name="land_purchase_id" class="inp"><option value="">${t('land.link_purchase')}</option>${d.purchases.map(p => `<option value="${p.id}">${esc(p.seller_name)} – ${esc(p.khasra_nos)}</option>`).join('')}</select>
+      <div class="col-span-full"><div class="text-xs text-slate-500">${t('land.link_purchase')}</div>${seg('land_purchase_id', ['', ...d.purchases.map(p => p.id)], '', v => v ? (p => p.seller_name + ' ' + Math.round(num(p.area_sqft) / (num(d.marla_sqft) || 270) * 100) / 100 + ' M')(d.purchases.find(p => p.id === v)) : '—')}</div>
       <input name="khasra_nos" placeholder="${t('land.khasra')}" class="inp num">${areaInputs()}`;
-  if (kind === 'tma') return `<select name="intiqal_id" required class="inp col-span-2"><option value="">${t('land.tma_from')}</option>${(d.intiqals || []).map(i => `<option value="${i.id}">${esc(i.intiqal_no)} – ${esc(i.holder_name)} (${t('land.balance')}: ${area(Math.max(0, i.balance), d.marla_sqft)})</option>`).join('')}</select>
+  if (kind === 'tma') return `<div class="col-span-full"><div class="text-xs text-slate-500">${t('land.tma_from')}</div>${seg('intiqal_id', (d.intiqals || []).map(i => i.id), '', v => (i => i.intiqal_no + ' – ' + i.holder_name.split(' s/o')[0] + ' (' + area(Math.max(0, i.balance), d.marla_sqft) + ')')(d.intiqals.find(i => i.id === v)), true)}</div>
       ${areaInputs()}<input name="registry_no" placeholder="${t('land.tma_reg')}" class="inp num"><input type="date" name="registry_date" class="inp"><input name="tma_intiqal_no" placeholder="${t('land.tma_intiqal')}" class="inp num"><input name="notes" placeholder="${t('notes')}" class="inp">`;
-  return `<select name="type" class="inp">${opts('parcelType')}</select><input name="name" required placeholder="${t('c.name')}" class="inp">${areaInputs()}<input name="width_ft" type="number" step="0.01" placeholder="${t('land.width')}" class="inp num">`;
+  return `<div class="col-span-full">${segEnum('type', 'parcelType')}</div><input name="name" required placeholder="${t('c.name')}" class="inp">${areaInputs()}<input name="width_ft" type="number" step="0.01" placeholder="${t('land.width')}" class="inp num">`;
 }
 function landEditBtn(kind, id) {
   return allow('land') ? `<button class="link text-sm whitespace-nowrap" onclick="landEdit('${kind}','${id}')">✏ ${t('edit')}</button>` : '';
@@ -1150,6 +1189,7 @@ function landEdit(kind, id) {
     const els = f.querySelectorAll(`[name="${k}"]`);
     els.forEach(el => {
       if (el.type === 'hidden') return;
+      if (el.type === 'radio') { el.checked = String(el.value) === String(rec[k] == null ? '' : rec[k]); return; }
       if (el.type === 'checkbox') el.checked = isTrue(rec[k]);
       else if (el.type === 'date') el.value = String(rec[k] || '').slice(0, 10);
       else el.value = rec[k] == null ? '' : rec[k];
@@ -1204,7 +1244,7 @@ VIEWS.land = d => {
 VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibold mb-4">${t('nav.settings')}</h1>
   ${S.user && S.user.role === 'admin' ? `<section class="card mb-6"><h2 class="font-semibold">${t('x.data_title')}</h2><p class="text-sm text-slate-500 mb-3">${t('x.import_help')}</p>
     <div class="flex flex-wrap gap-2 items-center text-sm">
-      <select id="imp-kind" class="inp" onchange="document.getElementById('import-result').innerHTML=''">${Object.keys(IMPORT_KINDS).map(k => `<option value="${k}">${t('x.kind_' + k)}</option>`).join('')}</select>
+      <input type="hidden" id="imp-kind" value="${S.impKind || 'registries'}">${chips(Object.keys(IMPORT_KINDS).map(k => [k, t('x.kind_' + k)]), S.impKind || 'registries', 'impKind', 'w-full')}
       <button class="inp" onclick="downloadTemplate(document.getElementById('imp-kind').value)">⬇ ${t('x.template')}</button>
       <label class="btn bg-p cursor-pointer">⬆ ${t('x.upload')}<input type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="importExcel(this, document.getElementById('imp-kind').value)"></label>
       <span class="mx-2 text-slate-300">|</span>
@@ -1243,9 +1283,9 @@ VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibol
   <section class="card mb-6"><h2 class="font-semibold mb-3">${t('s.users')}</h2><table class="t"><tr><th>${t('c.name')}</th><th>${t('email')}</th><th>${t('s.role')}</th><th>${t('s.active')}</th></tr>
     ${users.map(u => `<tr><td>${esc(u.name)}</td><td class="num">${esc(u.email)}</td><td>${L('roles', u.role)}</td><td>${u.is_active ? '✔' : '✖'}</td></tr>`).join('')}</table>
     <details class="mt-3"><summary class="link text-sm">${t('s.add_user')}</summary><form class="grid md:grid-cols-3 gap-2 text-sm mt-2" onsubmit="return submitForm(event,'saveUser',{})">
-      <select name="id" class="inp" onchange="fillUser(this)"><option value="">— new —</option>${users.map(u => `<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select>
+      <div class="col-span-full" onchange="fillUser(event.target)">${seg('id', ['', ...users.map(u => u.id)], '', v => v ? users.find(u => u.id === v).name : '+ new')}</div>
       <input name="name" required placeholder="${t('c.name')}" class="inp"><input name="email" type="email" required placeholder="${t('email')}" class="inp num">
-      <select name="role" class="inp">${opts('roles')}</select><input name="department" placeholder="${t('s.sender_dept')}" class="inp">
+      <div class="col-span-full">${segEnum('role', 'roles')}</div><input name="department" placeholder="${t('s.sender_dept')}" class="inp">
       <input name="password" type="password" placeholder="${t('s.new_password')}" class="inp"><label class="flex gap-2 items-center"><input type="hidden" name="is_active" value="FALSE"><input type="checkbox" name="is_active" value="TRUE" checked> ${t('s.active')}</label>
       <div><button class="btn bg-p">${t('save')}</button></div></form></details></section>
   <section class="card"><h2 class="font-semibold mb-3">${t('s.change_pw')}</h2><form class="flex flex-wrap gap-2 text-sm" onsubmit="return submitForm(event,'changePassword',{})">

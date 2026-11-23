@@ -195,7 +195,7 @@ var Views = (function () {
     var pending = plotsOf(projectId).filter(function (p) { return p.sale_status === 'payment_cleared'; }).sort(natural)
       .map(function (p) { return { id: p.id, plot_no: p.plot_no, customer: (customersById[p.current_customer_id] || {}).name || '' }; });
     var cases = casesOf(projectId).filter(function (c) {
-      return status ? c.status === status : ENUM.finalCase.indexOf(c.status) < 0;
+      return status === 'all' ? true : status ? c.status === status : ENUM.finalCase.indexOf(c.status) < 0;
     }).sort(function (a, b) { return b.id - a.id; });
     return { pending: pending, cases: cases };
   }

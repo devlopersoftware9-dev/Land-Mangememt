@@ -104,6 +104,35 @@
 .qc-pno { font-size: 22px; font-weight: 700; color: var(--p); line-height: 1; }
 .qc-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #64748b; }
 .qc-pill { display: inline-block; font-size: 12px; padding: 3px 9px; border-radius: 999px; background: #fff; border: 1px solid #e2e8f0; color: #334155; white-space: nowrap; }
+/* ---- navigation bar styles (Theme → Menu style) */
+.tab { font-size: var(--nav-size, 15px); transition: background .15s, color .15s; }
+.tab svg { opacity: .75; } .tab.active svg, .tab:hover svg { opacity: 1; }
+html[data-nav=pills] .tabbar > div { gap: 4px; padding-top: 6px; padding-bottom: 6px; }
+html[data-nav=pills] .tab { border-bottom: 0; border-radius: 999px; padding: .5rem 1.1rem; }
+html[data-nav=pills] .tab:hover { background: var(--p-soft); }
+html[data-nav=pills] .tab.active { background: var(--p); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+html[data-nav=boxed] .tabbar { background: var(--stripe); }
+html[data-nav=boxed] .tabbar > div { gap: 4px; padding-top: 8px; }
+html[data-nav=boxed] .tab { border: 1px solid #e2e8f0; border-bottom: 0; border-radius: 10px 10px 0 0; background: #fff; border-top: 3px solid transparent; }
+html[data-nav=boxed] .tab.active { border-top-color: var(--p); color: var(--p); background: #fff; box-shadow: 0 -2px 6px rgba(0,0,0,.05); }
+html[data-nav=solid] .tabbar { background: var(--p); border-bottom: 0; }
+html[data-nav=solid] .tab { color: rgba(255,255,255,.85); border-bottom-color: transparent; }
+html[data-nav=solid] .tab:hover { background: rgba(255,255,255,.12); color: #fff; }
+html[data-nav=solid] .tab.active { background: rgba(255,255,255,.2); color: #fff; border-bottom-color: #fff; }
+/* ---- filter box styles (Theme → Filter box style) */
+.fchip { font-size: var(--chip-size, 13px); transition: background .15s, border-color .15s, transform .1s; }
+.fchip:active { transform: scale(.97); }
+.fchip .dot { display: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--p)); margin-inline-end: 6px; vertical-align: 1px; }
+.statusbar { border-top: 3px solid var(--p); }
+html[data-chip=status] .fchip[style*="--c"] .dot { display: inline-block; }
+html[data-chip=status] .fchip[style*="--c"] { border-color: color-mix(in srgb, var(--c) 45%, #fff); background: color-mix(in srgb, var(--c) 8%, #fff); }
+html[data-chip=status] .fchip[style*="--c"]:hover { border-color: var(--c); }
+html[data-chip=status] .fchip.on[style*="--c"] { background: var(--c); border-color: var(--c); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+html[data-chip=status] .fchip.on .dot { background: #fff; }
+html[data-chip=soft] .fchip { border-color: transparent; background: var(--p-soft); }
+html[data-chip=soft] .fchip.on { background: var(--p); color: #fff; }
+html[data-chip=square] .fchip { border-radius: 6px; }
+html[data-chip=square] .fchip .cnt { border-radius: 4px; }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen">
@@ -140,7 +169,7 @@ en: {
     sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
     sell_title: 'Sell plot {plots}', pay_title: 'Payment Clear: {plots}', demand_title: 'Fard demand – Plot {plot}', sold_menu: 'Plot {plot} – {name}',
     transfer_open: 'Transfer / full details', done_n: 'Done ({n}).', need_payment: 'Payment Clear first', need_sold: 'Sell first' },
-  theme: { sizes: 'Sizes', sz_tilePad: 'Dashboard box size', sz_tileNum: 'Box number size', sz_tileLbl: 'Box title size', sz_font: 'Text size (whole app)', sz_reset: 'Reset sizes', title: 'Theme', presets: 'Ready colour schemes', custom: 'Your own colours', header: 'Top bar', primary: 'Buttons / links / tabs',
+  theme: { nav_style: 'Menu bar style', nav_pills: 'Pills', nav_underline: 'Underline', nav_boxed: 'Folder tabs', nav_solid: 'Coloured bar', chip_style: 'Filter box style', chip_status: 'Status colours', chip_soft: 'Soft', chip_outline: 'Outline', chip_square: 'Square', sz_navSize: 'Menu text size', sz_chipSize: 'Filter box text size', sizes: 'Sizes', sz_tilePad: 'Dashboard box size', sz_tileNum: 'Box number size', sz_tileLbl: 'Box title size', sz_font: 'Text size (whole app)', sz_reset: 'Reset sizes', title: 'Theme', presets: 'Ready colour schemes', custom: 'Your own colours', header: 'Top bar', primary: 'Buttons / links / tabs',
     table: 'Table header', background: 'Page background', done: 'Done', reset: 'Reset', save_all: 'Make default for everyone', saved_all: 'Saved as default for all users.',
     note: 'Your choice is saved on this computer. Admin can make it the default for everyone.' },
   app: 'Land Management', login: 'Login', logout: 'Logout', email: 'Email', password: 'Password', save: 'Save', saved: 'Saved.', edit: 'Edit', delete: 'Delete', deleted: 'Deleted.',
@@ -232,7 +261,7 @@ ur: {
     sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
     sell_title: 'پلاٹ {plots} فروخت کریں', pay_title: 'پیمنٹ کلیئر: {plots}', demand_title: 'فرد ڈیمانڈ – پلاٹ {plot}', sold_menu: 'پلاٹ {plot} – {name}',
     transfer_open: 'منتقلی / مکمل تفصیل', done_n: 'ہو گیا ({n})۔', need_payment: 'پہلے پیمنٹ کلیئر کریں', need_sold: 'پہلے فروخت کریں' },
-  theme: { sizes: 'سائز', sz_tilePad: 'ڈیش بورڈ باکس کا سائز', sz_tileNum: 'باکس میں نمبر کا سائز', sz_tileLbl: 'باکس کے عنوان کا سائز', sz_font: 'لکھائی کا سائز (پوری ایپ)', sz_reset: 'سائز واپس', title: 'رنگ', presets: 'تیار رنگ', custom: 'اپنی مرضی کے رنگ', header: 'اوپر والی پٹی', primary: 'بٹن / لنک / ٹیب',
+  theme: { nav_style: 'مینو بار کا انداز', nav_pills: 'گول بٹن', nav_underline: 'نیچے لکیر', nav_boxed: 'فولڈر ٹیبز', nav_solid: 'رنگین پٹی', chip_style: 'فلٹر باکس کا انداز', chip_status: 'اسٹیٹس کے رنگ', chip_soft: 'ہلکا', chip_outline: 'خاکہ', chip_square: 'چوکور', sz_navSize: 'مینو کی لکھائی', sz_chipSize: 'فلٹر باکس کی لکھائی', sizes: 'سائز', sz_tilePad: 'ڈیش بورڈ باکس کا سائز', sz_tileNum: 'باکس میں نمبر کا سائز', sz_tileLbl: 'باکس کے عنوان کا سائز', sz_font: 'لکھائی کا سائز (پوری ایپ)', sz_reset: 'سائز واپس', title: 'رنگ', presets: 'تیار رنگ', custom: 'اپنی مرضی کے رنگ', header: 'اوپر والی پٹی', primary: 'بٹن / لنک / ٹیب',
     table: 'ٹیبل کا ہیڈر', background: 'پیج کا پس منظر', done: 'ٹھیک ہے', reset: 'پہلے جیسا', save_all: 'سب کے لیے ڈیفالٹ بنائیں', saved_all: 'سب یوزرز کے لیے محفوظ ہو گیا۔',
     note: 'آپ کی پسند اسی کمپیوٹر پر محفوظ رہے گی۔ ایڈمن اسے سب کے لیے ڈیفالٹ بنا سکتا ہے۔' },
   app: 'لینڈ مینجمنٹ', login: 'لاگ اِن', logout: 'لاگ آؤٹ', email: 'ای میل', password: 'پاس ورڈ', save: 'محفوظ کریں', saved: 'محفوظ ہو گیا۔', edit: 'ترمیم', delete: 'حذف کریں', deleted: 'حذف ہو گیا۔',
@@ -361,7 +390,7 @@ function areaBig(sqft, marla) {
 function statusChip(s) { const c = COLORS[s] || '#94a3b8'; return `<span class="chip" style="background:${c}1f;color:${c};border:1px solid ${c}55"><span class="dot" style="background:${c}"></span>${esc(L('plotStatus', s))}</span>`; }
 /** Filter boxes (no dropdowns): items = [[value, label, count?]]; click calls fn(value). */
 function chips(items, active, fn, cls) {
-  return `<div class="chipbar ${cls || ''}">${items.map(([v, label, n]) => `<button type="button" class="fchip ${String(v) === String(active || '') ? 'on' : ''}" onclick="${fn}('${esc(v)}')">${label}${n !== undefined ? ` <span class="cnt">${n}</span>` : ''}</button>`).join('')}</div>`;
+  return `<div class="chipbar ${cls || ''}">${items.map(([v, label, n, col]) => `<button type="button" class="fchip ${String(v) === String(active || '') ? 'on' : ''}" ${col ? `style="--c:${col}"` : ''} onclick="${fn}('${esc(v)}')">${col ? '<i class="dot"></i>' : ''}${label}${n !== undefined ? ` <span class="cnt">${n}</span>` : ''}</button>`).join('')}</div>`;
 }
 /** Form choice as boxes instead of a dropdown (radio buttons). */
 function seg(name, values, selected, labelFn, required) {
@@ -467,8 +496,11 @@ function mix(hex, pct) { // lighten a colour toward white (pct 0..1)
   const f = c => Math.round(c + (255 - c) * pct).toString(16).padStart(2, '0');
   return '#' + f(r) + f(g) + f(b);
 }
-const SIZES_DEFAULT = { tilePad: 16, tileNum: 24, tileLbl: 14, font: 100 };
-const SIZE_RANGE = { tilePad: [4, 40, 1, 'px'], tileNum: [14, 56, 1, 'px'], tileLbl: [10, 24, 1, 'px'], font: [80, 130, 5, '%'] };
+const SIZES_DEFAULT = { tilePad: 16, tileNum: 24, tileLbl: 14, font: 100, navSize: 15, chipSize: 13 };
+const NAV_STYLES = ['pills', 'underline', 'boxed', 'solid'], CHIP_STYLES = ['status', 'soft', 'outline', 'square'];
+const SIZE_RANGE = { navSize: [12, 20, 1, 'px'], chipSize: [11, 18, 1, 'px'], tilePad: [4, 40, 1, 'px'], tileNum: [14, 56, 1, 'px'], tileLbl: [10, 24, 1, 'px'], font: [80, 130, 5, '%'] };
+const setNavStyle = v => setStyle('navStyle', v), setChipStyle = v => setStyle('chipStyle', v);
+function setStyle(k, v) { setTheme(Object.assign({}, S.theme, { [k]: v })); }
 /** Slider change: apply at once and save, without redrawing the panel (so dragging keeps working). */
 function setSize(k, v) {
   const th = Object.assign({}, S.theme); th.sizes = Object.assign({}, SIZES_DEFAULT, th.sizes || {}, { [k]: Number(v) });
@@ -485,6 +517,9 @@ function applyTheme(th) {
   const sz = Object.assign({}, SIZES_DEFAULT, th.sizes || {});
   st.setProperty('--tile-pad', sz.tilePad + 'px'); st.setProperty('--tile-num', sz.tileNum + 'px'); st.setProperty('--tile-lbl', sz.tileLbl + 'px');
   st.fontSize = sz.font + '%';
+  st.setProperty('--nav-size', sz.navSize + 'px'); st.setProperty('--chip-size', sz.chipSize + 'px');
+  document.documentElement.dataset.nav = NAV_STYLES.includes(th.navStyle) ? th.navStyle : 'pills';
+  document.documentElement.dataset.chip = CHIP_STYLES.includes(th.chipStyle) ? th.chipStyle : 'status';
   S.theme = th;
 }
 function loadTheme() {
@@ -511,6 +546,10 @@ function openTheme() {
       <div class="text-sm divide-y">
         ${picker('hdr', t('theme.header'))}${picker('p', t('theme.primary'))}${picker('th', t('theme.table'))}${picker('bg', t('theme.background'))}
       </div>
+      <div class="text-sm text-slate-500 mt-4 mb-1">${t('theme.nav_style')}</div>
+      ${chips(NAV_STYLES.map(k => [k, t('theme.nav_' + k)]), document.documentElement.dataset.nav, 'setNavStyle')}
+      <div class="text-sm text-slate-500 mt-3 mb-1">${t('theme.chip_style')}</div>
+      ${chips(CHIP_STYLES.map(k => [k, t('theme.chip_' + k)]), document.documentElement.dataset.chip, 'setChipStyle')}
       <div class="text-sm text-slate-500 mt-4 mb-1">${t('qc.format_setting')}</div>
       ${chips(Object.keys(QC_FORMATS).map(k => [k, t('qc.f_' + k)]), qcFormat(), 'setQcFormat')}
       <div class="text-sm text-slate-500 mt-4 mb-1">${t('theme.sizes')}</div>
@@ -831,9 +870,9 @@ function gridFilters() {
   const row = (label, html) => `<div class="flex flex-wrap items-start gap-1"><span class="chiplbl">${label}</span>${html}</div>`;
   const statuses = (S.enums.plotStatus || []).filter(v => cnt(r => r.sale_status === v));
   const sizes = [...new Set(rows.map(r => r.size_marla).filter(Boolean))].sort((a, b) => num(a) - num(b));
-  el.innerHTML = `<div class="card mb-3 py-2">
-    ${row(t('p.status'), chips([['', t('all'), rows.length], ...statuses.map(v => [v, L('plotStatus', v), cnt(r => r.sale_status === v)]),
-      ...(cnt(r => r.pay_pending) ? [['pay_pending', '⚠ ' + t('g.pending'), cnt(r => r.pay_pending)]] : [])], f.status, 'gfStatus'))}
+  el.innerHTML = `<div class="card mb-3 py-2 statusbar">
+    ${row(t('p.status'), chips([['', t('all'), rows.length, 'var(--p)'], ...statuses.map(v => [v, L('plotStatus', v), cnt(r => r.sale_status === v), COLORS[v]]),
+      ...(cnt(r => r.pay_pending) ? [['pay_pending', '⚠ ' + t('g.pending'), cnt(r => r.pay_pending), '#d97706']] : [])], f.status, 'gfStatus'))}
     ${gfActive() ? `<button class="link text-sm" onclick="S.gf={q:''};document.querySelector('input[type=search]').value='';gridRender()">✕ ${t('g.clear_filters')}</button>` : ''}</div>`;
   document.querySelectorAll('.hf').forEach(b => b.classList.toggle('on', hfOn(b.dataset.col)));
 }

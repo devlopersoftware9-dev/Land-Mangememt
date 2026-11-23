@@ -65,7 +65,9 @@ window.addEventListener('error', function (e) {
   var msg = (e.message || 'error') + (e.lineno ? ' @' + e.lineno + ':' + e.colno : '');
   window.__appErr(msg);
   try {
-    var sc = document.scripts[document.scripts.length - 1];
+    var sc = document.scripts[document.scripts.length - 1], info = [];
+    for (var j = 0; j < document.scripts.length; j++) { var d = document.scripts[j]; var ok = 'src'; if (!d.src) { try { new Function(d.textContent); ok = 'compiles'; } catch (ce) { ok = 'ERR ' + ce.message; } } info.push(j + ' ' + (d.src || 'inline') + ' len=' + d.textContent.length + ' ' + ok); }
+    msg += '\n' + info.join('\n') + '\nfile=' + e.filename;
     google.script.run.withSuccessHandler(function (r) { window.__appErr(msg + '\n' + JSON.stringify(r, null, 1)); }).debugClientScript(sc.textContent);
   } catch (x) {}
 });

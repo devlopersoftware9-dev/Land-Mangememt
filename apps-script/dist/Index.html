@@ -544,11 +544,11 @@ function setTheme(th, persist) {
 }
 function closeTheme() { document.getElementById('modal').innerHTML = ''; }
 function openTheme() {
-  const th = S.theme || THEMES.teal;
+  const th = S.theme || THEMES.teal, old = document.getElementById('theme-panel'), keep = old ? old.scrollTop : 0;
   const picker = (k, label) => `<label class="flex items-center justify-between gap-3 py-1"><span>${label}</span>
     <input type="color" value="${th[k]}" oninput="setTheme(Object.assign({}, S.theme, {${k}: this.value}))"></label>`;
-  document.getElementById('modal').innerHTML = `<div class="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-16" onclick="if(event.target===this)closeTheme()">
-    <div id="theme-panel" class="card w-full max-w-md">
+  document.getElementById('modal').innerHTML = `<div class="fixed inset-0 z-50 bg-black/40 flex items-start justify-center p-3 sm:pt-10" onclick="if(event.target===this)closeTheme()">
+    <div id="theme-panel" class="card w-full max-w-md overflow-y-auto overscroll-contain" style="max-height:calc(100vh - 2.5rem)">
       <div class="flex justify-between items-center mb-3"><h2 class="font-semibold text-lg">🎨 ${t('theme.title')}</h2><button class="text-2xl leading-none" onclick="closeTheme()">×</button></div>
       <div class="text-sm text-slate-500 mb-2">${t('theme.presets')}</div>
       <div class="flex flex-wrap gap-2 mb-4">${Object.keys(THEMES).map(k => `<button class="swatch" title="${k}" style="background:linear-gradient(135deg, ${THEMES[k].hdr} 50%, ${THEMES[k].p} 50%)" onclick="setTheme(Object.assign({}, THEMES.${k}, { sizes: (S.theme || {}).sizes }))"></button>`).join('')}</div>
@@ -577,6 +577,7 @@ function openTheme() {
       </div>
       <p class="text-xs text-slate-400 mt-3">${t('theme.note')}</p>
     </div></div>`;
+  if (keep) document.getElementById('theme-panel').scrollTop = keep;
 }
 
 function switchProject(id) { S.projectId = id; try { localStorage.setItem('lm_project', id); } catch (e) {} load(); }

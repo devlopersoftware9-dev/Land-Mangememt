@@ -73,6 +73,9 @@
 .hf-list { max-height: 260px; overflow: auto; border-top: 1px solid #e2e8f0; margin-top: 4px; padding-top: 4px; }
 .hf-row { display: flex; align-items: center; gap: 6px; padding: 3px 2px; cursor: pointer; }
 .hf-row:hover { background: #f1f5f9; }
+.card.tile { padding: var(--tile-pad, 16px); }
+.tile-num { font-size: var(--tile-num, 24px); line-height: 1.2; }
+.tile-lbl { font-size: var(--tile-lbl, 14px); }
 </style>
 </head>
 <body class="text-slate-800 min-h-screen">
@@ -108,7 +111,7 @@ en: {
     sell_selected: 'Sell {n} to one customer', pay_selected: 'Payment Clear ({n})', clear_sel: 'Clear selection', search_customer: 'Search customer (name, CNIC, phone)',
     sell_title: 'Sell plot {plots}', pay_title: 'Payment Clear: {plots}', demand_title: 'Fard demand – Plot {plot}', sold_menu: 'Plot {plot} – {name}',
     transfer_open: 'Transfer / full details', done_n: 'Done ({n}).', need_payment: 'Payment Clear first', need_sold: 'Sell first' },
-  theme: { title: 'Theme', presets: 'Ready colour schemes', custom: 'Your own colours', header: 'Top bar', primary: 'Buttons / links / tabs',
+  theme: { sizes: 'Sizes', sz_tilePad: 'Dashboard box size', sz_tileNum: 'Box number size', sz_tileLbl: 'Box title size', sz_font: 'Text size (whole app)', sz_reset: 'Reset sizes', title: 'Theme', presets: 'Ready colour schemes', custom: 'Your own colours', header: 'Top bar', primary: 'Buttons / links / tabs',
     table: 'Table header', background: 'Page background', done: 'Done', reset: 'Reset', save_all: 'Make default for everyone', saved_all: 'Saved as default for all users.',
     note: 'Your choice is saved on this computer. Admin can make it the default for everyone.' },
   app: 'Land Management', login: 'Login', logout: 'Logout', email: 'Email', password: 'Password', save: 'Save', saved: 'Saved.', edit: 'Edit', delete: 'Delete', deleted: 'Deleted.',
@@ -199,7 +202,7 @@ ur: {
     sell_selected: '{n} پلاٹ ایک کسٹمر کو بیچیں', pay_selected: 'پیمنٹ کلیئر ({n})', clear_sel: 'انتخاب ختم', search_customer: 'کسٹمر تلاش کریں (نام، شناختی کارڈ، فون)',
     sell_title: 'پلاٹ {plots} فروخت کریں', pay_title: 'پیمنٹ کلیئر: {plots}', demand_title: 'فرد ڈیمانڈ – پلاٹ {plot}', sold_menu: 'پلاٹ {plot} – {name}',
     transfer_open: 'منتقلی / مکمل تفصیل', done_n: 'ہو گیا ({n})۔', need_payment: 'پہلے پیمنٹ کلیئر کریں', need_sold: 'پہلے فروخت کریں' },
-  theme: { title: 'رنگ', presets: 'تیار رنگ', custom: 'اپنی مرضی کے رنگ', header: 'اوپر والی پٹی', primary: 'بٹن / لنک / ٹیب',
+  theme: { sizes: 'سائز', sz_tilePad: 'ڈیش بورڈ باکس کا سائز', sz_tileNum: 'باکس میں نمبر کا سائز', sz_tileLbl: 'باکس کے عنوان کا سائز', sz_font: 'لکھائی کا سائز (پوری ایپ)', sz_reset: 'سائز واپس', title: 'رنگ', presets: 'تیار رنگ', custom: 'اپنی مرضی کے رنگ', header: 'اوپر والی پٹی', primary: 'بٹن / لنک / ٹیب',
     table: 'ٹیبل کا ہیڈر', background: 'پیج کا پس منظر', done: 'ٹھیک ہے', reset: 'پہلے جیسا', save_all: 'سب کے لیے ڈیفالٹ بنائیں', saved_all: 'سب یوزرز کے لیے محفوظ ہو گیا۔',
     note: 'آپ کی پسند اسی کمپیوٹر پر محفوظ رہے گی۔ ایڈمن اسے سب کے لیے ڈیفالٹ بنا سکتا ہے۔' },
   app: 'لینڈ مینجمنٹ', login: 'لاگ اِن', logout: 'لاگ آؤٹ', email: 'ای میل', password: 'پاس ورڈ', save: 'محفوظ کریں', saved: 'محفوظ ہو گیا۔', edit: 'ترمیم', delete: 'حذف کریں', deleted: 'حذف ہو گیا۔',
@@ -433,12 +436,24 @@ function mix(hex, pct) { // lighten a colour toward white (pct 0..1)
   const f = c => Math.round(c + (255 - c) * pct).toString(16).padStart(2, '0');
   return '#' + f(r) + f(g) + f(b);
 }
+const SIZES_DEFAULT = { tilePad: 16, tileNum: 24, tileLbl: 14, font: 100 };
+const SIZE_RANGE = { tilePad: [4, 40, 1, 'px'], tileNum: [14, 56, 1, 'px'], tileLbl: [10, 24, 1, 'px'], font: [80, 130, 5, '%'] };
+/** Slider change: apply at once and save, without redrawing the panel (so dragging keeps working). */
+function setSize(k, v) {
+  const th = Object.assign({}, S.theme); th.sizes = Object.assign({}, SIZES_DEFAULT, th.sizes || {}, { [k]: Number(v) });
+  applyTheme(th);
+  try { localStorage.setItem('lm_theme', JSON.stringify(S.theme)); } catch (e) {}
+  const out = document.getElementById('sz-' + k); if (out) out.textContent = v + SIZE_RANGE[k][3];
+}
 function applyTheme(th) {
   th = Object.assign({}, THEMES.teal, th || {});
   const st = document.documentElement.style;
   st.setProperty('--p', th.p); st.setProperty('--p-soft', mix(th.p, 0.88));
   st.setProperty('--hdr', th.hdr); st.setProperty('--th', th.th); st.setProperty('--bg', th.bg);
   st.setProperty('--stripe', mix(th.p, 0.96));
+  const sz = Object.assign({}, SIZES_DEFAULT, th.sizes || {});
+  st.setProperty('--tile-pad', sz.tilePad + 'px'); st.setProperty('--tile-num', sz.tileNum + 'px'); st.setProperty('--tile-lbl', sz.tileLbl + 'px');
+  st.fontSize = sz.font + '%';
   S.theme = th;
 }
 function loadTheme() {
@@ -460,10 +475,16 @@ function openTheme() {
     <div id="theme-panel" class="card w-full max-w-md">
       <div class="flex justify-between items-center mb-3"><h2 class="font-semibold text-lg">🎨 ${t('theme.title')}</h2><button class="text-2xl leading-none" onclick="closeTheme()">×</button></div>
       <div class="text-sm text-slate-500 mb-2">${t('theme.presets')}</div>
-      <div class="flex flex-wrap gap-2 mb-4">${Object.keys(THEMES).map(k => `<button class="swatch" title="${k}" style="background:linear-gradient(135deg, ${THEMES[k].hdr} 50%, ${THEMES[k].p} 50%)" onclick="setTheme(THEMES.${k})"></button>`).join('')}</div>
+      <div class="flex flex-wrap gap-2 mb-4">${Object.keys(THEMES).map(k => `<button class="swatch" title="${k}" style="background:linear-gradient(135deg, ${THEMES[k].hdr} 50%, ${THEMES[k].p} 50%)" onclick="setTheme(Object.assign({}, THEMES.${k}, { sizes: (S.theme || {}).sizes }))"></button>`).join('')}</div>
       <div class="text-sm text-slate-500 mb-1">${t('theme.custom')}</div>
       <div class="text-sm divide-y">
         ${picker('hdr', t('theme.header'))}${picker('p', t('theme.primary'))}${picker('th', t('theme.table'))}${picker('bg', t('theme.background'))}
+      </div>
+      <div class="text-sm text-slate-500 mt-4 mb-1">${t('theme.sizes')}</div>
+      <div class="text-sm divide-y">${Object.keys(SIZE_RANGE).map(k => { const [mn, mx, stp, u] = SIZE_RANGE[k], v = Object.assign({}, SIZES_DEFAULT, th.sizes || {})[k];
+        return `<label class="flex items-center justify-between gap-3 py-1"><span class="w-40">${t('theme.sz_' + k)}</span>
+          <input type="range" min="${mn}" max="${mx}" step="${stp}" value="${v}" class="flex-1" oninput="setSize('${k}', this.value)"><span id="sz-${k}" class="num w-12 text-end">${v}${u}</span></label>`; }).join('')}
+        <div class="py-2"><button class="inp text-xs" onclick="setTheme(Object.assign({}, S.theme, { sizes: Object.assign({}, SIZES_DEFAULT) }))">${t('theme.sz_reset')}</button></div>
       </div>
       <div class="flex flex-wrap gap-2 mt-4">
         <button class="btn bg-p" onclick="closeTheme()">${t('theme.done')}</button>
@@ -589,8 +610,8 @@ const VIEWS = {};
 VIEWS.dashboard = d => {
   const ms = d.marla_sqft;
   return `<div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">${(S.enums.plotStatus || []).map(s => `
-      <a class="card border-t-4 cursor-pointer" style="border-color:${COLORS[s]}" onclick="S.gf={status:'${s}'};go('#/plots')">
-        <div class="text-sm text-slate-500">${L('plotStatus', s)}</div><div class="text-2xl font-semibold num">${d.byStatus[s] || 0}</div></a>`).join('')}</div>
+      <a class="card tile border-t-4 cursor-pointer" style="border-color:${COLORS[s]}" onclick="S.gf={status:'${s}'};go('#/plots')">
+        <div class="tile-lbl text-slate-500">${L('plotStatus', s)}</div><div class="tile-num font-semibold num">${d.byStatus[s] || 0}</div></a>`).join('')}</div>
   <section class="card mb-6"><h2 class="font-semibold mb-2">${t('land.intiqals')}</h2>
     ${intiqalTable(d.intiqals, ms)}</section>
   <div class="grid md:grid-cols-2 gap-6">

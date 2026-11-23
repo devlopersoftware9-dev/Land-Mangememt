@@ -278,7 +278,7 @@ ok(pv1.grand_total === 213200 && pv2.grand_total === 213200 + 31000, 'settings c
     sessionStorage: { getItem: () => null, setItem() {}, removeItem() {} }, localStorage: { getItem: () => null, setItem() {} },
     google: { script: { run: {}, history: { setChangeHandler() {}, push() {} }, url: { getLocation() {} } } }, console, setTimeout, clearTimeout, URL };
   vm.createContext(ui);
-  vm.runInContext(fs.readFileSync(path.join(dir, 'Index.html'), 'utf8').split('<script>')[1].split('</script>')[0] + ';this.VIEWS=VIEWS;this.S=S;', ui);
+  vm.runInContext(fs.readFileSync(path.join(dir, 'Index.html'), 'utf8').split('<script>').pop().split('</script>')[0] + ';this.VIEWS=VIEWS;this.S=S;', ui);
   ui.S.enums = api(admin, 'bootstrap', {}).enums; ui.S.user = { role: 'admin', name: 'A' }; ui.S.projectId = pid;
   const screens = {
     dashboard: api(admin, 'dashboard', { project_id: pid }), plots: api(admin, 'plots', { project_id: pid }), plot: api(admin, 'plot', { id: plot.id }),

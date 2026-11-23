@@ -32,7 +32,7 @@
   .badge-n { background: #dc2626; color: #fff; border-radius: 9999px; font-size: .7rem; padding: 0 .4rem; }
 
   /* Tables: real grid */
-  table.t { width: 100%; font-size: .875rem; border-collapse: separate; border-spacing: 0; border: 1px solid #cbd5e1; border-radius: .5rem; overflow: hidden; }
+  table.t { width: 100%; font-size: .875rem; border-collapse: separate; border-spacing: 0; border: 1px solid #cbd5e1; border-radius: .5rem; }
   table.t th { text-align: start; background: var(--th); color: var(--th-text); font-weight: 600; padding: .55rem .7rem; border-inline-end: 1px solid rgba(255,255,255,.25); white-space: nowrap; }
   table.t td { padding: .5rem .7rem; border-top: 1px solid #e2e8f0; border-inline-end: 1px solid #e2e8f0; vertical-align: top; background: #fff; }
   table.t th:last-child, table.t td:last-child { border-inline-end: 0; }
@@ -41,10 +41,15 @@
   .card.p-0 { padding: 0; }
   table.t tr.sel td { background: var(--p-soft) !important; }
   input[type=checkbox] { accent-color: var(--p); }
-  table.t thead th { position: sticky; top: 0; z-index: 2; }
+  /* header row stays visible while scrolling (page or box); no overflow:hidden on the table, or sticky stops working */
+  table.t tr:first-child th, table.t thead th { position: sticky; top: 0; z-index: 3; box-shadow: 0 1px 0 rgba(0,0,0,.08); }
+  table.t tr:first-child th:first-child { border-start-start-radius: .45rem; }
+  table.t tr:first-child th:last-child { border-start-end-radius: .45rem; }
+  table.t tr:last-child td:first-child { border-end-start-radius: .45rem; }
+  table.t tr:last-child td:last-child { border-end-end-radius: .45rem; }
   .border, .border-b, .border-t, .divide-y > * { border-color: #e2e8f0; }
   .scroll-table { max-height: 70vh; overflow: auto; border-radius: .5rem; }
-  .scroll-table table.t th { position: sticky; top: 0; z-index: 1; }
+
   .chip { display: inline-flex; align-items: center; gap: .35rem; border-radius: 9999px; padding: .05rem .65rem; font-size: .78rem; font-weight: 500; }
   .dot { width: .6rem; height: .6rem; border-radius: 9999px; display: inline-block; }
 

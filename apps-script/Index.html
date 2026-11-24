@@ -1728,14 +1728,14 @@ VIEWS.settings = ([rates, st, users, perms]) => `<h1 class="text-xl font-semibol
 
 // ---- Automatic e-mail backup (Settings)
 function backupSection(st) {
-  const hs = String(st.backup_times || '9,18').split(/[^0-9:]+/).filter(String).map(x => parseInt(x, 10));
-  const hh = h => (h >= 0 && h <= 23 ? ('0' + h).slice(-2) : '09') + ':00', on = String(st.backup_on || 'TRUE').toUpperCase() !== 'FALSE';
+  const hs = String(st.backup_times || '14,18').split(/[^0-9:]+/).filter(String).map(x => parseInt(x, 10));
+  const hh = h => (h >= 0 && h <= 23 ? ('0' + h).slice(-2) : '14') + ':00', on = String(st.backup_on || 'TRUE').toUpperCase() !== 'FALSE';
   setTimeout(loadBackupStatus, 0);
   return `<section class="card mb-6"><h2 class="font-semibold">📧 ${t('ab.backup_title')}</h2><p class="text-sm text-slate-500 mb-3">${t('ab.backup_help')}</p>
     <form class="grid md:grid-cols-4 gap-3 text-sm items-end" onsubmit="return saveBackup(event)">
       <div><div class="mb-1">${t('ab.backup_on')} / ${t('ab.backup_off')}</div>${seg('backup_on', ['TRUE', 'FALSE'], on ? 'TRUE' : 'FALSE', v => v === 'TRUE' ? t('ab.backup_on') : t('ab.backup_off'))}</div>
       <label class="md:col-span-3">${t('ab.backup_emails')}<input name="backup_emails" value="${esc(st.backup_emails || '')}" placeholder="${t('ab.backup_emails_ph')}" class="inp w-full num"></label>
-      <label>${t('ab.backup_time1')}<input name="t1" type="time" step="3600" value="${hh(hs[0] === undefined ? 9 : hs[0])}" class="inp w-full num"></label>
+      <label>${t('ab.backup_time1')}<input name="t1" type="time" step="3600" value="${hh(hs[0] === undefined ? 14 : hs[0])}" class="inp w-full num"></label>
       <label>${t('ab.backup_time2')}<input name="t2" type="time" step="3600" value="${hh(hs[1] === undefined ? 18 : hs[1])}" class="inp w-full num"></label>
       <div class="md:col-span-2 flex flex-wrap gap-2"><button class="btn bg-p">${t('save')}</button>
         <button type="button" class="inp" onclick="emailBackupNow(this)">📤 ${t('ab.backup_now')}</button></div>

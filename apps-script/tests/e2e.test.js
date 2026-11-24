@@ -345,7 +345,7 @@ ok(pv1.grand_total === 213200 && pv2.grand_total === 213200 + 31000, 'settings c
 
 // ---------------- automatic e-mail backup (xlsx built by hand, twice a day)
 {
-  ok(api(admin, 'backupStatus', {}).hours.join(',') === '9,18', 'backup: default times 9 & 18');
+  ok(api(admin, 'backupStatus', {}).hours.join(',') === '14,18', 'backup: default times 14 & 18');
   api(admin, 'saveSettings', { backup_on: 'TRUE', backup_emails: 'boss@x.com, office@y.com', backup_times: '10,20' });
   const trg = ctx.ScriptApp._t.filter(t => t.getHandlerFunction() === 'sendScheduledBackup');
   ok(trg.length === 2 && trg.map(t => t.spec.hour).join(',') === '10,20', 'backup: two daily triggers at 10 & 20');
@@ -358,7 +358,7 @@ ok(pv1.grand_total === 213200 && pv2.grand_total === 213200 + 31000, 'settings c
   ok(JSON.parse(ctx.setting('backup_last', '{}')).rows === r.rows, 'backup: last result stored');
   api(admin, 'saveSettings', { backup_on: 'FALSE' });
   ok(ctx.ScriptApp._t.filter(t => t.getHandlerFunction() === 'sendScheduledBackup').length === 0, 'backup: switched off removes triggers');
-  api(admin, 'saveSettings', { backup_on: 'TRUE', backup_times: '9,18', backup_emails: '' });
+  api(admin, 'saveSettings', { backup_on: 'TRUE', backup_times: '14,18', backup_emails: '' });
   let denied = false; try { api(acc, 'emailBackupNow', {}); } catch (e) { denied = true; }
   ok(denied, 'backup: only admin can send');
 }

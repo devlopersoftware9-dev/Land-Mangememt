@@ -16,10 +16,10 @@ var AutoBackup = (function () {
   }
 
   function hours() {
-    var hs = str(setting('backup_times', '9,18')).split(/[^0-9:]+/).filter(String).map(function (x) { return parseInt(x.split(':')[0], 10); })
+    var hs = str(setting('backup_times', '14,18')).split(/[^0-9:]+/).filter(String).map(function (x) { return parseInt(x.split(':')[0], 10); })
       .filter(function (h) { return h >= 0 && h <= 23; });
     hs = hs.filter(function (h, i) { return hs.indexOf(h) === i; });
-    return hs.length ? hs.slice(0, 4) : [9, 18];
+    return hs.length ? hs.slice(0, 4) : [14, 18];
   }
   function recipients() {
     var list = str(setting('backup_emails', '')).split(/[\s,;]+/).filter(function (e) { return /@/.test(e); });
